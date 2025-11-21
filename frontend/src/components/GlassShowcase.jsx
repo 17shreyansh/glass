@@ -140,10 +140,12 @@ const GlassShowcase = () => {
           left: '-50px',
           width: isMobile ? '300px' : '700px',
           height: isMobile ? '300px' : '700px',
-          backgroundColor: currentData.ellipseColor,
-          mask: `url(${ellipse5}) no-repeat center/contain`,
-          WebkitMask: `url(${ellipse5}) no-repeat center/contain`,
-          transition: 'background-color 0.8s ease'
+          backgroundImage: `url(${ellipse5})`,
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          filter: `hue-rotate(${currentData.ellipseColor === '#667eea' ? '0deg' : currentData.ellipseColor === '#4facfe' ? '20deg' : currentData.ellipseColor === '#f093fb' ? '280deg' : currentData.ellipseColor === '#00f2fe' ? '180deg' : currentData.ellipseColor === '#fbc7aa' ? '30deg' : '160deg'})`,
+          transition: 'filter 0.8s ease'
         }} />
         <div style={{
           position: 'absolute',
@@ -151,10 +153,12 @@ const GlassShowcase = () => {
           right: '0%',
           width: isMobile ? '400px' : '800px',
           height: isMobile ? '400px' : '800px',
-          backgroundColor: currentData.ellipseColor,
-          mask: `url(${ellipse4}) no-repeat center/contain`,
-          WebkitMask: `url(${ellipse4}) no-repeat center/contain`,
-          transition: 'background-color 0.8s ease'
+          backgroundImage: `url(${ellipse4})`,
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          filter: `hue-rotate(${currentData.ellipseColor === '#667eea' ? '0deg' : currentData.ellipseColor === '#4facfe' ? '20deg' : currentData.ellipseColor === '#f093fb' ? '280deg' : currentData.ellipseColor === '#00f2fe' ? '180deg' : currentData.ellipseColor === '#fbc7aa' ? '30deg' : '160deg'})`,
+          transition: 'filter 0.8s ease'
         }} />
       </div>
 
