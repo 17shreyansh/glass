@@ -1,0 +1,149 @@
+/* Auth Pages Responsive Styles */
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .auth-container {
+    padding: 20px 15px !important;
+  }
+  
+  .auth-card {
+    margin: 0 !important;
+    border-radius: 12px !important;
+  }
+  
+  .auth-card .ant-card-body {
+    padding: 30px 20px !important;
+  }
+  
+  .auth-hero-title {
+    font-size: 32px !important;
+    margin-bottom: 15px !important;
+  }
+  
+  .auth-hero-text {
+    font-size: 16px !important;
+  }
+  
+  .auth-benefits {
+    font-size: 14px !important;
+    margin-top: 30px !important;
+  }
+  
+  .auth-benefits div {
+    margin-bottom: 10px !important;
+  }
+}
+
+/* Tablet optimizations */
+@media (max-width: 992px) and (min-width: 769px) {
+  .auth-hero-title {
+    font-size: 40px !important;
+  }
+  
+  .auth-hero-text {
+    font-size: 17px !important;
+  }
+}
+
+/* Form input focus effects */
+.auth-input:focus,
+.auth-input:hover {
+  border-color: #8E6A4E !important;
+  box-shadow: 0 0 0 2px rgba(142, 106, 78, 0.1) !important;
+}
+
+.auth-input .ant-input:focus {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Button hover effects */
+.auth-button:hover {
+  background: #7A5A42 !important;
+  border-color: #7A5A42 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(142, 106, 78, 0.3) !important;
+}
+
+/* Loading state */
+.auth-button.ant-btn-loading {
+  transform: none !important;
+}
+
+/* Trust indicators animation */
+.trust-indicators {
+  animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Card entrance animation */
+.auth-card {
+  animation: slideInRight 0.5s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Hero content animation */
+.auth-hero-content {
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Form validation styles */
+.ant-form-item-has-error .auth-input {
+  border-color: #ff4d4f !important;
+}
+
+.ant-form-item-has-error .auth-input:focus {
+  border-color: #ff4d4f !important;
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.1) !important;
+}
+
+/* Checkbox custom styling */
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #8E6A4E !important;
+  border-color: #8E6A4E !important;
+}
+
+.ant-checkbox:hover .ant-checkbox-inner {
+  border-color: #8E6A4E !important;
+}
+
+/* Link hover effects */
+.auth-link:hover {
+  color: #7A5A42 !important;
+  text-decoration: underline !important;
+}
+
+/* Back button hover */
+.auth-back-button:hover {
+  color: #7A5A42 !important;
+  background: rgba(142, 106, 78, 0.05) !important;
+}

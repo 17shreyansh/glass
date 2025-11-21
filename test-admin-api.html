@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Admin API</title>
+</head>
+<body>
+    <h1>Test Admin API Endpoints</h1>
+    <div>
+        <button onclick="testLogin()">1. Login as Admin</button>
+        <button onclick="testGetProducts()">2. Get Products</button>
+        <button onclick="testGetCategories()">3. Get Categories</button>
+        <button onclick="testCreateProduct()">4. Create Test Product</button>
+        <button onclick="testCreateCategory()">5. Create Test Category</button>
+    </div>
+    <div id="result" style="margin-top: 20px; padding: 10px; background: #f5f5f5; white-space: pre-wrap;"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        let authToken = null;
+
+        function log(message) {
+            document.getElementById('result').innerHTML += message + '\n\n';
+        }
+
+        async function testLogin() {
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email: 'admin@delicorn.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                log(`Login: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`Login Error: ${error.message}`);
+            }
+        }
+
+        async function testGetProducts() {
+            try {
+                const response = await fetch(`${API_URL}/products/type/ashta-dhatu`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                log(`Get Products: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`Get Products Error: ${error.message}`);
+            }
+        }
+
+        async function testGetCategories() {
+            try {
+                const response = await fetch(`${API_URL}/categories`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                log(`Get Categories: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`Get Categories Error: ${error.message}`);
+            }
+        }
+
+        async function testCreateProduct() {
+            try {
+                const response = await fetch(`${API_URL}/products`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        name: 'Test Ashta Dhatu Ring',
+                        description: 'Test product',
+                        price: 1999,
+                        productType: 'ashta-dhatu',
+                        stock: 10
+                    })
+                });
+                
+                const data = await response.json();
+                log(`Create Product: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`Create Product Error: ${error.message}`);
+            }
+        }
+
+        async function testCreateCategory() {
+            try {
+                const response = await fetch(`${API_URL}/categories`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        name: 'Test Rings',
+                        slug: 'test-rings',
+                        description: 'Test category for rings'
+                    })
+                });
+                
+                const data = await response.json();
+                log(`Create Category: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`Create Category Error: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

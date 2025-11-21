@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Cookie Auth</title>
+</head>
+<body>
+    <h1>Test Cookie Authentication</h1>
+    <div>
+        <h3>Login Test</h3>
+        <button onclick="testLogin()">Test Login</button>
+        <button onclick="testProfile()">Test Get Profile</button>
+        <button onclick="testLogout()">Test Logout</button>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        
+        async function testLogin() {
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email: 'admin@delicorn.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        async function testProfile() {
+            try {
+                const response = await fetch(`${API_URL}/auth/profile`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        async function testLogout() {
+            try {
+                const response = await fetch(`${API_URL}/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Category System</title>
+</head>
+<body>
+    <h1>Test Category System</h1>
+    <div>
+        <button onclick="testLogin()">1. Login</button>
+        <button onclick="testCreateAshtaDhatuCategory()">2. Create Ashta Dhatu Category</button>
+        <button onclick="testCreateFashionCategory()">3. Create Fashion Category</button>
+        <button onclick="testGetAshtaDhatuCategories()">4. Get Ashta Dhatu Categories</button>
+        <button onclick="testGetFashionCategories()">5. Get Fashion Categories</button>
+    </div>
+    <div id="result" style="margin-top: 20px; padding: 10px; background: #f5f5f5; white-space: pre-wrap;"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+
+        function log(message) {
+            document.getElementById('result').innerHTML += message + '\n\n';
+        }
+
+        async function testLogin() {
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email: 'admin@delicorn.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                log(`Login: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`Login Error: ${error.message}`);
+            }
+        }
+
+        async function testCreateAshtaDhatuCategory() {
+            try {
+                const response = await fetch(`${API_URL}/categories`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        name: 'Ashta Dhatu Rings',
+                        slug: 'ashta-dhatu-rings',
+                        description: 'Sacred rings made from eight metals',
+                        productType: 'ashta-dhatu'
+                    })
+                });
+                
+                const data = await response.json();
+                log(`Create Ashta Dhatu Category: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`Create Ashta Dhatu Category Error: ${error.message}`);
+            }
+        }
+
+        async function testCreateFashionCategory() {
+            try {
+                const response = await fetch(`${API_URL}/categories`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        name: 'Fashion Rings',
+                        slug: 'fashion-rings',
+                        description: 'Modern fashion rings',
+                        productType: 'fashion-jewelry'
+                    })
+                });
+                
+                const data = await response.json();
+                log(`Create Fashion Category: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`Create Fashion Category Error: ${error.message}`);
+            }
+        }
+
+        async function testGetAshtaDhatuCategories() {
+            try {
+                const response = await fetch(`${API_URL}/categories?productType=ashta-dhatu`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                log(`Get Ashta Dhatu Categories: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`Get Ashta Dhatu Categories Error: ${error.message}`);
+            }
+        }
+
+        async function testGetFashionCategories() {
+            try {
+                const response = await fetch(`${API_URL}/categories?productType=fashion-jewelry`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                log(`Get Fashion Categories: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`Get Fashion Categories Error: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>
