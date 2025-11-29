@@ -65,7 +65,7 @@ initializeServices().catch(error => {
 
 // Middleware setup
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000', "https://mvcrafted.com/", "https://www.mvcrafted.com/"],
+    origin: ['http://localhost:5173', 'http://localhost:3000', "https://mvcrafted.com", "https://www.mvcrafted.com"],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
