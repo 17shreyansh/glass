@@ -13,7 +13,7 @@ const seedAdmin = async () => {
         // Create new admin user
         const admin = await User.create({
             name: 'Admin',
-            email: 'admin@delicorn.com',
+            email: 'admin@mvcrafted.com',
             password: 'admin123',
             isAdmin: true,
             isEmailVerified: true,
