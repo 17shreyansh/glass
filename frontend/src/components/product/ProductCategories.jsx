@@ -12,15 +12,11 @@ const ProductCategories = () => {
           backgroundColor: "#fff",
           padding: "80px 10px",
           textAlign: "center",
-          fontFamily: "'Josefin Sans', sans-serif",
+          fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
           overflowX: "hidden",
         }}
       >
-      {/* Font Import */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400&family=Prata&display=swap"
-        rel="stylesheet"
-      />
+
 
       <div style={{ maxWidth: "1200px", margin: "0 auto", position: "relative" }}>
         <p
@@ -65,11 +61,11 @@ const ProductCategories = () => {
                 marginBottom: "4px",
               }}
             >
-              Unveil the Sacred
+              Elegant Serving
             </p>
 
             <Link
-              to="/ashta-dhatu"
+              to="/category/serveware"
               style={{
                 display: "block",
                 fontFamily: "'Prata', serif",
@@ -81,7 +77,7 @@ const ProductCategories = () => {
               onMouseEnter={(e) => (e.target.style.color = "#1a6a6a")}
               onMouseLeave={(e) => (e.target.style.color = "#0d4b4b")}
             >
-              Explore Ashtadhatu Jewellery
+              Explore Glass Serveware
             </Link>
           </Col>
 
@@ -116,11 +112,11 @@ const ProductCategories = () => {
                 marginBottom: "4px",
               }}
             >
-              Define Your Style
+              Perfect Sipping
             </p>
 
             <Link
-              to="/fashion-jewelry"
+              to="/category/drinkware"
               style={{
                 display: "block",
                 fontFamily: "'Prata', serif",
@@ -132,7 +128,7 @@ const ProductCategories = () => {
               onMouseEnter={(e) => (e.target.style.color = "#1a6a6a")}
               onMouseLeave={(e) => (e.target.style.color = "#0d4b4b")}
             >
-              Shop Fashion Jewellery
+              Shop Glass Drinkware
             </Link>
           </Col>
         </Row>
@@ -148,7 +144,7 @@ const ProductCategories = () => {
           padding: '6px 0',
           fontSize: '14px',
           fontWeight: 500,
-          fontFamily: "'Josefin Sans', sans-serif",
+          fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
           overflow: 'hidden',
           position: 'relative',
           width: '100%',

@@ -1,6 +1,6 @@
 /* Account Pages Global Styles */
 .account-page {
-  font-family: 'Josefin Sans', sans-serif;
+  font-family: 'HK Grotesk', sans-serif;
 }
 
 /* Sidebar Styles */
@@ -18,7 +18,7 @@
 .account-sidebar .ant-menu {
   border: none !important;
   background: transparent !important;
-  font-family: 'Josefin Sans', sans-serif !important;
+  font-family: 'HK Grotesk', sans-serif !important;
   font-size: 15px !important;
   font-weight: 500 !important;
 }
@@ -63,7 +63,7 @@
 .account-page .ant-btn-primary {
   background: #8E6A4E;
   border-color: #8E6A4E;
-  font-family: 'Josefin Sans', sans-serif;
+  font-family: 'HK Grotesk', sans-serif;
   font-weight: 500;
 }
 
@@ -89,28 +89,28 @@
 }
 
 .account-page .ant-form-item-label > label {
-  font-family: 'Josefin Sans', sans-serif;
+  font-family: 'HK Grotesk', sans-serif;
   font-weight: 500;
   color: #8E6A4E;
 }
 
 /* Typography Styles */
 .account-page .ant-card-head-title {
-  font-family: 'Josefin Sans', sans-serif;
+  font-family: 'HK Grotesk', sans-serif;
   font-weight: 600;
   color: #8E6A4E;
 }
 
 .account-page .ant-typography {
-  font-family: 'Josefin Sans', sans-serif;
+  font-family: 'HK Grotesk', sans-serif;
 }
 
 .account-page .ant-tag {
-  font-family: 'Josefin Sans', sans-serif;
+  font-family: 'HK Grotesk', sans-serif;
 }
 
 .account-page .ant-modal-title {
-  font-family: 'Josefin Sans', sans-serif;
+  font-family: 'HK Grotesk', sans-serif;
   font-weight: 600;
   color: #8E6A4E;
 }
@@ -136,7 +136,7 @@
   flex: 1;
   min-width: 120px;
   height: 40px;
-  font-family: 'Josefin Sans', sans-serif;
+  font-family: 'HK Grotesk', sans-serif;
   font-weight: 500;
   border: 1px solid #8E6A4E;
   border-radius: 6px;

@@ -139,7 +139,7 @@ const Addresses = () => {
 
         <Modal
           title={
-            <Text style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 600, color: '#114D4D' }}>
+            <Text style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontWeight: 600, color: '#114D4D' }}>
               {editingAddress ? 'Edit Address' : 'Add New Address'}
             </Text>
           }
@@ -152,16 +152,16 @@ const Addresses = () => {
             style: {
               background: '#114D4D',
               borderColor: '#114D4D',
-              fontFamily: 'Josefin Sans, sans-serif',
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
             }
           }}
           cancelButtonProps={{
             style: {
-              fontFamily: 'Josefin Sans, sans-serif',
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
             }
           }}
         >
-          <Form form={form} layout="vertical" style={{ fontFamily: 'Josefin Sans, sans-serif' }}>
+          <Form form={form} layout="vertical" style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12}>
                 <Form.Item name="name" label="Full Name" rules={[{ required: true }]}>

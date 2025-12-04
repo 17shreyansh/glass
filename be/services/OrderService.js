@@ -41,14 +41,12 @@ class OrderService {
             if (!product) {
                 throw new Error(`Product with ID ${item._id} not found.`);
             }            let itemPrice = product.price;
-            let availableStock = 0;
+            let availableStock = 999; // Default high stock
 
-            // Check if product uses stock variants (the new system)
+            // Check if product uses stock variants
             if (Array.isArray(product.stockVariants) && product.stockVariants.length > 0) {
-                // Use the model's method to get stock for the specific variant
                 availableStock = product.getStockForVariant(parseFloat(item.size), item.color);
                 
-                // Validate that the variant exists
                 const variant = product.stockVariants.find(
                     v => v.size === parseFloat(item.size) && v.color.toLowerCase() === item.color.toLowerCase()
                 );
@@ -56,11 +54,10 @@ class OrderService {
                 if (!variant) {
                     throw new Error(`Product ${product.name} does not have a variant with Size: ${item.size}, Color: ${item.color}.`);
                 }
-
-                // Price is always from the main product in the new schema
                 itemPrice = product.price;
-            } else {
-                throw new Error(`Product ${product.name} has no valid stock configuration. Stock variants are required.`);
+            } else if (product.stock !== undefined) {
+                // Fallback to simple stock field
+                availableStock = product.stock;
             }
 
             // Check stock
@@ -78,12 +75,15 @@ class OrderService {
                 quantity: item.quantity,
                 price: itemPrice,
             });
-            productUpdates.push({
-                productId: product._id,
-                size: item.size,
-                color: item.color,
-                quantity: item.quantity
-            });
+            // Only track stock updates if product has stock management
+            if (Array.isArray(product.stockVariants) && product.stockVariants.length > 0) {
+                productUpdates.push({
+                    productId: product._id,
+                    size: item.size,
+                    color: item.color,
+                    quantity: item.quantity
+                });
+            }
         }
 
         // Calculate Delivery Charge
@@ -266,24 +266,28 @@ class OrderService {
 
         // Only update stock and coupon usage for confirmed orders or COD orders
         if (orderObj.status === 'CONFIRMED' || paymentMethod === 'COD') {
-            // Update product stock
-            for (const itemUpdate of calculation.productUpdates) {
-                const product = await Product.findById(itemUpdate.productId);
-                if (!product) {
-                    console.error(`Product ${itemUpdate.productId} not found during stock update.`);
-                    continue;
-                }
+            // Update product stock only if there are updates to process
+            if (calculation.productUpdates && calculation.productUpdates.length > 0) {
+                for (const itemUpdate of calculation.productUpdates) {
+                    const product = await Product.findById(itemUpdate.productId);
+                    if (!product) {
+                        console.error(`Product ${itemUpdate.productId} not found during stock update.`);
+                        continue;
+                    }
 
-                const currentStock = product.getStockForVariant(parseFloat(itemUpdate.size), itemUpdate.color);
-                const success = product.updateVariantStock(
-                    parseFloat(itemUpdate.size),
-                    itemUpdate.color,
-                    currentStock - itemUpdate.quantity
-                );
+                    if (product.getStockForVariant && product.updateVariantStock) {
+                        const currentStock = product.getStockForVariant(parseFloat(itemUpdate.size), itemUpdate.color);
+                        const success = product.updateVariantStock(
+                            parseFloat(itemUpdate.size),
+                            itemUpdate.color,
+                            currentStock - itemUpdate.quantity
+                        );
 
-                if (success) {
-                    await product.save();
-                    console.log(`Updated stock for ${product.name} (Size: ${itemUpdate.size}, Color: ${itemUpdate.color})`);
+                        if (success) {
+                            await product.save();
+                            console.log(`Updated stock for ${product.name} (Size: ${itemUpdate.size}, Color: ${itemUpdate.color})`);
+                        }
+                    }
                 }
             }
 

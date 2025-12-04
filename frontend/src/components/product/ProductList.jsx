@@ -5,12 +5,12 @@ import ProductCard from './ProductCard';
 const { Title } = Typography;
 const { Option } = Select;
 
-const ProductList = ({ products, title }) => {
+const ProductList = ({ products = [], title }) => {
   const [sortBy, setSortBy] = useState('name');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
 
-  const sortedProducts = [...products].sort((a, b) => {
+  const sortedProducts = [...(Array.isArray(products) ? products : [])].sort((a, b) => {
     switch (sortBy) {
       case 'price-low':
         return a.price - b.price;

@@ -13,7 +13,7 @@ export default function JewelleryBanner() {
         justifyContent: "space-around",
         backgroundColor: "#fff",
         padding: "40px 20px",
-        fontFamily: "'Josefin Sans', sans-serif",
+        fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
         flexWrap: "wrap",
         gap: "20px",
         maxWidth: "100%",
@@ -79,17 +79,17 @@ export default function JewelleryBanner() {
           style={{
             color: "#555",
             marginBottom: "15px",
-            fontFamily: "'Josefin Sans', sans-serif",
+            fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
             fontWeight: "200",
 
           }}
         >
           Discover the perfect blend of spiritual heritage and modern elegance.
         </p>
-        <p style={{ color: "#555",marginBottom: "15px", fontFamily: "'Josefin Sans', sans-serif", fontWeight: "200" }}>
+        <p style={{ color: "#555",marginBottom: "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontWeight: "200" }}>
           From sacred Ashta Dhatu Jewellery to trend-setting Fashion Jewellery,
         </p>
-        <p style={{ color: "#555", marginBottom: "25px", fontFamily: "'Josefin Sans', sans-serif", fontWeight: "200" }}>
+        <p style={{ color: "#555", marginBottom: "25px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontWeight: "200" }}>
           Find pieces that reflect your style and soul.
         </p>
 
@@ -103,7 +103,7 @@ export default function JewelleryBanner() {
             fontSize: "15px",
             borderRadius: "0px",
             transition: "all 0.3s ease",
-            fontFamily: "'Josefin Sans', sans-serif",
+            fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
           }}
           onMouseOver={(e) => {
             e.currentTarget.style.backgroundColor = "#A67C5A";

@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const Category = require("../models/Category");
 const mongoose = require('mongoose');
 const { uploadService } = require('./uploadController');
 
@@ -24,45 +25,31 @@ exports.getProducts = async (req, res) => {
   try {
     const { 
       category, 
-      productType,
-      brand, 
-      material, 
-      color, 
-      size,
-      gender, 
       minPrice, 
       maxPrice, 
       sortBy, 
       search,
       inStock,
-      featured 
+      featured,
+      limit,
+      skip 
     } = req.query;
     
     let query = { isActive: true };
 
-    // Product type filter (ashta-dhatu or fashion-jewelry)
-    if (productType) query.productType = productType;
-    if (category) query.productType = category; // Frontend compatibility
-    
-    if (brand) query.brand = brand;
-    if (gender) query.gender = gender;
+    // Category filter - support both slug and ObjectId
+    if (category) {
+      console.log('Category filter requested:', category);
+      const categoryDoc = await Category.findOne({ slug: category });
+      console.log('Found category:', categoryDoc);
+      if (categoryDoc) {
+        query.categories = categoryDoc._id;
+        console.log('Query:', JSON.stringify(query));
+      } else {
+        console.log('Category not found for slug:', category);
+      }
+    }
     if (featured === 'true') query.isFeatured = true;
-    
-    // Handle multiple selections using $in operator
-    if (material) {
-      const materialsArray = material.split(',').map(m => new RegExp(m.trim(), 'i'));
-      query.material = { $in: materialsArray };
-    }
-    
-    if (color) {
-      const colorsArray = color.split(',').map(c => c.trim());
-      query.availableColors = { $in: colorsArray };
-    }
-    
-    if (size) {
-      const sizesArray = size.split(',').map(s => parseFloat(s.trim()));
-      query.availableSizes = { $in: sizesArray };
-    }
 
     // Price range filter
     if (minPrice || maxPrice) {
@@ -76,24 +63,13 @@ exports.getProducts = async (req, res) => {
       query.totalStock = { $gt: 0 };
     }
 
-    // Enhanced search functionality
+    // Search functionality
     if (search) {
-      const searchTerms = search.split(' ').filter(term => term.length > 0);
-      
-      if (searchTerms.length > 0) {
-        const searchConditions = searchTerms.map(term => ({
-          $or: [
-            { name: new RegExp(term, 'i') },
-            { description: new RegExp(term, 'i') },
-            { material: new RegExp(term, 'i') },
-            { productType: new RegExp(term, 'i') },
-            { gender: new RegExp(term, 'i') },
-
-          ]
-        }));
-        
-        query.$and = searchConditions;
-      }
+      query.$or = [
+        { name: new RegExp(search, 'i') },
+        { description: new RegExp(search, 'i') },
+        { category: new RegExp(search, 'i') }
+      ];
     }
 
     let productsQuery = Product.find(query);
@@ -106,7 +82,12 @@ exports.getProducts = async (req, res) => {
     else if (sortBy === "featured") productsQuery = productsQuery.sort({ isFeatured: -1, createdAt: -1 });
     else productsQuery = productsQuery.sort({ createdAt: -1 });
 
+    // Pagination
+    if (skip) productsQuery = productsQuery.skip(parseInt(skip));
+    if (limit) productsQuery = productsQuery.limit(parseInt(limit));
+
     const products = await productsQuery.exec();
+    console.log(`Found ${products.length} products`);
     res.json({ success: true, data: products });
   } catch (err) {
     console.error("Error fetching products:", err);
@@ -145,31 +126,7 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-// @desc    Get products by type (ashta-dhatu or fashion-jewelry)
-// @route   GET /api/products/type/:type
-// @access  Public
-exports.getProductsByType = async (req, res) => {
-  try {
-    const { type } = req.params;
-    const { limit = 20, sortBy = 'createdAt' } = req.query;
-    
-    // Allow any product type
 
-    let query = Product.find({ productType: type, isActive: true })
-      .limit(parseInt(limit));
-
-    if (sortBy === 'featured') query = query.sort({ isFeatured: -1, createdAt: -1 });
-    else if (sortBy === 'price') query = query.sort({ price: 1 });
-    else if (sortBy === 'rating') query = query.sort({ rating: -1 });
-    else query = query.sort({ createdAt: -1 });
-
-    const products = await query.exec();
-    res.json({ success: true, data: products });
-  } catch (err) {
-    console.error("Error fetching products by type:", err);
-    res.status(500).json({ error: "Failed to fetch products" });
-  }
-};
 
 // @desc    Get related products
 // @route   GET /api/products/:identifier/related
@@ -192,7 +149,7 @@ exports.getRelatedProducts = async (req, res) => {
 
     const relatedProducts = await Product.find({
       _id: { $ne: product._id },
-      productType: product.productType,
+      categories: { $in: product.categories },
       isActive: true
     })
     .limit(parseInt(limit))
@@ -284,11 +241,9 @@ exports.updateStock = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    const variant = product.sizeVariants.find(v => v.size === size);
-    if (variant) {
-      variant.stock = stock;
-    } else {
-      product.sizeVariants.push({ size, stock });
+    const variantIndex = req.body.variantIndex;
+    if (variantIndex !== undefined && product.variants[variantIndex]) {
+      product.variants[variantIndex].stock = stock;
     }
 
     await product.save();

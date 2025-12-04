@@ -17,7 +17,7 @@ const AccountLayout = ({ title, children, showTitle = true }) => {
               style={{
                 textAlign: 'center',
                 marginBottom: '40px',
-                fontFamily: 'Josefin Sans, sans-serif',
+                fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                 fontWeight: 500,
                 color: '#8E6A4E',
               }}

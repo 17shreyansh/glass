@@ -68,8 +68,7 @@ const Shop = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await apiService.getCategories();
-        const allCategories = response.data || [];
+        const allCategories = await apiService.getCategories();
         setCategories(allCategories.length > 0 ? allCategories : [
           { name: 'Rings', image: p1 },
           { name: 'Pendants', image: p1 },
@@ -120,9 +119,9 @@ const Shop = () => {
       {/* Heading and Breadcrumb */}
       <div style={{ padding: '40px 20px 20px', maxWidth: '1200px', margin: '0 auto' }}>
         <Title level={2} style={{ textAlign: 'center', fontFamily: "'Prata', serif", color: "#8E6A4E", fontWeight: '400' }}>
-          Jewelry Collection
+          Shop the Collection
         </Title>
-        <Breadcrumb style={{ marginBottom: '20px', fontFamily: "'Josefin Sans', sans-serif", justifyContent: 'center', display: 'flex' }}>
+        <Breadcrumb style={{ marginBottom: '20px', fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", justifyContent: 'center', display: 'flex' }}>
           <Breadcrumb.Item>
             <Link to="/">Home</Link>
           </Breadcrumb.Item>
@@ -130,63 +129,13 @@ const Shop = () => {
         </Breadcrumb>
       </div>
 
-      {/* Categories */}
-      <div style={{ padding: '0 20px 40px', maxWidth: '1200px', margin: '0 auto' }}>
-        <Row gutter={[24, 24]} justify="center">
-          <Col xs={12} sm={8} md={6} lg={4} xl={4}>
-            <div 
-              style={{ textAlign: 'center', cursor: 'pointer' }}
-              onClick={() => handleCategoryClick('all')}
-            >
-              <img 
-                src={p1}
-                alt="All Categories"
-                style={{ 
-                  width: '150px', 
-                  height: '150px', 
-                  objectFit: 'cover', 
-                  borderRadius: '50%',
-                  marginBottom: '10px',
-                  border: selectedCategory === 'all' ? '3px solid #8E6A4E' : '1px solid #8E6A4E'
-                }}
-              />
-              <Title level={4} style={{ fontFamily: "'Josefin Sans', sans-serif",fontWeight: '500', color: selectedCategory === 'all' ? '#8E6A4E' : '#333' }}>
-                All Categories
-              </Title>
-            </div>
-          </Col>
-          {categories.map((category, index) => (
-            <Col xs={12} sm={8} md={6} lg={4} xl={4} key={category._id || index}>
-              <div 
-                style={{ textAlign: 'center', cursor: 'pointer' }}
-                onClick={() => handleCategoryClick(category.name)}
-              >
-                <img 
-                  src={category.image ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${category.image}` : p1}
-                  alt={category.name}
-                  style={{ 
-                    width: '150px', 
-                    height: '150px', 
-                    objectFit: 'cover', 
-                    borderRadius: '50%',
-                    marginBottom: '10px',
-                    border: selectedCategory === category.name ? '3px solid #8E6A4E' : '1px solid #8E6A4E'
-                  }}
-                />
-                <Title level={4} style={{ fontFamily: "'Josefin Sans', sans-serif",fontWeight: '500', color: selectedCategory === category.name ? '#8E6A4E' : '#333' }}>
-                  {category.name}
-                </Title>
-              </div>
-            </Col>
-          ))}
-        </Row>
-      </div>
+
 
       {/* Products */}
       <div style={{ padding: '40px 20px', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: '500', fontSize: '16px' }}>Filter:</span>
+            <span style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontWeight: '500', fontSize: '16px' }}>Filter:</span>
             <Dropdown
               menu={{
                 items: [
@@ -203,14 +152,14 @@ const Shop = () => {
               }}
               trigger={['click']}
             >
-              <Button icon={<FilterOutlined />} style={{ fontFamily: "'Josefin Sans', sans-serif", height: '32px', minWidth: '120px' }}>
+              <Button icon={<FilterOutlined />} style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", height: '32px', minWidth: '120px' }}>
                 {selectedCategory === 'all' ? 'All' : selectedCategory}
               </Button>
             </Dropdown>
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: '500', fontSize: '16px' }}>Sort by:</span>
+            <span style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontWeight: '500', fontSize: '16px' }}>Sort by:</span>
             <Dropdown
               menu={{
                 items: [
@@ -224,7 +173,7 @@ const Shop = () => {
               }}
               trigger={['click']}
             >
-              <Button style={{ fontFamily: "'Josefin Sans', sans-serif", height: '32px', minWidth: '120px' }}>
+              <Button style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", height: '32px', minWidth: '120px' }}>
                 Featured
               </Button>
             </Dropdown>

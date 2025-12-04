@@ -5,30 +5,32 @@ import apiService from '../services/api';
 
 const { Title } = Typography;
 
-const FeaturedProducts = ({ limit = 8 }) => {
+const FeaturedProducts = ({ limit = 8, skip = 0, title = 'Feature Collection' }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
-        const response = await apiService.getFeaturedProducts(limit);
-        setProducts(response.data || []);
+        const response = await apiService.getFeaturedProducts(limit, skip);
+        const productsData = response?.data || response || [];
+        setProducts(Array.isArray(productsData) ? productsData : []);
       } catch (error) {
         console.error('Failed to fetch featured products:', error);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchFeaturedProducts();
-  }, [limit]);
+  }, [limit, skip]);
 
   return (
     <div style={{
-      padding: '40px 16px',
+      padding: window.innerWidth <= 768 ? '30px 12px' : '40px 16px',
       backgroundColor: '#fff',
-      minHeight: '100vh'
+      minHeight: window.innerWidth <= 768 ? 'auto' : '100vh'
     }}>
       <div style={{
         maxWidth: '1200px',
@@ -42,11 +44,15 @@ const FeaturedProducts = ({ limit = 8 }) => {
           fontWeight: '400',
           color: '#2C200F'
         }}>
-          Feature Collection
+          {title}
         </Title>
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <Spin size="large" />
+          </div>
+        ) : products.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+            <p style={{ fontSize: '16px' }}>No featured products available at the moment.</p>
           </div>
         ) : (
           <Row gutter={[20, 24]} justify="center">

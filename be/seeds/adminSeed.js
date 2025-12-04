@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const seedAdmin = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI);
+        await mongoose.connect(process.env.MONGODB_URI);
         
         // Delete existing admin users
         await User.deleteMany({ isAdmin: true });
@@ -13,7 +13,7 @@ const seedAdmin = async () => {
         // Create new admin user
         const admin = await User.create({
             name: 'Admin',
-            email: 'admin@mellotoes.com',
+            email: 'admin@delicorn.com',
             password: 'admin123',
             isAdmin: true,
             isEmailVerified: true,

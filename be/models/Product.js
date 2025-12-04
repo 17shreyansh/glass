@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 
-// Size variant schema
-const sizeVariantSchema = new mongoose.Schema({
-  size: { type: String, required: true },
+// Variant schema for customizable attributes
+const variantSchema = new mongoose.Schema({
+  attributes: { type: Map, of: String },
   stock: { type: Number, default: 0, min: 0 },
-  price: { type: Number }, // Optional different price for size
+  sku: { type: String },
 }, { _id: false });
 
 const productSchema = new mongoose.Schema({
@@ -15,21 +15,12 @@ const productSchema = new mongoose.Schema({
   price: { type: Number, required: true, min: 0 },
   originalPrice: { type: Number, min: 0 },
   
-  productType: {
-    type: String,
-    default: "jewelry"
-  },
+
   
-  // Size variants for different sizes and their stock
-  sizeVariants: [sizeVariantSchema],
+  // Variants with customizable attributes
+  variants: [variantSchema],
   totalStock: { type: Number, default: 0 },
   inStock: { type: Boolean, default: true },
-  
-  // Colors and materials
-  availableColors: [{ type: String }],
-  material: { type: String },
-  metalDetails: [{ type: String }],
-  benefits: [{ type: String }],
   
   // Images
   image: { type: String, default: "placeholder.jpg" }, // Main image for frontend compatibility
@@ -60,8 +51,8 @@ productSchema.pre("save", function(next) {
     this.sku = `JW${Date.now().toString().slice(-6)}`;
   }
   
-  // Calculate total stock from size variants
-  this.totalStock = this.sizeVariants.reduce((total, variant) => total + variant.stock, 0);
+  // Calculate total stock from variants
+  this.totalStock = this.variants.reduce((total, variant) => total + variant.stock, 0);
   this.inStock = this.totalStock > 0;
   this.reviews = this.reviewsCount;
   this.image = this.mainImage; // Sync for frontend compatibility

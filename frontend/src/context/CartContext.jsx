@@ -12,14 +12,14 @@ const cartReducer = (state, action) => {
           ...state,
           items: state.items.map(item =>
             (item._id || item.id) === productId
-              ? { ...item, quantity: item.quantity + 1 }
+              ? { ...item, quantity: (item.quantity || 0) + 1 }
               : item
           )
         };
       }
       return {
         ...state,
-        items: [...state.items, { ...action.payload, quantity: 1 }]
+        items: [...state.items, { ...action.payload, _id: productId, quantity: 1 }]
       };
     
     case 'REMOVE_FROM_CART':
@@ -33,7 +33,7 @@ const cartReducer = (state, action) => {
         ...state,
         items: state.items.map(item =>
           (item._id || item.id) === action.payload.id
-            ? { ...item, quantity: action.payload.quantity }
+            ? { ...item, quantity: Number(action.payload.quantity) || 1 }
             : item
         )
       };

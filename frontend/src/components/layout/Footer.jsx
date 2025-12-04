@@ -19,8 +19,8 @@ const Footer = () => {
         background: "url(" + bg + ") no-repeat center",
         backgroundSize: "cover",
         color: "white",
-        padding: "60px 20px 20px",
-        fontFamily: "'Josefin Sans', sans-serif",
+        padding: window.innerWidth <= 768 ? "40px 15px 15px" : "60px 20px 20px",
+        fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
         position: "relative",
       }}
     >
@@ -34,39 +34,39 @@ const Footer = () => {
         zIndex: 1
       }} />
       <div style={{ position: "relative", zIndex: 2 }}>
-      <Row gutter={[40, 40]} justify="space-between" align="top">
+      <Row gutter={window.innerWidth <= 768 ? [20, 30] : [40, 40]} justify="space-between" align="top">
         {/* Left Section */}
         <Col xs={24} md={8}>
-          <div style={{ marginBottom: "24px" }}>
+          <div style={{ marginBottom: window.innerWidth <= 768 ? "16px" : "24px" }}>
             <img
               src={logo}
               alt="Delicorn Logo"
-              style={{ width: "180px", marginBottom: "24px" }}
+              style={{ width: window.innerWidth <= 768 ? "140px" : "180px", marginBottom: window.innerWidth <= 768 ? "16px" : "24px" }}
             />
           </div>
 
           <Text
             style={{
               display: "block",
-              fontSize: "15px",
+              fontSize: window.innerWidth <= 768 ? "13px" : "15px",
               color: "white",
-              marginBottom: "12px",
-              fontFamily: "'Josefin Sans', sans-serif",
+              marginBottom: window.innerWidth <= 768 ? "10px" : "12px",
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
             }}
           >
             Sign up for exclusive offers, new arrivals & styling tips.
           </Text>
 
-          <div style={{ display: "flex", gap: "10px", marginBottom: "24px" }}>
+          <div style={{ display: "flex", flexDirection: window.innerWidth <= 768 ? "column" : "row", gap: "10px", marginBottom: window.innerWidth <= 768 ? "16px" : "24px" }}>
             <Input
               placeholder="Enter your email"
               style={{
                 flex: 1,
                 borderRadius: "2px",
-                padding: "8px 12px",
-                fontSize: "14px",
+                padding: window.innerWidth <= 768 ? "6px 10px" : "8px 12px",
+                fontSize: window.innerWidth <= 768 ? "13px" : "14px",
                 border: "1px solid #ccc",
-                fontFamily: "'Josefin Sans', sans-serif",
+                fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
               }}
             />
             <Button
@@ -74,10 +74,11 @@ const Footer = () => {
                 backgroundColor: "#8E6A4E",
                 color: "white",
                 borderRadius: "2px",
-                padding: "0 18px",
-                fontSize: "14px",
+                padding: window.innerWidth <= 768 ? "6px 18px" : "0 18px",
+                fontSize: window.innerWidth <= 768 ? "13px" : "14px",
                 fontWeight: 500,
-                fontFamily: "'Josefin Sans', sans-serif",
+                fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
+                width: window.innerWidth <= 768 ? "100%" : "auto",
               }}
             >
               Subscribe Now
@@ -87,11 +88,11 @@ const Footer = () => {
           <Text
             style={{
               display: "block",
-              fontSize: "15px",
+              fontSize: window.innerWidth <= 768 ? "13px" : "15px",
               color: "white",
               maxWidth: "340px",
               lineHeight: "1.6",
-              fontFamily: "'Josefin Sans', sans-serif",
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
             }}
           >
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
@@ -105,19 +106,19 @@ const Footer = () => {
             level={5}
             style={{
               color: "white",
-              marginBottom: "16px",
-              fontSize: "18px",
-              fontFamily: "'Josefin Sans', sans-serif",
+              marginBottom: window.innerWidth <= 768 ? "12px" : "16px",
+              fontSize: window.innerWidth <= 768 ? "16px" : "18px",
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
             }}
           >
             Quick Links
           </Title>
           <Space direction="vertical" size="small">
-            <Text style={{ fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif", color: "white" }}>Shop</Text>
-            <Text style={{ fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif", color: "white" }}>Collections</Text>
-            <Text style={{ fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif", color: "white" }}>Brands</Text>
-            <Text style={{ fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif", color: "white" }}>About Us</Text>
-            <Text style={{ fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif", color: "white" }}>Contact Us</Text>
+            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Shop</Text>
+            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Collections</Text>
+            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Brands</Text>
+            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>About Us</Text>
+            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Contact Us</Text>
           </Space>
         </Col>
 
@@ -127,18 +128,18 @@ const Footer = () => {
             level={5}
             style={{
               color: "white",
-              marginBottom: "16px",
-              fontSize: "18px",
-              fontFamily: "'Josefin Sans', sans-serif",
+              marginBottom: window.innerWidth <= 768 ? "12px" : "16px",
+              fontSize: window.innerWidth <= 768 ? "16px" : "18px",
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
             }}
           >
             Policies
           </Title>
           <Space direction="vertical" size="small">
-            <Text style={{ fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif", color: "white" }}>Shipping</Text>
-            <Text style={{ fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif", color: "white" }}>Returns</Text>
-            <Text style={{ fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif", color: "white" }}>Privacy Policy</Text>
-            <Text style={{ fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif", color: "white" }}>Terms</Text>
+            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Shipping</Text>
+            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Returns</Text>
+            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Privacy Policy</Text>
+            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Terms</Text>
           </Space>
         </Col>
 
@@ -148,18 +149,18 @@ const Footer = () => {
             level={5}
             style={{
               color: "white",
-              marginBottom: "16px",
-              fontSize: "18px",
-              fontFamily: "'Josefin Sans', sans-serif",
+              marginBottom: window.innerWidth <= 768 ? "12px" : "16px",
+              fontSize: window.innerWidth <= 768 ? "16px" : "18px",
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
             }}
           >
             Policies
           </Title>
           <Space direction="vertical" size="small">
-            <Text style={{ fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif", color: "white" }}>Shipping</Text>
-            <Text style={{ fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif", color: "white" }}>Returns</Text>
-            <Text style={{ fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif", color: "white" }}>Privacy Policy</Text>
-            <Text style={{ fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif", color: "white" }}>Terms</Text>
+            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Shipping</Text>
+            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Returns</Text>
+            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Privacy Policy</Text>
+            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Terms</Text>
           </Space>
         </Col>
       </Row>
@@ -170,19 +171,19 @@ const Footer = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          gap: "12px",
-          marginTop: "40px",
+          gap: window.innerWidth <= 768 ? "10px" : "12px",
+          marginTop: window.innerWidth <= 768 ? "30px" : "40px",
           marginBottom: "10px",
           flexWrap: "wrap",
         }}
       >
-        <Text style={{ marginRight: "10px", color: "white", fontSize: "15px", fontFamily: "'Josefin Sans', sans-serif" }}>
+        <Text style={{ marginRight: window.innerWidth <= 768 ? "5px" : "10px", color: "white", fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>
           Follow us
         </Text>
-        <InstagramOutlined style={{ fontSize: "20px", cursor: "pointer", color: "white" }} />
-        <FacebookOutlined style={{ fontSize: "20px", cursor: "pointer", color: "white" }} />
-        <TwitterOutlined style={{ fontSize: "20px", cursor: "pointer", color: "white" }} />
-        <YoutubeOutlined style={{ fontSize: "20px", cursor: "pointer", color: "white" }} />
+        <InstagramOutlined style={{ fontSize: window.innerWidth <= 768 ? "18px" : "20px", cursor: "pointer", color: "white" }} />
+        <FacebookOutlined style={{ fontSize: window.innerWidth <= 768 ? "18px" : "20px", cursor: "pointer", color: "white" }} />
+        <TwitterOutlined style={{ fontSize: window.innerWidth <= 768 ? "18px" : "20px", cursor: "pointer", color: "white" }} />
+        <YoutubeOutlined style={{ fontSize: window.innerWidth <= 768 ? "18px" : "20px", cursor: "pointer", color: "white" }} />
       </div>
 
       {/* Bottom Strip */}
@@ -191,18 +192,19 @@ const Footer = () => {
           backgroundColor: "#8E6A4E",
           color: "white",
           textAlign: "center",
-          padding: "12px 0",
-          marginTop: "20px",
-          marginLeft: "-20px",
-          marginRight: "-20px",
-          marginBottom: "-20px",
+          padding: window.innerWidth <= 768 ? "10px 5px" : "12px 0",
+          marginTop: window.innerWidth <= 768 ? "15px" : "20px",
+          marginLeft: window.innerWidth <= 768 ? "-15px" : "-20px",
+          marginRight: window.innerWidth <= 768 ? "-15px" : "-20px",
+          marginBottom: window.innerWidth <= 768 ? "-15px" : "-20px",
         }}
       >
-        <Text style={{ color: "white", fontSize: "14px", fontFamily: "'Josefin Sans', sans-serif" }}>
+        <Text style={{ color: "white", fontSize: window.innerWidth <= 768 ? "11px" : "14px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>
           <span style={{ cursor: "pointer" }}>Privacy Policy</span>
           {" | "}
           <span style={{ cursor: "pointer" }}>Terms and Conditions</span>
-          {" | "}
+          {window.innerWidth > 768 && " | "}
+          {window.innerWidth <= 768 && <br />}
           Made with love and craft by AFFOBE
         </Text>
       </div>

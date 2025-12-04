@@ -3,7 +3,7 @@ import aboutImage from '../assets/aboutus.jpg'; // adjust the path as needed
 
 const AboutUs = () => {
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '60px 20px', color: '#333', lineHeight: '1.7', fontFamily: 'Josefin Sans, sans-serif' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '60px 20px', color: '#333', lineHeight: '1.7', fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>
       <h1 style={{ textAlign: 'center', marginBottom: '50px', fontSize: '36px', color: '#8E6A4E' }}>About us</h1>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: '40px' }}>
@@ -81,3 +81,6 @@ const AboutUs = () => {
 };
 
 export default AboutUs;
+
+
+

@@ -29,7 +29,7 @@ const Offer = () => {
         padding: '100px',
       }}>
         <h2 style={{
-          fontFamily: "'Josefin Sans', sans-serif",
+          fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
           fontWeight: '600',
           fontSize: '40px',
           color: '#fff',
@@ -44,7 +44,7 @@ const Offer = () => {
           style={{
             backgroundColor: '#8E6A4E',
             borderColor: '#8E6A4E',
-            fontFamily: "'Josefin Sans', sans-serif",
+            fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
             fontWeight: '600',
             padding: '10px 30px',
             height: 'auto',

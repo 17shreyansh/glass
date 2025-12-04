@@ -4,10 +4,6 @@ const categorySchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   slug: { type: String, required: true, lowercase: true, trim: true },
   description: String,
-  productType: {
-    type: String,
-    default: 'jewelry'
-  },
   // Self-referencing field for parent category
   parent: {
     type: mongoose.Schema.Types.ObjectId,
@@ -22,6 +18,8 @@ const categorySchema = new mongoose.Schema({
   level: { type: Number, default: 0 }, // 0 for top-level, 1 for child, etc.
   // Optional: Image for the category (e.g., icon or banner)
   image: { type: String, default: "category-placeholder.jpg" },
+  // Hero image for category page banner
+  heroImage: { type: String, default: null },
 }, { timestamps: true });
 
 // Unique index for name and slug

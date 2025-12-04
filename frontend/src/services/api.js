@@ -38,35 +38,27 @@ class ApiService {
   // ============ PRODUCT METHODS ============
   
   // Get all products with filters
-  getProducts(filters = {}) {
+  async getProducts(filters = {}) {
     const params = new URLSearchParams();
     Object.keys(filters).forEach(key => {
       if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
         params.append(key, filters[key]);
       }
     });
-    return this.request(`/products?${params.toString()}`);
-  }
-
-  // Get products by type (ashta-dhatu or fashion-jewelry)
-  getProductsByType(type, options = {}) {
-    const params = new URLSearchParams();
-    Object.keys(options).forEach(key => {
-      if (options[key] !== undefined && options[key] !== null) {
-        params.append(key, options[key]);
-      }
-    });
-    return this.request(`/products/type/${type}?${params.toString()}`);
+    const response = await this.request(`/products?${params.toString()}`);
+    return response;
   }
 
   // Get single product by slug
-  getProduct(slug) {
-    return this.request(`/products/${slug}`);
+  async getProduct(slug) {
+    const response = await this.request(`/products/${slug}`);
+    return response.data || response;
   }
 
   // Get related products by slug
-  getRelatedProducts(slug, limit = 4) {
-    return this.request(`/products/${slug}/related?limit=${limit}`);
+  async getRelatedProducts(slug, limit = 4) {
+    const response = await this.request(`/products/${slug}/related?limit=${limit}`);
+    return response.data || response;
   }
 
   // Search products
@@ -81,8 +73,9 @@ class ApiService {
   }
 
   // Get featured products
-  getFeaturedProducts(limit = 8) {
-    return this.request(`/products?featured=true&limit=${limit}`);
+  async getFeaturedProducts(limit = 8, skip = 0) {
+    const response = await this.request(`/products?featured=true&limit=${limit}&skip=${skip}`);
+    return response.data || response;
   }
 
   // ============ ADMIN PRODUCT METHODS ============
@@ -116,14 +109,16 @@ class ApiService {
 
   // ============ CATEGORY METHODS ============
   
-  getCategories() {
-    return this.request('/categories');
+  async getCategories() {
+    const response = await this.request('/categories');
+    return response.data || response;
   }
 
   // ============ BRAND METHODS ============
   
-  getBrands() {
-    return this.request('/brands');
+  async getBrands() {
+    const response = await this.request('/brands');
+    return response.data || response;
   }
 
   // ============ SEARCH METHODS ============
@@ -156,23 +151,50 @@ class ApiService {
 
   // ============ ORDER METHODS ============
   
-  getOrders() {
-    return this.request('/orders/my-orders');
+  async getOrders(params = {}) {
+    const queryParams = new URLSearchParams(params);
+    const response = await this.request(`/orders/my-orders?${queryParams.toString()}`);
+    return response;
   }
 
   getAdminOrders() {
     return this.request('/orders/admin/orders');
   }
 
-  getOrder(id) {
-    return this.request(`/orders/${id}`);
+  async getOrder(id) {
+    const response = await this.request(`/orders/my-orders/${id}`);
+    return response;
   }
 
-  createOrder(orderData) {
-    return this.request('/orders', {
+  async createOrder(orderData) {
+    const response = await this.request('/orders', {
       method: 'POST',
       body: JSON.stringify(orderData),
     });
+    return response;
+  }
+
+  async verifyPayment(paymentData) {
+    const response = await this.request('/orders/verify-payment', {
+      method: 'POST',
+      body: JSON.stringify(paymentData),
+    });
+    return response;
+  }
+
+  async applyCoupon(couponData) {
+    const response = await this.request('/orders/apply-coupon', {
+      method: 'POST',
+      body: JSON.stringify(couponData),
+    });
+    return response;
+  }
+
+  async cancelOrder(orderId) {
+    const response = await this.request(`/orders/my-orders/${orderId}/cancel`, {
+      method: 'PATCH',
+    });
+    return response;
   }
 
   updateOrderStatus(id, status) {
@@ -237,33 +259,60 @@ class ApiService {
 
   // ============ WISHLIST METHODS ============
   
-  getWishlist() {
-    return this.request('/wishlist');
+  async getWishlist() {
+    const response = await this.request('/wishlist');
+    return response;
   }
 
-  addToWishlist(productId) {
-    return this.request('/wishlist', {
+  async addToWishlist(productId) {
+    const response = await this.request('/wishlist', {
       method: 'POST',
       body: JSON.stringify({ productId }),
     });
+    return response;
   }
 
-  removeFromWishlist(productId) {
-    return this.request(`/wishlist/${productId}`, {
+  async removeFromWishlist(productId) {
+    const response = await this.request(`/wishlist/${productId}`, {
       method: 'DELETE',
     });
+    return response;
   }
 
   // ============ REVIEW METHODS ============
   
-  getProductReviews(productId) {
-    return this.request(`/reviews/product/${productId}`);
+  getProductReviews(productId, params = {}) {
+    const queryParams = new URLSearchParams(params);
+    return this.request(`/reviews/product/${productId}?${queryParams.toString()}`);
   }
 
-  createReview(reviewData) {
-    return this.request('/reviews', {
+  canUserReview(productId) {
+    return this.request(`/reviews/product/${productId}/can-review`);
+  }
+
+  createReview(productId, reviewData) {
+    return this.request(`/reviews/product/${productId}`, {
       method: 'POST',
       body: JSON.stringify(reviewData),
+    });
+  }
+
+  updateReview(reviewId, reviewData) {
+    return this.request(`/reviews/${reviewId}`, {
+      method: 'PUT',
+      body: JSON.stringify(reviewData),
+    });
+  }
+
+  deleteReview(reviewId) {
+    return this.request(`/reviews/${reviewId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  markReviewHelpful(reviewId) {
+    return this.request(`/reviews/${reviewId}/helpful`, {
+      method: 'POST',
     });
   }
 

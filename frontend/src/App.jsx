@@ -24,6 +24,7 @@ import ReturnRefund from './pages/ReturnRefund';
 // Account Pages
 import AccountOverview from './pages/Account/AccountOverview';
 import MyOrders from './pages/Account/MyOrders';
+import OrderDetail from './pages/Account/OrderDetail';
 import Wishlist from './pages/Account/Wishlist';
 import Addresses from './pages/Account/Addresses';
 import ReturnsRefunds from './pages/Account/ReturnsRefunds';
@@ -99,6 +100,7 @@ function App() {
                         {/* Account Pages */}
                         <Route path={ROUTES.ACCOUNT} element={<ProtectedRoute><AccountOverview /></ProtectedRoute>} />
                         <Route path={ROUTES.ACCOUNT_ORDERS} element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+                        <Route path="/account/orders/:orderId" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
                         <Route path={ROUTES.ACCOUNT_WISHLIST} element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
                         <Route path={ROUTES.ACCOUNT_ADDRESSES} element={<ProtectedRoute><Addresses /></ProtectedRoute>} />
                         <Route path={ROUTES.ACCOUNT_RETURNS} element={<ProtectedRoute><ReturnsRefunds /></ProtectedRoute>} />

@@ -10,7 +10,6 @@ export const ashtaDhatuProducts = [
     originalPrice: 3000,
     image: ring,
     category: "ashta-dhatu",
-    productType: "ashta-dhatu",
     inStock: true,
     rating: 4.5,
     reviews: 23
@@ -23,7 +22,6 @@ export const ashtaDhatuProducts = [
     price: 1800,
     image: ring,
     category: "ashta-dhatu",
-    productType: "ashta-dhatu",
     inStock: true,
     rating: 4.8,
     reviews: 15
@@ -85,7 +83,6 @@ export const fashionJewelryProducts = [
     originalPrice: 10000,
     image: ring,
     category: "fashion-jewelry",
-    productType: "fashion-jewelry",
     inStock: true,
     rating: 4.8,
     reviews: 67

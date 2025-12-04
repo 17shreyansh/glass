@@ -18,7 +18,7 @@ const JewelrySale = () => {
 
   const containerStyle = {
     backgroundColor: "#FFF9EB",
-    fontFamily: "'Josefin Sans', sans-serif",
+    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
     paddingTop: isMobile ? "20px" : "40px",
     paddingRight: isMobile ? "15px" : "20px",
     paddingBottom: isMobile ? "20px" : "40px",
@@ -95,7 +95,7 @@ const JewelrySale = () => {
     color: "#fff",
     fontSize: isMobile ? "16px" : "20px",
     fontWeight: "500",
-    fontFamily: "'Josefin Sans', sans-serif",
+    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
     border: "none",
     cursor: "pointer",
     transition: "all 0.3s ease",

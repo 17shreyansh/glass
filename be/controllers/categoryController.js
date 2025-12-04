@@ -18,14 +18,7 @@ exports.createCategory = async (req, res) => {
 // Modified to fetch categories with parent populated and potentially structured
 exports.getCategories = async (req, res) => {
   try {
-    const { productType } = req.query;
-    let query = {};
-    
-    if (productType) {
-      query.productType = productType;
-    }
-    
-    const categories = await Category.find(query).sort({ name: 1 });
+    const categories = await Category.find({}).sort({ name: 1 });
     res.json({ success: true, data: categories });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -48,6 +41,11 @@ exports.updateCategory = async (req, res) => {
     // Delete old image if new image is provided
     if (req.body.image && existingCategory.image && req.body.image !== existingCategory.image) {
       await uploadService.deleteFileByUrl(existingCategory.image);
+    }
+
+    // Delete old hero image if new hero image is provided
+    if (req.body.heroImage && existingCategory.heroImage && req.body.heroImage !== existingCategory.heroImage) {
+      await uploadService.deleteFileByUrl(existingCategory.heroImage);
     }
 
     const category = await Category.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
@@ -86,6 +84,11 @@ exports.deleteCategory = async (req, res) => {
     // Delete category image if exists
     if (result.image) {
       await uploadService.deleteFileByUrl(result.image);
+    }
+
+    // Delete category hero image if exists
+    if (result.heroImage) {
+      await uploadService.deleteFileByUrl(result.heroImage);
     }
 
     res.json({ message: "Category and associated products updated/deleted successfully" });

@@ -30,13 +30,8 @@ import Coupon from './Coupon';
 import Deleverycharges from './Deleverycharges';
 import AdminSupport from './adminSupport';
 import AdminMenu from './Menu';
-import AshtaDhatuProducts from './AshtaDhatuProducts';
-import FashionJewelryProducts from './FashionJewelryProducts';
-import AshtaDhatuCategories from './AshtaDhatuCategories';
-import FashionJewelryCategories from './FashionJewelryCategories';
+
 import FileManager from './FileManager';
-import EditProduct from './EditProduct';
-import AddProduct from './AddProduct';
 import './styles/layout.css'; // Import custom CSS for additional styling
 
 const { Sider, Content, Header } = Layout;
@@ -136,34 +131,14 @@ const AdminLayout = () => {
               label: <Link to="/admin">Dashboard</Link>
             },
             {
-              key: 'products',
+              key: '/admin/products',
               icon: <ShoppingOutlined />,
-              label: 'Products',
-              children: [
-                {
-                  key: '/admin/ashta-dhatu-products',
-                  label: <Link to="/admin/ashta-dhatu-products">Ashta Dhatu</Link>
-                },
-                {
-                  key: '/admin/fashion-jewelry-products',
-                  label: <Link to="/admin/fashion-jewelry-products">Fashion Jewelry</Link>
-                }
-              ]
+              label: <Link to="/admin/products">Products</Link>
             },
             {
-              key: 'categories',
+              key: '/admin/categories',
               icon: <TagsOutlined />,
-              label: 'Categories',
-              children: [
-                {
-                  key: '/admin/ashta-dhatu-categories',
-                  label: <Link to="/admin/ashta-dhatu-categories">Ashta Dhatu</Link>
-                },
-                {
-                  key: '/admin/fashion-jewelry-categories',
-                  label: <Link to="/admin/fashion-jewelry-categories">Fashion Jewelry</Link>
-                }
-              ]
+              label: <Link to="/admin/categories">Categories</Link>
             },
             {
               key: '/admin/orders',
@@ -226,10 +201,8 @@ const AdminLayout = () => {
         <Content className="admin-content">
           <Routes>
             <Route index element={<Dashboard />} />
-            <Route path="ashta-dhatu-products" element={<AshtaDhatuProducts />} />
-            <Route path="fashion-jewelry-products" element={<FashionJewelryProducts />} />
-            <Route path="ashta-dhatu-categories" element={<AshtaDhatuCategories />} />
-            <Route path="fashion-jewelry-categories" element={<FashionJewelryCategories />} />
+            <Route path="products" element={<Products />} />
+            <Route path="categories" element={<Categories />} />
             <Route path="orders" element={<Order />} />
             <Route path="users" element={<Users />} />
             <Route path="coupon" element={<Coupon />} />
@@ -237,8 +210,7 @@ const AdminLayout = () => {
             <Route path="support" element={<AdminSupport />} />
             <Route path="menu" element={<AdminMenu />} />
             <Route path="file-manager" element={<FileManager />} />
-            <Route path="products/edit/:id" element={<EditProduct />} />
-            <Route path="products/add" element={<AddProduct />} />
+
           </Routes>
         </Content>
       </Layout>

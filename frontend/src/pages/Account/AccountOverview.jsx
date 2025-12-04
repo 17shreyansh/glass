@@ -100,7 +100,7 @@ const AccountOverview = () => {
             >
           <Text
             style={{
-              fontFamily: 'Josefin Sans, sans-serif',
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
               fontSize: '18px',
               fontWeight: 600,
               color: '#8E6A4E',
@@ -116,7 +116,7 @@ const AccountOverview = () => {
               style={{
                 color: '#8E6A4E',
                 fontSize: '16px',
-                fontFamily: 'Josefin Sans, sans-serif',
+                fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
               }}
             >
               Edit
@@ -131,7 +131,7 @@ const AccountOverview = () => {
                 style={{
                   background: '#8E6A4E',
                   borderColor: '#8E6A4E',
-                  fontFamily: 'Josefin Sans, sans-serif',
+                  fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                 }}
               >
                 Save
@@ -140,7 +140,7 @@ const AccountOverview = () => {
                 icon={<CloseOutlined />}
                 onClick={handleCancel}
                 style={{
-                  fontFamily: 'Josefin Sans, sans-serif',
+                  fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                 }}
               >
                 Cancel
@@ -154,13 +154,13 @@ const AccountOverview = () => {
             <Col xs={24} sm={12}>
               <Form.Item
                 name="name"
-                label={<Text style={{ fontWeight: 600, color: '#8E6A4E', fontFamily: 'Josefin Sans, sans-serif' }}>Full Name</Text>}
+                label={<Text style={{ fontWeight: 600, color: '#8E6A4E', fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>Full Name</Text>}
                 rules={[{ required: true, message: 'Please enter your name' }]}
               >
                 <Input
                   disabled={!isEditing}
                   style={{
-                    fontFamily: 'Josefin Sans, sans-serif',
+                    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                     background: isEditing ? '#fff' : '#f5f5f5',
                   }}
                 />
@@ -169,13 +169,13 @@ const AccountOverview = () => {
             <Col xs={24} sm={12}>
               <Form.Item
                 name="phone"
-                label={<Text style={{ fontWeight: 600, color: '#8E6A4E', fontFamily: 'Josefin Sans, sans-serif' }}>Contact Number</Text>}
+                label={<Text style={{ fontWeight: 600, color: '#8E6A4E', fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>Contact Number</Text>}
                 rules={[{ required: true, message: 'Please enter your phone number' }]}
               >
                 <Input
                   disabled={!isEditing}
                   style={{
-                    fontFamily: 'Josefin Sans, sans-serif',
+                    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                     background: isEditing ? '#fff' : '#f5f5f5',
                   }}
                 />
@@ -184,13 +184,13 @@ const AccountOverview = () => {
             <Col xs={24}>
               <Form.Item
                 name="email"
-                label={<Text style={{ fontWeight: 600, color: '#8E6A4E', fontFamily: 'Josefin Sans, sans-serif' }}>Email Address</Text>}
+                label={<Text style={{ fontWeight: 600, color: '#8E6A4E', fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>Email Address</Text>}
                 rules={[{ required: true, type: 'email', message: 'Please enter a valid email' }]}
               >
                 <Input
                   disabled={!isEditing}
                   style={{
-                    fontFamily: 'Josefin Sans, sans-serif',
+                    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                     background: isEditing ? '#fff' : '#f5f5f5',
                   }}
                 />
@@ -199,13 +199,13 @@ const AccountOverview = () => {
             <Col xs={24} sm={12}>
               <Form.Item
                 name="gender"
-                label={<Text style={{ fontWeight: 600, color: '#8E6A4E', fontFamily: 'Josefin Sans, sans-serif' }}>Gender</Text>}
+                label={<Text style={{ fontWeight: 600, color: '#8E6A4E', fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>Gender</Text>}
                 rules={[{ required: true, message: 'Please select your gender' }]}
               >
                 <Select
                   disabled={!isEditing}
                   style={{
-                    fontFamily: 'Josefin Sans, sans-serif',
+                    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                   }}
                 >
                   <Option value="MALE">Male</Option>
@@ -217,14 +217,14 @@ const AccountOverview = () => {
             <Col xs={24} sm={12}>
               <Form.Item
                 name="dob"
-                label={<Text style={{ fontWeight: 600, color: '#8E6A4E', fontFamily: 'Josefin Sans, sans-serif' }}>Date of Birth</Text>}
+                label={<Text style={{ fontWeight: 600, color: '#8E6A4E', fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>Date of Birth</Text>}
                 rules={[{ required: true, message: 'Please enter your date of birth' }]}
               >
                 <Input
                   disabled={!isEditing}
                   placeholder="DD/MM/YYYY"
                   style={{
-                    fontFamily: 'Josefin Sans, sans-serif',
+                    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                     background: isEditing ? '#fff' : '#f5f5f5',
                   }}
                 />
@@ -240,3 +240,6 @@ const AccountOverview = () => {
 };
 
 export default AccountOverview;
+
+
+

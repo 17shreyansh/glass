@@ -7,7 +7,7 @@ export default function Ring() {
   const sectionStyle = {
     textAlign: "center",
     padding: "50px 10px",
-    fontFamily: "'Josefin Sans', sans-serif",
+    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
     backgroundColor: "#fff",
     position: "relative",
   };
@@ -23,7 +23,7 @@ export default function Ring() {
   };
 
   const upperHeadingStyle = {
-    fontFamily: "'Josefin Sans', sans-serif",
+    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
     fontSize: "28px",
     fontWeight: "300",
     color: "#333",

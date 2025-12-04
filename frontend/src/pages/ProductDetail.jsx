@@ -15,12 +15,15 @@ import {
   Select,
   Avatar,
   Input,
+  Modal,
+  Form,
+  message,
 } from 'antd';
 
 // Add Google Font
-if (!document.querySelector('link[href*="Josefin+Sans"]')) {
+if (!document.querySelector('link[href*="HK+Grotesk"]')) {
   const link = document.createElement('link');
-  link.href = 'https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600&display=swap';
+  link.href = 'https://fonts.googleapis.com/css2?family=HK+Grotesk:wght@400;500;600&display=swap';
   link.rel = 'stylesheet';
   document.head.appendChild(link);
 }
@@ -56,7 +59,8 @@ const ProductDetail = () => {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useUser();
   
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState('1');
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [selectedAttributes, setSelectedAttributes] = useState({});
   const [mainImage, setMainImage] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -64,6 +68,12 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [productLoading, setProductLoading] = useState(true);
+  const [reviews, setReviews] = useState([]);
+  const [reviewStats, setReviewStats] = useState(null);
+  const [canReview, setCanReview] = useState(false);
+  const [reviewModalVisible, setReviewModalVisible] = useState(false);
+  const [reviewForm] = Form.useForm();
+  const { isAuthenticated } = useUser();
   
   React.useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -75,12 +85,20 @@ const ProductDetail = () => {
     const fetchProduct = async () => {
       setProductLoading(true);
       try {
-        const response = await apiService.getProduct(slug);
-        setProduct(response.data);
+        const productData = await apiService.getProduct(slug);
+        setProduct(productData);
         
         // Fetch related products
-        const relatedResponse = await apiService.getRelatedProducts(slug);
-        setRelatedProducts(relatedResponse.data || []);
+        const relatedData = await apiService.getRelatedProducts(slug);
+        setRelatedProducts(relatedData || []);
+        
+        // Fetch reviews
+        if (productData._id) {
+          fetchReviews(productData._id);
+          if (isAuthenticated()) {
+            checkCanReview(productData._id);
+          }
+        }
       } catch (error) {
         console.error('Failed to fetch product:', error);
         // Fallback to static data
@@ -95,7 +113,58 @@ const ProductDetail = () => {
     if (slug) {
       fetchProduct();
     }
-  }, [slug]);
+  }, [slug, isAuthenticated]);
+
+  const fetchReviews = async (productId) => {
+    try {
+      const response = await apiService.getProductReviews(productId, { limit: 3 });
+      if (response.success) {
+        setReviews(response.data.reviews || []);
+        setReviewStats(response.data.statistics || null);
+      }
+    } catch (error) {
+      console.error('Failed to fetch reviews:', error);
+    }
+  };
+
+  const checkCanReview = async (productId) => {
+    try {
+      const response = await apiService.canUserReview(productId);
+      if (response.success) {
+        setCanReview(response.canReview);
+      }
+    } catch (error) {
+      console.error('Failed to check review eligibility:', error);
+    }
+  };
+
+  const handleWriteReview = () => {
+    if (!isAuthenticated()) {
+      message.warning('Please login to write a review');
+      return;
+    }
+    if (!canReview) {
+      message.warning('You can only review products you have purchased');
+      return;
+    }
+    setReviewModalVisible(true);
+  };
+
+  const handleSubmitReview = async () => {
+    try {
+      const values = await reviewForm.validateFields();
+      const response = await apiService.createReview(product._id, values);
+      if (response.success) {
+        message.success('Review submitted successfully');
+        setReviewModalVisible(false);
+        reviewForm.resetFields();
+        fetchReviews(product._id);
+        setCanReview(false);
+      }
+    } catch (error) {
+      message.error(error.message || 'Failed to submit review');
+    }
+  };
 
   // Initialize images when product loads
   React.useEffect(() => {
@@ -179,7 +248,7 @@ const ProductDetail = () => {
               style={{ marginBottom: 20 }}
               items={[
                 { title: <Link to="/">Home</Link> },
-                { title: <Link to={`/${product.productType}`}>{product.productType === 'ashta-dhatu' ? 'Ashta Dhatu' : 'Fashion Jewellery'}</Link> },
+                { title: <Link to="/shop">Shop</Link> },
                 { title: product.name }
               ]}
             />
@@ -187,7 +256,7 @@ const ProductDetail = () => {
 
           <Row gutter={isMobile ? [0, 0] : [40, 40]}>
             {/* Image Section */}
-            <Col xs={24} md={12}>
+            <Col xs={24} md={10}>
               <div style={{ 
                 position: isMobile ? 'sticky' : 'static',
                 top: isMobile ? 0 : 'auto',
@@ -323,28 +392,26 @@ const ProductDetail = () => {
               </div>
             </Col>
 
-            {/* Product Info */}
-            <Col xs={24} md={12}>
+            {/* Product Info and Reviews */}
+            <Col xs={24} md={14}>
               <div style={{ 
-                maxWidth: isMobile ? '100%' : 520,
                 padding: isMobile ? '20px 16px' : 0
               }}>
                 <Title level={3} style={{ 
                   marginBottom: 6,
-                  fontFamily: "'Josefin Sans', sans-serif",
-                  color: '#8E6A4E'
+                  fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
+                  color: '#392A21'
                 }}>
                   {product.name}
                 </Title>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <Rate disabled value={product.rating || 4} />
-                  <Text type="secondary">({product.reviews || 799})</Text>
+                  <Rate disabled value={reviewStats?.averageRating || product.rating || 4} />
+                  <Text type="secondary">({reviewStats?.totalReviews || product.reviewsCount || 0})</Text>
                 </div>
 
                 {/* Price Section */}
                 <div style={{ marginTop: 16 }}>
-                  {/* Main Price Row */}
                   <div style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
@@ -353,9 +420,9 @@ const ProductDetail = () => {
                     flexWrap: 'wrap'
                   }}>
                     <Title level={2} style={{ 
-                      color: '#8E6A4E', 
+                      color: '#000000', 
                       margin: 0,
-                      fontFamily: "'Josefin Sans', sans-serif",
+                      fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                       fontSize: isMobile ? '28px' : '32px'
                     }}>
                       ₹{product.price.toLocaleString()}
@@ -365,7 +432,7 @@ const ProductDetail = () => {
                       <Text delete style={{ 
                         color: '#9a9a9a', 
                         fontSize: isMobile ? '16px' : '18px',
-                        fontFamily: "'Josefin Sans', sans-serif"
+                        fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif"
                       }}>
                         ₹{product.originalPrice.toLocaleString()}
                       </Text>
@@ -378,7 +445,7 @@ const ProductDetail = () => {
                         padding: '6px 12px',
                         borderRadius: 6,
                         fontSize: isMobile ? '12px' : '14px',
-                        fontFamily: "'Josefin Sans', sans-serif",
+                        fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                         fontWeight: 600
                       }}>
                         {percentSave}% OFF
@@ -386,11 +453,10 @@ const ProductDetail = () => {
                     )}
                   </div>
 
-                  {/* EMI and Tax Info */}
                   <div style={{ marginBottom: 16 }}>
                     <Text type="secondary" style={{ 
                       display: 'block',
-                      fontFamily: "'Josefin Sans', sans-serif",
+                      fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                       fontSize: '14px',
                       marginBottom: 4
                     }}>
@@ -398,159 +464,122 @@ const ProductDetail = () => {
                     </Text>
                     <Text type="secondary" style={{ 
                       display: 'block',
-                      fontFamily: "'Josefin Sans', sans-serif",
+                      fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                       fontSize: '14px'
                     }}>
                       Inclusive of all taxes
                     </Text>
                   </div>
-
-
                 </div>
 
-                {/* SKU and Size Row */}
-                <div style={{ 
-                  marginTop: 14,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}>
-                  <Text type="secondary" style={{ fontFamily: "'Josefin Sans', sans-serif" }}>
-                    SKU: {product.sku || 'N/A'}
-                  </Text>
+                {/* SKU */}
+                <Text type="secondary" style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", display: 'block', marginTop: 14 }}>
+                  SKU: {selectedVariant?.sku || product.sku || 'N/A'}
+                </Text>
+
+                {/* Variant Selection - Improved */}
+                {product.variants && product.variants.length > 0 && (() => {
+                  const attrKeys = new Set();
+                  product.variants.forEach(v => {
+                    if (v.attributes) {
+                      Object.keys(v.attributes).forEach(k => attrKeys.add(k));
+                    }
+                  });
                   
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Text strong style={{ 
-                      fontFamily: "'Josefin Sans', sans-serif",
-                      color: '#003333'
+                  if (attrKeys.size === 0) return null;
+                  
+                  return (
+                    <div style={{ 
+                      background: '#f8f9fa',
+                      padding: '16px',
+                      borderRadius: 8,
+                      marginTop: 16
                     }}>
-                      Size:
-                    </Text>
-                    <Select
-                      value={selectedSize}
-                      onChange={(val) => setSelectedSize(val)}
-                      style={{ width: 80 }}
-                      size="small"
-                    >
-                      {product.sizeVariants && product.sizeVariants.length > 0 ? (
-                        product.sizeVariants.map(variant => (
-                          <Option key={variant.size} value={variant.size}>
-                            {variant.size}
-                          </Option>
-                        ))
-                      ) : (
-                        <Option value="1">1</Option>
-                      )}
-                    </Select>
-                  </div>
-                </div>
-
-
-
-                {/* In stock info */}
-                <div style={{ marginTop: 24 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: isMobile ? 16 : 0 }}>
-                    <InboxOutlined style={{ color: '#8E6A4E' }} />
-                    <Text style={{ fontFamily: "'Josefin Sans', sans-serif" }}>In stock - ready to ship</Text>
-                  </div>
-                </div>
-
-                {/* Mobile: Color and Quantity in same row */}
-                {isMobile ? (
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between',
-                    padding: '16px',
-                    background: '#f8f9fa',
-                    borderRadius: 8
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Text strong style={{ 
-                        fontFamily: "'Josefin Sans', sans-serif",
-                        color: '#8E6A4E'
-                      }}>Color:</Text>
-                      {product.availableColors && product.availableColors.length > 0 ? (
-                        product.availableColors.map((color, index) => (
-                          <div
-                            key={index}
-                            style={{
-                              width: 22,
-                              height: 22,
-                              borderRadius: '50%',
-                              background: color.toLowerCase(),
-                              border: index === 0 ? '2px solid #8E6A4E' : '1px solid #ddd',
-                              cursor: 'pointer'
-                            }}
-                          />
-                        ))
-                      ) : (
-                        <div
-                          style={{
-                            width: 22,
-                            height: 22,
-                            borderRadius: '50%',
-                            background: '#d4af37',
-                            border: '2px solid #0d4b4b',
-                            cursor: 'pointer'
-                          }}
-                        />
-                      )}
-                    </div>
-                    
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Text strong style={{ 
+                        fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                         color: '#8E6A4E',
-                        fontFamily: "'Josefin Sans', sans-serif"
-                      }}>Qty:</Text>
-                      <InputNumber
-                        min={1}
-                        max={10}
-                        value={quantity}
-                        onChange={(val) => setQuantity(val)}
-                        style={{ 
-                          width: 70, 
-                          borderRadius: 6,
-                          borderColor: '#0d4b4b'
-                        }}
-                      />
+                        display: 'block',
+                        marginBottom: 12,
+                        fontSize: '15px'
+                      }}>Select Options</Text>
+                      {Array.from(attrKeys).map(attrKey => {
+                        const uniqueValues = [...new Set(product.variants.map(v => v.attributes?.[attrKey]).filter(Boolean))];
+                        return (
+                          <div key={attrKey} style={{ marginBottom: 12 }}>
+                            <Text style={{ 
+                              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
+                              fontSize: '13px',
+                              display: 'block',
+                              marginBottom: 6,
+                              color: '#666'
+                            }}>
+                              {attrKey}
+                            </Text>
+                            <Select
+                              value={selectedAttributes[attrKey]}
+                              onChange={(val) => {
+                                const newAttrs = { ...selectedAttributes, [attrKey]: val };
+                                setSelectedAttributes(newAttrs);
+                                const matchingVariant = product.variants.find(v => 
+                                  Object.keys(newAttrs).every(k => v.attributes?.[k] === newAttrs[k])
+                                );
+                                setSelectedVariant(matchingVariant || null);
+                              }}
+                              style={{ width: '100%' }}
+                              placeholder={`Select ${attrKey}`}
+                            >
+                              {uniqueValues.map(val => (
+                                <Option key={val} value={val}>{val}</Option>
+                              ))}
+                            </Select>
+                          </div>
+                        );
+                      })}
                     </div>
-                  </div>
-                ) : (
-                  /* Desktop: Color section */
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 16 }}>
-                    <Text strong style={{ 
-                      fontFamily: "'Josefin Sans', sans-serif",
-                      color: '#8E6A4E'
-                    }}>Color</Text>
-                    {product.availableColors && product.availableColors.length > 0 ? (
-                      product.availableColors.map((color, index) => (
-                        <div
-                          key={index}
-                          style={{
-                            width: 22,
-                            height: 22,
-                            borderRadius: '50%',
-                            background: color.toLowerCase(),
-                            border: index === 0 ? '2px solid #8E6A4E' : '1px solid #ddd',
-                            cursor: 'pointer'
-                          }}
-                        />
-                      ))
-                    ) : (
-                      <div
-                        style={{
-                          width: 22,
-                          height: 22,
-                          borderRadius: '50%',
-                          background: '#d4af37',
-                          border: '2px solid #0d4b4b',
-                          cursor: 'pointer'
-                        }}
-                      />
+                  );
+                })()}
+
+                {/* Stock Info */}
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <InboxOutlined style={{ color: product.inStock ? '#52c41a' : '#ff4d4f' }} />
+                    <Text style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: '14px' }}>
+                      {product.inStock ? 'In Stock' : 'Out of Stock'}
+                    </Text>
+                    {selectedVariant && (
+                      <Text type="secondary" style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: '13px' }}>
+                        - {selectedVariant.stock} available
+                      </Text>
+                    )}
+                    {!selectedVariant && product.totalStock > 0 && (
+                      <Text type="secondary" style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: '13px' }}>
+                        - {product.totalStock} available
+                      </Text>
                     )}
                   </div>
-                )}
+                </div>
+
+                {/* Quantity - Improved */}
+                <div style={{ marginTop: 16 }}>
+                  <Text strong style={{ 
+                    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
+                    fontSize: '14px',
+                    display: 'block',
+                    marginBottom: 8,
+                    color: '#8E6A4E'
+                  }}>Quantity</Text>
+                  <InputNumber
+                    min={1}
+                    max={selectedVariant?.stock || product.totalStock || 10}
+                    value={quantity}
+                    onChange={(val) => setQuantity(val)}
+                    size="large"
+                    style={{ 
+                      width: isMobile ? '100%' : '150px',
+                      borderRadius: 6
+                    }}
+                  />
+                </div>
 
                 {/* Desktop buttons */}
                 {!isMobile ? (
@@ -563,13 +592,13 @@ const ProductDetail = () => {
                         onClick={handleAddToCart}
                         disabled={!product.isActive || !product.inStock}
                         style={{
-                          background: '#8E6A4E',
-                          borderColor: '#8E6A4E',
+                          background: '#000000',
+                          borderColor: '#000000',
                           borderRadius: 6,
                           padding: '0 30px',
                           height: 44,
                           fontWeight: 500,
-                          fontFamily: "'Josefin Sans', sans-serif",
+                          fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                           flex: 1
                         }}
                       >
@@ -589,24 +618,6 @@ const ProductDetail = () => {
                           padding: 0
                         }}
                       />
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Text strong style={{ 
-                          color: '#8E6A4E',
-                          fontFamily: "'Josefin Sans', sans-serif"
-                        }}>Qty:</Text>
-                        <InputNumber
-                          min={1}
-                          max={10}
-                          value={quantity}
-                          onChange={(val) => setQuantity(val)}
-                          style={{ 
-                            width: 70, 
-                            borderRadius: 6,
-                            borderColor: '#8E6A4E'
-                          }}
-                        />
-                      </div>
                     </div>
 
                     <div style={{ marginTop: 12 }}>
@@ -620,7 +631,7 @@ const ProductDetail = () => {
                           borderRadius: 6,
                           height: 44,
                           fontWeight: 500,
-                          fontFamily: "'Josefin Sans', sans-serif",
+                          fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                           width: '100%'
                         }}
                       >
@@ -637,156 +648,102 @@ const ProductDetail = () => {
 
                 <Divider style={{ marginTop: 20, borderColor: '#f0f0f0' }} />
 
-                {/* Enhanced Collapsible sections */}
-                <Collapse 
-                  bordered={false} 
-                  defaultActiveKey={['1']}
-                  style={{ background: 'transparent' }}
-                  expandIconPosition="end"
-                  items={[
-                    {
-                      key: '1',
-                      label: <Text strong style={{ fontSize: '16px', color: '#000000', fontFamily: "'Josefin Sans', sans-serif", fontWeight: 400 }}>DESCRIPTION</Text>,
-                      children: <Paragraph style={{ margin: 0, color: '#666', lineHeight: 1.6, fontFamily: "'Josefin Sans', sans-serif", fontSize: '15px' }}>{product.description}</Paragraph>,
-                      style: { border: 'none', marginBottom: 8, background: '#f8f9fa', borderRadius: 8 }
-                    },
-                    {
-                      key: '2',
-                      label: <Text strong style={{ fontSize: '16px', color: '#000000', fontFamily: "'Josefin Sans', sans-serif", fontWeight: 400 }}>METAL DETAILS</Text>,
-                      children: (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          {product.metalDetails && product.metalDetails.length > 0 ? (
-                            product.metalDetails.map((detail, index) => (
-                              <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#0d4b4b' }} />
-                                <Text style={{ fontFamily: "'Josefin Sans', sans-serif", color: '#666' }}>{detail}</Text>
+                {/* Description */}
+                {product.description && (
+                  <Collapse 
+                    bordered={false} 
+                    defaultActiveKey={['1']}
+                    style={{ background: 'transparent' }}
+                    expandIconPosition="end"
+                    items={[
+                      {
+                        key: '1',
+                        label: <Text strong style={{ fontSize: '16px', color: '#000000', fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontWeight: 400 }}>DESCRIPTION</Text>,
+                        children: <Paragraph style={{ margin: 0, color: '#666', lineHeight: 1.6, fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: '15px' }}>{product.description}</Paragraph>,
+                        style: { border: 'none', background: '#f8f9fa', borderRadius: 8 }
+                      }
+                    ]}
+                  />
+                )}
+
+                {/* Reviews section */}
+                <div style={{ marginTop: 30 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <div>
+                      <Title level={4} style={{ 
+                        margin: 0,
+                        fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
+                        color: '#8E6A4E'
+                      }}>
+                        Reviews
+                      </Title>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                        <Rate disabled value={reviewStats?.averageRating || 0} style={{ fontSize: 14 }} />
+                        <Text type="secondary" style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: '13px' }}>({reviewStats?.totalReviews || 0})</Text>
+                      </div>
+                    </div>
+
+                    <Button 
+                      type="default" 
+                      size="small" 
+                      onClick={handleWriteReview}
+                      disabled={!canReview}
+                      style={{ 
+                        borderRadius: 6,
+                        borderColor: '#8E6A4E',
+                        color: '#8E6A4E',
+                        fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
+                        fontWeight: 500
+                      }}
+                    >
+                      Write Review
+                    </Button>
+                  </div>
+
+                  {reviews.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {reviews.map((review) => (
+                        <Card key={review._id} styles={{ body: { padding: 12 } }} style={{ borderRadius: 8 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <Avatar size="small">{review.userId?.name?.[0] || 'U'}</Avatar>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Text strong style={{ fontSize: '13px' }}>{review.userId?.name || 'Anonymous'}</Text>
+                                <Rate disabled value={review.rating} style={{ fontSize: 11 }} />
                               </div>
-                            ))
-                          ) : (
-                            <>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#8E6A4E' }} />
-                                <Text style={{ fontFamily: "'Josefin Sans', sans-serif", color: '#666' }}>Ashta Dhatu alloy base</Text>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#8E6A4E' }} />
-                                <Text style={{ fontFamily: "'Josefin Sans', sans-serif", color: '#666' }}>Precise gold plating</Text>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      ),
-                      style: { border: 'none', marginBottom: 8, background: '#f8f9fa', borderRadius: 8 }
-                    },
-                    {
-                      key: '3',
-                      label: <Text strong style={{ fontSize: '16px', color: '#000000', fontFamily: "'Josefin Sans', sans-serif", fontWeight: 400 }}>BENEFITS</Text>,
-                      children: (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          {product.benefits && product.benefits.length > 0 ? (
-                            product.benefits.map((benefit, index) => (
-                              <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <CheckCircleFilled style={{ color: '#0d4b4b', fontSize: '14px' }} />
-                                <Text style={{ fontFamily: "'Josefin Sans', sans-serif", color: '#666' }}>{benefit}</Text>
-                              </div>
-                            ))
-                          ) : (
-                            <>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <CheckCircleFilled style={{ color: '#8E6A4E', fontSize: '14px' }} />
-                                <Text style={{ fontFamily: "'Josefin Sans', sans-serif", color: '#666' }}>Hypoallergenic & skin-friendly</Text>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <CheckCircleFilled style={{ color: '#8E6A4E', fontSize: '14px' }} />
-                                <Text style={{ fontFamily: "'Josefin Sans', sans-serif", color: '#666' }}>Durable & long-lasting finish</Text>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      ),
-                      style: { border: 'none', background: '#f8f9fa', borderRadius: 8 }
-                    }
-                  ]}
-                />
+                              <Text strong style={{ display: 'block', margin: '4px 0 2px', fontSize: '12px' }}>{review.title}</Text>
+                              <Paragraph style={{ margin: '2px 0 4px', fontSize: '13px', color: '#666' }}>{review.comment}</Paragraph>
+                              <Text type="secondary" style={{ fontSize: 11 }}>{new Date(review.createdAt).toLocaleDateString()}</Text>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '20px', background: '#f8f9fa', borderRadius: 8 }}>
+                      <Text type="secondary">No reviews yet. Be the first to review!</Text>
+                    </div>
+                  )}
+                </div>
               </div>
             </Col>
           </Row>
 
-          {/* Reviews section */}
+          {/* Recommendations - at bottom */}
           <div style={{ 
-            marginTop: isMobile ? 30 : 60,
+            marginTop: isMobile ? 40 : 60,
             padding: isMobile ? '0 16px' : 0
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <Title level={3} style={{ 
-                  margin: 0,
-                  fontFamily: "'Josefin Sans', sans-serif",
-                  color: '#8E6A4E'
-                }}>
-                  Reviews
-                </Title>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <Rate disabled defaultValue={4} />
-                  <Text type="secondary" style={{ fontFamily: "'Josefin Sans', sans-serif" }}>(799)</Text>
-                </div>
-              </div>
-
-              <Button type="default" style={{ 
-                borderRadius: 6,
-                borderColor: '#8E6A4E',
-                color: '#8E6A4E',
-                fontFamily: "'Josefin Sans', sans-serif",
-                fontWeight: 500
-              }}>
-                Write a Review
-              </Button>
-            </div>
-
-            <Row gutter={[20, 20]} style={{ marginTop: 18 }}>
-              {[1, 2, 3, 4].map((n) => (
-                <Col xs={24} sm={12} md={6} key={n}>
-                  <Card styles={{ body: { padding: 16 } }} style={{ borderRadius: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <Avatar>{'D'}</Avatar>
-                      <div>
-                        <Text strong>Deepika</Text>
-                        <div>
-                          <Rate disabled defaultValue={4} style={{ fontSize: 12 }} />
-                        </div>
-                      </div>
-                    </div>
-                    <Paragraph style={{ marginTop: 12, marginBottom: 8 }}>its worth it</Paragraph>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      08/09/2025
-                    </Text>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
-
-            <div style={{ marginTop: 12 }}>
-              <a href="#see-more" style={{ color: '#003f3a' }}>
-                See More Reviews
-              </a>
-            </div>
-          </div>
-
-          {/* Related Products / Complete Your Style */}
-          {relatedProducts && relatedProducts.length > 0 && (
-            <div style={{ 
-              marginTop: isMobile ? 40 : 70,
-              padding: isMobile ? '0 16px' : 0
+            <Title level={3} style={{ 
+              textAlign: 'center', 
+              marginBottom: 30,
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
+              color: '#8E6A4E'
             }}>
-              <Title level={3} style={{ 
-                textAlign: 'center', 
-                marginBottom: 24,
-                fontFamily: "'Josefin Sans', sans-serif",
-                color: '#8E6A4E'
-              }}>
-                Complete Your Style
-              </Title>
+              Recommended For You
+            </Title>
 
+            {relatedProducts && relatedProducts.length > 0 ? (
               <Row gutter={[24, 24]}>
                 {relatedProducts.slice(0, 4).map((rp) => (
                   <Col xs={24} sm={12} md={6} key={rp.id}>
@@ -794,8 +751,19 @@ const ProductDetail = () => {
                   </Col>
                 ))}
               </Row>
-            </div>
-          )}
+            ) : (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '40px 20px',
+                background: '#f8f9fa',
+                borderRadius: 8
+              }}>
+                <Text type="secondary" style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>
+                  No recommendations available at the moment
+                </Text>
+              </div>
+            )}
+          </div>
 
         </div>
       </Content>
@@ -834,12 +802,12 @@ const ProductDetail = () => {
             onClick={handleAddToCart}
             disabled={!product.inStock}
             style={{
-              background: '#8E6A4E',
-              borderColor: '#8E6A4E',
+              background: '#000000',
+              borderColor: '#000000',
               borderRadius: 8,
               height: 50,
               fontWeight: 600,
-              fontFamily: "'Josefin Sans', sans-serif",
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
               flex: 1,
               fontSize: '16px'
             }}
@@ -855,7 +823,7 @@ const ProductDetail = () => {
               borderRadius: 8,
               height: 50,
               fontWeight: 600,
-              fontFamily: "'Josefin Sans', sans-serif",
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
               flex: 1,
               fontSize: '16px'
             }}
@@ -865,54 +833,50 @@ const ProductDetail = () => {
         </div>
       )}
 
-      {/* Banner: Adorn Yourself with Timeless Beauty - Full Width */}
-      <div
-        style={{
-          height: isMobile ? 200 : 320,
-          display: 'flex',
-          alignItems: 'center',
-          marginTop: isMobile ? 20 : 0
+      
+      <WebsiteFooter />
+
+      {/* Review Modal */}
+      <Modal
+        title="Write a Review"
+        open={reviewModalVisible}
+        onOk={handleSubmitReview}
+        onCancel={() => {
+          setReviewModalVisible(false);
+          reviewForm.resetFields();
+        }}
+        okText="Submit Review"
+        okButtonProps={{
+          style: {
+            background: '#8E6A4E',
+            borderColor: '#8E6A4E',
+          }
         }}
       >
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            backgroundImage: `url(${pg})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            position: 'relative',
-          }}
-        >
-          {/* overlay */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              display: 'flex',
-              alignItems: 'center',
-              paddingLeft: 64,
-            }}
+        <Form form={reviewForm} layout="vertical">
+          <Form.Item
+            name="rating"
+            label="Rating"
+            rules={[{ required: true, message: 'Please select a rating' }]}
           >
-            <div style={{ padding: isMobile ? '0 20px' : '0' }}>
-              <Title style={{ 
-                color: '#fff', 
-                margin: 0, 
-                fontWeight: 400, 
-                fontFamily: "'Josefin Sans', sans-serif",
-                fontSize: isMobile ? 'clamp(20px, 6vw, 28px)' : 'clamp(28px, 4vw, 42px)',
-                textAlign: isMobile ? 'center' : 'left'
-              }} level={1}>
-                Adorn Yourself with Timeless Beauty
-              </Title>
-            </div>
-          </div>
-        </div>
-      </div>
-      <WebsiteFooter />
+            <Rate />
+          </Form.Item>
+          <Form.Item
+            name="title"
+            label="Review Title"
+            rules={[{ required: true, message: 'Please enter a title' }]}
+          >
+            <Input placeholder="Summarize your experience" maxLength={100} />
+          </Form.Item>
+          <Form.Item
+            name="comment"
+            label="Your Review"
+            rules={[{ required: true, message: 'Please write your review' }]}
+          >
+            <Input.TextArea rows={4} placeholder="Share your thoughts about this product" maxLength={1000} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </Layout>
   );
 };

@@ -19,11 +19,11 @@ exports.getSearchSuggestions = async (req, res) => {
     // Run queries in parallel
     const [products, categories, brands] = await Promise.all([
       Product.find({ name: searchRegex })
-        .select('name slug')
+        .select('name slug image mainImage')
         .limit(limit),
       
       Category.find({ name: searchRegex })
-        .select('name slug')
+        .select('name slug image')
         .limit(limit),
       
       Brand.find({ name: searchRegex })
@@ -41,7 +41,8 @@ exports.getSearchSuggestions = async (req, res) => {
         type: 'product',
         id: product._id,
         name: product.name,
-        slug: product.slug
+        slug: product.slug,
+        image: product.mainImage || product.image
       })),
       
       // Add category suggestions
@@ -49,7 +50,8 @@ exports.getSearchSuggestions = async (req, res) => {
         type: 'category',
         id: category._id,
         name: category.name,
-        slug: category.slug
+        slug: category.slug,
+        image: category.image
       })),
       
       // Add brand suggestions

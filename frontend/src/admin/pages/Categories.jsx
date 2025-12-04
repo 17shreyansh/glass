@@ -8,8 +8,9 @@ import {
   message,
   Popconfirm,
   Select,
-  Tree, // Import Tree component
+  Tree,
   Tooltip,
+  Upload,
 } from "antd";
 import {
   PlusOutlined,
@@ -17,6 +18,7 @@ import {
   DeleteOutlined,
   FolderOutlined,
   FileOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 
@@ -32,7 +34,11 @@ const CategoryAdminPage = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [editingCategory, setEditingCategory] = useState(null);
-  const [expandedKeys, setExpandedKeys] = useState([]); // For controlled tree expansion
+  const [expandedKeys, setExpandedKeys] = useState([]);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [heroImageFile, setHeroImageFile] = useState(null);
+  const [heroImagePreview, setHeroImagePreview] = useState(null);
 
   const generateSlug = (name) => {
     if (!name) return "";
@@ -46,9 +52,8 @@ const CategoryAdminPage = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/categories`);
-      // No need for client-side sorting by level and name if the backend handles it or we build the tree
-      setCategories(res.data);
+      const res = await axios.get(`${API_BASE_URL}/categories`);
+      setCategories(res.data.data || res.data);
     } catch (err) {
       console.error("Failed to load categories:", err.response?.data || err.message);
       message.error("Failed to load categories");
@@ -62,9 +67,38 @@ const CategoryAdminPage = () => {
 
   const onFinish = async (values) => {
     try {
+      let imageUrl = editingCategory?.image || null;
+      let heroImageUrl = editingCategory?.heroImage || null;
+
+      // Upload image if new file selected
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        formData.append('folder', 'categories');
+        
+        const uploadRes = await axios.post(`${API_BASE_URL}/upload`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        imageUrl = uploadRes.data.data?.url || uploadRes.data.url;
+      }
+
+      // Upload hero image if new file selected
+      if (heroImageFile) {
+        const formData = new FormData();
+        formData.append('image', heroImageFile);
+        formData.append('folder', 'categories');
+        
+        const uploadRes = await axios.post(`${API_BASE_URL}/upload`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        heroImageUrl = uploadRes.data.data?.url || uploadRes.data.url;
+      }
+
       const dataToSend = {
         ...values,
         slug: values.slug || generateSlug(values.name),
+        image: imageUrl,
+        heroImage: heroImageUrl,
       };
 
       if (dataToSend.parent === "") {
@@ -73,18 +107,22 @@ const CategoryAdminPage = () => {
 
       if (editingCategory) {
         await axios.put(
-          `${API_BASE_URL}/api/categories/${editingCategory._id}`,
+          `${API_BASE_URL}/categories/${editingCategory._id}`,
           dataToSend
         );
         message.success("Category updated successfully!");
       } else {
-        await axios.post(`${API_BASE_URL}/api/categories`, dataToSend);
+        await axios.post(`${API_BASE_URL}/categories`, dataToSend);
         message.success("Category created successfully!");
       }
       fetchCategories();
       setModalVisible(false);
       form.resetFields();
       setEditingCategory(null);
+      setImageFile(null);
+      setImagePreview(null);
+      setHeroImageFile(null);
+      setHeroImagePreview(null);
     } catch (err) {
       const errorMessage =
         err.response && err.response.data && err.response.data.error
@@ -103,12 +141,18 @@ const CategoryAdminPage = () => {
       parent: record.parent ? record.parent._id : "",
       slug: record.slug,
     });
+    if (record.image && !record.image.includes('placeholder')) {
+      setImagePreview(`${API_BASE_URL.replace('/api', '')}${record.image}`);
+    }
+    if (record.heroImage) {
+      setHeroImagePreview(`${API_BASE_URL.replace('/api', '')}${record.heroImage}`);
+    }
     setModalVisible(true);
   };
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_BASE_URL}/api/categories/${id}`);
+      await axios.delete(`${API_BASE_URL}/categories/${id}`);
       message.success("Category deleted successfully!");
       fetchCategories();
     } catch (err) {
@@ -255,6 +299,10 @@ const CategoryAdminPage = () => {
             setEditingCategory(null);
             form.resetFields();
             form.setFieldsValue({ slug: "" });
+            setImageFile(null);
+            setImagePreview(null);
+            setHeroImageFile(null);
+            setHeroImagePreview(null);
           }}
         >
           Add New Category
@@ -297,6 +345,10 @@ const CategoryAdminPage = () => {
           setModalVisible(false);
           form.resetFields();
           setEditingCategory(null);
+          setImageFile(null);
+          setImagePreview(null);
+          setHeroImageFile(null);
+          setHeroImagePreview(null);
         }}
         onOk={() => form.submit()}
         okText={editingCategory ? "Update" : "Create"}
@@ -341,6 +393,66 @@ const CategoryAdminPage = () => {
 
           <Form.Item label="Description" name="description">
             <TextArea rows={3} placeholder="Optional description" />
+          </Form.Item>
+
+          <Form.Item label="Category Image" tooltip="Small icon/thumbnail for category">
+            <Upload
+              beforeUpload={(file) => {
+                const isImage = file.type.startsWith('image/');
+                if (!isImage) {
+                  message.error('You can only upload image files!');
+                  return false;
+                }
+                const isLt5M = file.size / 1024 / 1024 < 5;
+                if (!isLt5M) {
+                  message.error('Image must be smaller than 5MB!');
+                  return false;
+                }
+                setImageFile(file);
+                const reader = new FileReader();
+                reader.onload = (e) => setImagePreview(e.target.result);
+                reader.readAsDataURL(file);
+                return false;
+              }}
+              showUploadList={false}
+            >
+              <Button icon={<UploadOutlined />}>Select Image</Button>
+            </Upload>
+            {imagePreview && (
+              <div style={{ marginTop: 10 }}>
+                <img src={imagePreview} alt="Preview" style={{ maxWidth: 200, maxHeight: 200 }} />
+              </div>
+            )}
+          </Form.Item>
+
+          <Form.Item label="Hero Banner Image" tooltip="Large banner image for category page (recommended: 1920x400px)">
+            <Upload
+              beforeUpload={(file) => {
+                const isImage = file.type.startsWith('image/');
+                if (!isImage) {
+                  message.error('You can only upload image files!');
+                  return false;
+                }
+                const isLt5M = file.size / 1024 / 1024 < 5;
+                if (!isLt5M) {
+                  message.error('Image must be smaller than 5MB!');
+                  return false;
+                }
+                setHeroImageFile(file);
+                const reader = new FileReader();
+                reader.onload = (e) => setHeroImagePreview(e.target.result);
+                reader.readAsDataURL(file);
+                return false;
+              }}
+              showUploadList={false}
+            >
+              <Button icon={<UploadOutlined />}>Select Hero Image</Button>
+            </Upload>
+            {heroImagePreview && (
+              <div style={{ marginTop: 10 }}>
+                <img src={heroImagePreview} alt="Hero Preview" style={{ maxWidth: '100%', maxHeight: 200 }} />
+              </div>
+            )}
           </Form.Item>
 
           <Form.Item label="Parent Category" name="parent">

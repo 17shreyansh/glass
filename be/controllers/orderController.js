@@ -3,6 +3,7 @@ const PaymentService = require('../services/PaymentService');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const Settings = require('../models/Settings'); // For COD toggle
+const PDFDocument = require('pdfkit');
 
 // Initialize OrderService
 const orderService = new OrderService();
@@ -403,125 +404,112 @@ const getCODStatus = async (req, res) => {
     }
 };
 
-// Helper function to generate invoice HTML
-const generateInvoiceHtml = (order) => {
-    if (!order) return '<div>No order found.</div>';
+// Helper function to generate invoice PDF
+const generateInvoicePDF = (order) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const doc = new PDFDocument({ margin: 50, size: 'A4' });
+            const chunks = [];
 
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR'
-        }).format(amount);
-    };
+            doc.on('data', chunk => chunks.push(chunk));
+            doc.on('end', () => resolve(Buffer.concat(chunks)));
+            doc.on('error', reject);
 
-    const formatDate = (date) => new Date(date).toLocaleDateString('en-IN');
+            const formatCurrency = (amount) => `₹${amount.toLocaleString('en-IN')}`;
+            const formatDate = (date) => new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
-    const itemsHtml = order.items.map(item => `
-        <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 8px 0;">${item.productId.name}</td>
-            <td style="padding: 8px 0; text-align: center;">${item.quantity}</td>
-            <td style="padding: 8px 0; text-align: right;">${formatCurrency(item.price)}</td>
-            <td style="padding: 8px 0; text-align: right;">${formatCurrency(item.price * item.quantity)}</td>
-        </tr>
-    `).join('');
+            // Header
+            doc.fontSize(24).fillColor('#8E6A4E').text('INVOICE', { align: 'center' });
+            doc.moveDown(0.5);
+            doc.fontSize(12).fillColor('#333').text(`Order #${order.orderNumber}`, { align: 'center' });
+            doc.fontSize(10).fillColor('#666').text(`Date: ${formatDate(order.createdAt)}`, { align: 'center' });
+            doc.moveDown(2);
 
-    return `
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Invoice #${order.orderNumber}</title>
-            <style>
-                body { font-family: 'Arial', sans-serif; margin: 20px; color: #333; }
-                .container { width: 800px; margin: 0 auto; border: 1px solid #eee; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
-                .header, .footer { text-align: center; margin-bottom: 30px; }
-                .header h1 { margin: 0; color: #555; }
-                .invoice-details, .customer-details, .summary-details { margin-bottom: 20px; }
-                .invoice-details table, .customer-details table, .summary-details table { width: 100%; border-collapse: collapse; }
-                .invoice-details td, .customer-details td, .summary-details td { padding: 5px; vertical-align: top; }
-                .invoice-details .label, .customer-details .label, .summary-details .label { font-weight: bold; width: 150px; }
-                .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                .items-table th, .items-table td { border: 1px solid #eee; padding: 8px; text-align: left; }
-                .items-table th { background-color: #f9f9f9; }
-                .total-row { font-weight: bold; background-color: #f0f0f0; }
-                .text-right { text-align: right; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>Invoice</h1>
-                    <p>Order Number: <strong>${order.orderNumber}</strong></p>
-                    <p>Date: ${formatDate(order.createdAt)}</p>
-                </div>
+            // Bill To & Ship To
+            const leftColumn = 50;
+            const rightColumn = 320;
+            let yPos = doc.y;
 
-                <div class="customer-details">
-                    <table style="width: 100%;">
-                        <tr>
-                            <td style="width: 50%;">
-                                <strong>Bill To:</strong><br/>
-                                ${order.userId.name || 'N/A'}<br/>
-                                ${order.userId.email || 'N/A'}<br/>
-                                ${order.shippingAddress.phone || 'N/A'}
-                            </td>
-                            <td style="width: 50%;">
-                                <strong>Ship To:</strong><br/>
-                                ${order.shippingAddress.fullName || order.userId.name || 'N/A'}<br/>
-                                ${order.shippingAddress.address || 'N/A'}<br/>
-                                ${order.shippingAddress.city || 'N/A'}, ${order.shippingAddress.state || 'N/A'} - ${order.shippingAddress.pincode || 'N/A'}
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+            doc.fontSize(11).fillColor('#333').text('Bill To:', leftColumn, yPos);
+            doc.fontSize(10).fillColor('#666')
+                .text(order.userId.name || 'N/A', leftColumn, yPos + 15)
+                .text(order.userId.email || 'N/A', leftColumn, yPos + 30)
+                .text(order.shippingAddress.phone || 'N/A', leftColumn, yPos + 45);
 
-                <table class="items-table">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th style="text-align: center;">Qty</th>
-                            <th style="text-align: right;">Unit Price</th>
-                            <th style="text-align: right;">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${itemsHtml}
-                    </tbody>
-                </table>
+            doc.fontSize(11).fillColor('#333').text('Ship To:', rightColumn, yPos);
+            doc.fontSize(10).fillColor('#666')
+                .text(order.shippingAddress.fullName || order.userId.name || 'N/A', rightColumn, yPos + 15)
+                .text(order.shippingAddress.address || 'N/A', rightColumn, yPos + 30, { width: 230 })
+                .text(`${order.shippingAddress.city || 'N/A'}, ${order.shippingAddress.state || 'N/A'} - ${order.shippingAddress.pincode || 'N/A'}`, rightColumn, yPos + 60);
 
-                <div class="summary-details" style="width: 100%; text-align: right;">
-                    <table style="width: 50%; float: right;">
-                        <tr>
-                            <td>Subtotal:</td>
-                            <td class="text-right">${formatCurrency(order.subtotal)}</td>
-                        </tr>
-                        <tr>
-                            <td>Delivery Charge:</td>
-                            <td class="text-right">${formatCurrency(order.deliveryCharge)}</td>
-                        </tr>
-                        ${order.discountAmount > 0 ? `
-                        <tr>
-                            <td>Discount:</td>
-                            <td class="text-right">-${formatCurrency(order.discountAmount)}</td>
-                        </tr>` : ''}
-                        <tr class="total-row">
-                            <td>Grand Total:</td>
-                            <td class="text-right">${formatCurrency(order.totalAmount)}</td>
-                        </tr>
-                        <tr>
-                            <td>Payment Method:</td>
-                            <td class="text-right">${order.paymentMethod} (${order.payment?.status || 'N/A'})</td>
-                        </tr>
-                    </table>
-                    <div style="clear: both;"></div>
-                </div>
+            doc.moveDown(5);
 
-                <div class="footer" style="margin-top: 50px;">
-                    <p>Thank you for your business!</p>
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
+            // Items Table
+            const tableTop = doc.y + 20;
+            doc.fontSize(10).fillColor('#333');
+            
+            // Table Header
+            doc.rect(50, tableTop, 495, 25).fillAndStroke('#f5f5f5', '#ddd');
+            doc.fillColor('#333')
+                .text('Item', 60, tableTop + 8)
+                .text('Qty', 320, tableTop + 8, { width: 40, align: 'center' })
+                .text('Price', 370, tableTop + 8, { width: 70, align: 'right' })
+                .text('Total', 450, tableTop + 8, { width: 85, align: 'right' });
+
+            // Table Items
+            let itemY = tableTop + 30;
+            order.items.forEach((item, i) => {
+                doc.fontSize(9).fillColor('#333')
+                    .text(item.productId?.name || item.name || 'Product', 60, itemY, { width: 250 })
+                    .text(item.quantity.toString(), 320, itemY, { width: 40, align: 'center' })
+                    .text(formatCurrency(item.price), 370, itemY, { width: 70, align: 'right' })
+                    .text(formatCurrency(item.price * item.quantity), 450, itemY, { width: 85, align: 'right' });
+                
+                itemY += 25;
+                if (i < order.items.length - 1) {
+                    doc.moveTo(50, itemY - 5).lineTo(545, itemY - 5).stroke('#eee');
+                }
+            });
+
+            // Summary
+            doc.moveDown(2);
+            const summaryX = 370;
+            let summaryY = itemY + 20;
+
+            doc.fontSize(10).fillColor('#666')
+                .text('Subtotal:', summaryX, summaryY)
+                .text(formatCurrency(order.subtotal), 450, summaryY, { width: 85, align: 'right' });
+            
+            summaryY += 20;
+            doc.text('Delivery:', summaryX, summaryY)
+                .text(formatCurrency(order.deliveryCharge), 450, summaryY, { width: 85, align: 'right' });
+
+            if (order.discountAmount > 0) {
+                summaryY += 20;
+                doc.fillColor('#6B8E23')
+                    .text('Discount:', summaryX, summaryY)
+                    .text(`-${formatCurrency(order.discountAmount)}`, 450, summaryY, { width: 85, align: 'right' });
+            }
+
+            summaryY += 25;
+            doc.moveTo(370, summaryY - 5).lineTo(545, summaryY - 5).stroke('#333');
+            doc.fontSize(12).fillColor('#8E6A4E')
+                .text('Total:', summaryX, summaryY + 5, { continued: false })
+                .text(formatCurrency(order.totalAmount), 450, summaryY + 5, { width: 85, align: 'right' });
+
+            summaryY += 35;
+            doc.fontSize(9).fillColor('#666')
+                .text(`Payment: ${order.paymentMethod} (${order.payment?.status || 'N/A'})`, summaryX, summaryY);
+
+            // Footer
+            doc.fontSize(10).fillColor('#8E6A4E')
+                .text('Thank you for your business!', 50, 750, { align: 'center', width: 495 });
+
+            doc.end();
+        } catch (error) {
+            reject(error);
+        }
+    });
 };
 
 // Get order invoice
@@ -542,12 +530,13 @@ const getOrderInvoice = async (req, res) => {
             return res.status(404).json({ message: 'Order not found' });
         }
 
-        // Generate invoice HTML
-        const invoiceHtml = generateInvoiceHtml(order);
+        // Generate invoice PDF
+        const pdfBuffer = await generateInvoicePDF(order);
 
-        // Send response
-        res.set('Content-Type', 'text/html');
-        res.status(200).send(invoiceHtml);
+        // Send PDF response
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=invoice-${order.orderNumber}.pdf`);
+        res.send(pdfBuffer);
 
     } catch (error) {
         console.error('Get invoice error:', error);

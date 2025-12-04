@@ -13,20 +13,29 @@ export default function MissionSection() {
         height: "100%",
         backgroundColor: "#fff",
         display: "flex",
+        flexDirection: window.innerWidth <= 768 ? "column" : "row",
         alignItems: "center",
         justifyContent: "flex-start",
-        // padding: "60px 0",
+        padding: window.innerWidth <= 768 ? "30px 0" : "0",
         boxSizing: "border-box",
       }}
     >
       {/* Left Image */}
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-start", height: "100%" }}>
+      <div style={{ 
+        flex: 1, 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: window.innerWidth <= 768 ? "center" : "flex-start", 
+        height: "100%",
+        width: window.innerWidth <= 768 ? "100%" : "auto"
+      }}>
         <img
           src={missionImg}
           alt="mission-img"
           style={{
-            width: "500px",
-            height: "80%",
+            width: window.innerWidth <= 768 ? "80%" : "500px",
+            maxWidth: window.innerWidth <= 768 ? "300px" : "500px",
+            height: "auto",
             objectFit: "contain",
           }}
         />
@@ -36,8 +45,9 @@ export default function MissionSection() {
       <div
         style={{
           flex: 1,
-          padding: "0 40px",
+          padding: window.innerWidth <= 768 ? "20px 20px" : "0 40px",
           textAlign: "center",
+          width: window.innerWidth <= 768 ? "100%" : "auto"
         }}
       >
         <Title level={2} style={{
@@ -53,8 +63,8 @@ export default function MissionSection() {
 
         <Paragraph
           style={{
-            marginTop: "20px",
-            fontSize: "18px",
+            marginTop: window.innerWidth <= 768 ? "15px" : "20px",
+            fontSize: window.innerWidth <= 768 ? "14px" : "18px",
             lineHeight: "1.7",
             color: "#8E6A4E",
             fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
@@ -65,8 +75,8 @@ export default function MissionSection() {
 
         <Paragraph
           style={{
-            marginTop: "20px",
-            fontSize: "18px",
+            marginTop: window.innerWidth <= 768 ? "15px" : "20px",
+            fontSize: window.innerWidth <= 768 ? "14px" : "18px",
             lineHeight: "1.7",
             color: "#8E6A4E",
             fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
@@ -80,8 +90,8 @@ export default function MissionSection() {
 
         <Paragraph
           style={{
-            marginTop: "20px",
-            fontSize: "18px",
+            marginTop: window.innerWidth <= 768 ? "15px" : "20px",
+            fontSize: window.innerWidth <= 768 ? "14px" : "18px",
             lineHeight: "1.7",
             color: "#8E6A4E",
             fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
@@ -99,12 +109,12 @@ export default function MissionSection() {
       style={{
         width: "100%",
         textAlign: "center",
-        padding: "20px 0",
+        padding: window.innerWidth <= 768 ? "15px 0" : "20px 0",
         backgroundColor: "#594131",
       }}
     >
       <Title 
-        level={2} 
+        level={window.innerWidth <= 768 ? 3 : 2}
         style={{
           fontWeight: 500,
           fontFamily: "'FONTSPRING DEMO - The Seasons', 'Playfair Display', serif",

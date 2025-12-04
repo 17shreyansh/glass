@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Layout,
   Row,
@@ -6,48 +6,33 @@ import {
   Typography,
   Card,
   Button,
-  Input,
-  Radio,
-  Space,
   InputNumber,
   Divider,
-  Steps,
   Empty,
 } from "antd";
 import {
   DeleteOutlined,
-  RightOutlined,
-  PlusOutlined,
-  ShoppingOutlined,
+  ShoppingCartOutlined,
 } from "@ant-design/icons";
 import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
 
 const { Title, Text } = Typography;
-const { Step } = Steps;
 
 const CartCheckout = () => {
-  const [step, setStep] = useState(0);
-  const [coupon, setCoupon] = useState("");
-  const [address, setAddress] = useState("home");
-  const [payment, setPayment] = useState("upi");
-  
-  const { cartItems, updateQuantity, removeFromCart, getCartTotal, getCartItemsCount } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, getCartTotal } = useCart();
 
   const subtotal = getCartTotal();
-  const shipping = 0;
-  const couponApplied = 0;
-  const walletUsed = 0;
-  const total = subtotal - couponApplied - walletUsed;
+  const total = subtotal;
 
   if (cartItems.length === 0) {
     return (
-      <Layout style={{ background: "#fff", minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Layout style={{ background: "#fff", minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 80 }}>
         <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          image={<ShoppingCartOutlined style={{ fontSize: 64, color: '#8E6A4E' }} />}
           description="Your cart is empty"
         >
-          <Link to="/">
+          <Link to="/shop">
             <Button type="primary" style={{ background: '#8E6A4E', borderColor: '#8E6A4E' }}>
               Continue Shopping
             </Button>
@@ -58,21 +43,19 @@ const CartCheckout = () => {
   }
 
   const styles = {
-    page: { marginTop: 80, padding: "20px 60px", fontFamily: "'Josefin Sans', sans-serif", background: "#fff" },
-    title: { textAlign: "center", marginBottom: 10 },
+    page: { marginTop: 80, padding: "20px 5%", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", background: "#fff", minHeight: '80vh' },
     card: {
       borderRadius: 10,
       border: "1px solid #ddd",
       padding: 20,
       background: "#fff",
+      marginBottom: 16
     },
-    sectionTitle: { fontWeight: 600, marginBottom: 10 },
-    label: { fontWeight: 500 },
     summaryCard: {
       borderRadius: 8,
       border: "1px solid #ddd",
       background: "#fff",
-      padding: "20px 20px 5px 20px",
+      padding: "20px",
     },
     summaryRow: {
       display: "flex",
@@ -81,315 +64,138 @@ const CartCheckout = () => {
       fontSize: 15,
     },
     divider: { margin: "8px 0" },
-    couponBox: {
-      display: "flex",
-      alignItems: "center",
-      marginTop: 20,
-      gap: 10,
-    },
-    addressCard: (isActive) => ({
-      border: isActive ? "1px solid #006d5b" : "1px solid #ddd",
-      borderRadius: 8,
-      padding: 12,
-      marginBottom: 10,
-      background: isActive ? "#f0fdf9" : "#fff",
-    }),
-    payRow: (isActive) => ({
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      border: isActive ? "1px solid #006d5b" : "1px solid #eee",
-      borderRadius: 8,
-      padding: "8px 12px",
-      marginBottom: 10,
-      background: isActive ? "#f0fdf9" : "#fff",
-    }),
   };
 
   return (
-    <Layout style={{ background: "#fff", fontFamily: "'Josefin Sans', sans-serif" }}>
+    <Layout style={{ background: "#fff", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>
       <div style={styles.page}>
-        <Title level={2} style={styles.title}>
-          Cart check out
+        <Title level={2} style={{ textAlign: 'center', marginBottom: 40 }}>
+          Shopping Cart
         </Title>
 
-        <Steps
-          current={step}
-          style={{ maxWidth: 500, margin: "0 auto 40px auto" }}
-          items={[
-            { title: "Cart" },
-            { title: "Address & Payment" },
-          ]}
-        />
-
-        {step === 0 ? (
-          <Row gutter={[32, 32]}>
-            <Col xs={24} lg={16}>
-              {cartItems.map((item, i) => (
-                <Card key={item.id || i} style={styles.card}>
-                  <Row align="middle" gutter={[16, 16]}>
-                    <Col span={4}>
-                      <img
-                        src={item.image || item.mainImage || 'https://via.placeholder.com/80x80.png?text=Product'}
-                        alt={item.name}
-                        style={{
-                          width: "100%",
-                          borderRadius: 8,
-                          objectFit: "cover",
-                        }}
-                      />
-                    </Col>
-                    <Col span={10}>
-                      <Title level={5} style={{ marginBottom: 0 }}>
-                        {item.name}
-                      </Title>
-                      <Text type="secondary">
-                        Product Type: {item.productType || 'N/A'}
-                      </Text>
-                      <br />
-                      <Text strong>₹{item.price}</Text>
-                    </Col>
-                    <Col span={4} style={{ textAlign: "center" }}>
-                      <Text>Quantity</Text>
-                      <InputNumber 
-                        min={1} 
-                        max={10} 
-                        value={item.quantity || 1}
-                        onChange={(value) => updateQuantity(item.id, value)}
-                      />
-                    </Col>
-                    <Col span={6} style={{ textAlign: "right" }}>
-                      <Text strong>₹{(item.price * (item.quantity || 1)).toFixed(2)}</Text>
-                      <br />
-                      <Button
-                        type="text"
-                        danger
-                        icon={<DeleteOutlined />}
-                        style={{ marginTop: 5 }}
-                        onClick={() => removeFromCart(item.id)}
-                      >
-                        Remove
-                      </Button>
-                    </Col>
-                  </Row>
-                </Card>
-              ))}
-
-              <div style={styles.couponBox}>
-                <Input
-                  placeholder="COUPON"
-                  value={coupon}
-                  onChange={(e) => setCoupon(e.target.value)}
-                />
-                <Button
-                  icon={<RightOutlined />}
-                  style={{
-                    background: "#8E6A4E",
-                    color: "#fff",
-                    borderRadius: 6,
-                  }}
-                >
-                  APPLY
-                </Button>
-              </div>
-            </Col>
-
-            <Col xs={24} lg={8}>
-              <Card style={styles.summaryCard}>
-                <div style={styles.summaryRow}>
-                  <span>ITEM(S) SUBTOTAL :</span>
-                  <span>₹{subtotal}</span>
-                </div>
-                <Divider style={styles.divider} />
-                <div style={styles.summaryRow}>
-                  <span>SHIPPING :</span>
-                  <span>FREE</span>
-                </div>
-                <Divider style={styles.divider} />
-                <div style={styles.summaryRow}>
-                  <span>TOTAL :</span>
-                  <span>₹{subtotal}</span>
-                </div>
-                <Divider style={styles.divider} />
-                <div style={styles.summaryRow}>
-                  <span>COUPON | PROMO APPLIED:</span>
-                  <span>-₹{couponApplied}</span>
-                </div>
-                <Divider style={styles.divider} />
-                <div style={styles.summaryRow}>
-                  <span>WALLET:</span>
-                  <span>-₹{walletUsed}</span>
-                </div>
-                <Divider style={styles.divider} />
-                <div
-                  style={{
-                    ...styles.summaryRow,
-                    fontWeight: 700,
-                    color: "#000",
-                  }}
-                >
-                  <span>NET FINAL AMOUNT :</span>
-                  <span>₹{total}</span>
-                </div>
+        <Row gutter={[32, 32]}>
+          <Col xs={24} lg={16}>
+            {cartItems.map((item, i) => (
+              <Card key={item._id || i} style={styles.card}>
+                <Row align="middle" gutter={[8, 16]}>
+                  <Col xs={6} sm={4}>
+                    <img
+                      src={item.image || item.mainImage || 'https://via.placeholder.com/80'}
+                      alt={item.name}
+                      style={{
+                        width: "100%",
+                        borderRadius: 8,
+                        objectFit: "cover",
+                      }}
+                    />
+                  </Col>
+                  <Col xs={18} sm={10}>
+                    <Title level={5} style={{ marginBottom: 0, fontSize: '16px' }}>
+                      {item.name}
+                    </Title>
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      {item.productType || 'Product'}
+                    </Text>
+                    <br />
+                    <Text strong>₹{item.price}</Text>
+                  </Col>
+                  <Col xs={12} sm={4} style={{ textAlign: "center" }}>
+                    <Text style={{ display: 'block', marginBottom: 8, fontSize: '12px' }}>Quantity</Text>
+                    <InputNumber 
+                      min={1} 
+                      max={10} 
+                      value={item.quantity || 1}
+                      onChange={(value) => updateQuantity(item._id || item.id, value)}
+                      style={{ width: '100%' }}
+                    />
+                  </Col>
+                  <Col xs={12} sm={6} style={{ textAlign: "right" }}>
+                    <Text strong style={{ fontSize: 16 }}>₹{(item.price * (item.quantity || 1)).toFixed(2)}</Text>
+                    <br />
+                    <Button
+                      type="text"
+                      danger
+                      icon={<DeleteOutlined />}
+                      size="small"
+                      style={{ marginTop: 5 }}
+                      onClick={() => removeFromCart(item._id || item.id)}
+                    >
+                      Remove
+                    </Button>
+                  </Col>
+                </Row>
               </Card>
+            ))}
+          </Col>
 
+          <Col xs={24} lg={8}>
+            <Card style={styles.summaryCard}>
+              <Title level={4} style={{ marginBottom: 20 }}>Order Summary</Title>
+              <div style={styles.summaryRow}>
+                <span>Subtotal ({cartItems.length} items):</span>
+                <span>₹{subtotal.toFixed(2)}</span>
+              </div>
+              <Divider style={styles.divider} />
+              <div style={styles.summaryRow}>
+                <span>Shipping:</span>
+                <span style={{ color: '#52c41a' }}>FREE</span>
+              </div>
+              <Divider style={styles.divider} />
+              <div
+                style={{
+                  ...styles.summaryRow,
+                  fontWeight: 700,
+                  fontSize: 18,
+                  color: "#000",
+                  marginTop: 10
+                }}
+              >
+                <span>Total:</span>
+                <span>₹{total.toFixed(2)}</span>
+              </div>
+            </Card>
+
+            <Link to="/checkout">
               <Button
                 type="primary"
                 block
+                size="large"
                 style={{
                   background: "#8E6A4E",
                   borderColor: "#8E6A4E",
                   marginTop: 20,
-                  height: 45,
+                  height: 50,
+                  fontSize: 16,
+                  fontWeight: 600
                 }}
-                onClick={() => setStep(1)}
               >
-                CHECK OUT
+                PROCEED TO CHECKOUT
               </Button>
+            </Link>
 
-              <div style={{ marginTop: 15, textAlign: "center" }}>
-                <Text style={{ color: "#777" }}>UPI / NETBANKING</Text>
-                <br />
-                <Text style={{ color: "#777" }}>
-                  CASH ON DELIVERY (COD)
-                </Text>
-              </div>
-            </Col>
-          </Row>
-        ) : (
-          <Row gutter={[32, 32]}>
-            <Col xs={24} lg={16}>
-              <div style={{ marginBottom: 30 }}>
-                <div style={styles.sectionTitle}>SELECT ADDRESSES</div>
-                <div
-                  style={styles.addressCard(address === "home")}
-                  onClick={() => setAddress("home")}
-                >
-                  <Radio checked={address === "home"} />
-                  <div style={{ marginLeft: 10 }}>
-                    <Text strong>HOME</Text>
-                    <div>
-                      B167, Vamika Pg , Jk Town, Kolar Road, Bhopal , Infront Of
-                      Jk Hospital , Kolar Road, Bhopal, 462042 , Madhya Pradesh,
-                      India
-                    </div>
-                    <div style={{ color: "#666" }}>
-                      HARSHITA JAIN 8967777320
-                    </div>
-                  </div>
-                </div>
+            <div style={{ marginTop: 20, textAlign: "center", padding: '15px', background: '#f5f5f5', borderRadius: 8 }}>
+              <Text style={{ color: "#666", fontSize: 13 }}>🔒 Secure Payment via Razorpay</Text>
+              <br />
+              <Text style={{ color: "#999", fontSize: 12 }}>
+                UPI • Cards • Net Banking
+              </Text>
+            </div>
 
-                <div
-                  style={styles.addressCard(address === "work")}
-                  onClick={() => setAddress("work")}
-                >
-                  <Radio checked={address === "work"} />
-                  <div style={{ marginLeft: 10 }}>
-                    <Text strong>WORK</Text>
-                    <div>
-                      B167, Vamika Pg , Jk Town, Kolar Road, Bhopal , Infront Of
-                      Jk Hospital , Kolar Road, Bhopal, 462042 , Madhya Pradesh,
-                      India
-                    </div>
-                    <div style={{ color: "#666" }}>
-                      HARSHITA JAIN 8966667770
-                    </div>
-                  </div>
-                </div>
-
-                <Button
-                  icon={<PlusOutlined />}
-                  style={{
-                    borderColor: "#8E6A4E",
-                    color: "#8E6A4E",
-                    marginTop: 10,
-                  }}
-                >
-                  Add Address
-                </Button>
-              </div>
-
-              <div>
-                <div style={styles.sectionTitle}>SELECT PAYMENT METHOD</div>
-                {[
-                  { id: "upi", label: "UPI" },
-                  { id: "cod", label: "COD" },
-                  { id: "netbanking", label: "NETBANKING" },
-                  { id: "wallet", label: "WALLETS" },
-                  { id: "card", label: "CREDIT/DEBIT CARD" },
-                ].map((m) => (
-                  <div
-                    key={m.id}
-                    style={styles.payRow(payment === m.id)}
-                    onClick={() => setPayment(m.id)}
-                  >
-                    <Radio checked={payment === m.id}>{m.label}</Radio>
-                    <RightOutlined />
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ marginTop: 30 }}>
-                <Button
-                  onClick={() => setStep(0)}
-                  style={{ marginRight: 10 }}
-                >
-                  Back
-                </Button>
-                <Button
-                  type="primary"
-                  style={{
-                    background: "#8E6A4E",
-                    borderColor: "#8E6A4E",
-                  }}
-                  onClick={() => alert("Order Placed!")}
-                >
-                  CHECK OUT
-                </Button>
-              </div>
-            </Col>
-
-            <Col xs={24} lg={8}>
-              <Card style={styles.summaryCard}>
-                <div style={styles.summaryRow}>
-                  <span>ITEM(S) SUBTOTAL :</span>
-                  <span>₹{subtotal}</span>
-                </div>
-                <Divider style={styles.divider} />
-                <div style={styles.summaryRow}>
-                  <span>SHIPPING :</span>
-                  <span>FREE</span>
-                </div>
-                <Divider style={styles.divider} />
-                <div style={styles.summaryRow}>
-                  <span>TOTAL :</span>
-                  <span>₹{subtotal}</span>
-                </div>
-                <Divider style={styles.divider} />
-                <div style={styles.summaryRow}>
-                  <span>COUPON | PROMO APPLIED:</span>
-                  <span>-₹{couponApplied}</span>
-                </div>
-                <Divider style={styles.divider} />
-                <div style={styles.summaryRow}>
-                  <span>WALLET:</span>
-                  <span>-₹{walletUsed}</span>
-                </div>
-                <Divider style={styles.divider} />
-                <div
-                  style={{
-                    ...styles.summaryRow,
-                    fontWeight: 700,
-                    color: "#000",
-                  }}
-                >
-                  <span>NET FINAL AMOUNT :</span>
-                  <span>₹{total}</span>
-                </div>
-              </Card>
-            </Col>
-          </Row>
-        )}
+            <Link to="/shop">
+              <Button
+                block
+                style={{
+                  marginTop: 15,
+                  height: 40,
+                  borderColor: '#8E6A4E',
+                  color: '#8E6A4E'
+                }}
+              >
+                Continue Shopping
+              </Button>
+            </Link>
+          </Col>
+        </Row>
       </div>
     </Layout>
   );

@@ -57,25 +57,39 @@ const ProductAdminPage = () => {
   const [fileList, setFileList] = useState([]); // State for main image upload
   const [galleryFileList, setGalleryFileList] = useState([]); // State for gallery images upload
   const [viewMode, setViewMode] = useState("grid"); // Toggles between 'grid' and 'table' view
+  const [categories, setCategories] = useState([]); // State for categories
+  const [selectedAttributes, setSelectedAttributes] = useState([]); // Selected attribute types
 
   // Function to fetch all products from the backend
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const data = await apiService.getProducts();
-      setProducts(data);
+      setProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       message.error("Failed to fetch products");
       console.error("Fetch products error:", error);
+      setProducts([]);
     }
     setLoading(false);
   };
 
 
 
+  // Function to fetch categories
+  const fetchCategories = async () => {
+    try {
+      const data = await apiService.getCategories();
+      setCategories(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Fetch categories error:", error);
+    }
+  };
+
   // useEffect hook to fetch initial data when the component mounts
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []); // Empty dependency array means this runs once on mount
 
   // Handles form submission for creating or updating a product
@@ -86,7 +100,7 @@ const ProductAdminPage = () => {
     let mainImageUrl = null;
     if (fileList.length > 0) {
       const mainFile = fileList[0];
-      if (mainFile.status === "done" && mainFile.response?.url) {
+      if (mainFile.response?.url) {
         mainImageUrl = mainFile.response.url;
       } else if (mainFile.url) {
         mainImageUrl = mainFile.url.startsWith('http://localhost:3001')
@@ -97,9 +111,8 @@ const ProductAdminPage = () => {
 
     // Handle gallery image URLs for submission
     const galleryImageUrls = galleryFileList
-      .filter((file) => file.status === "done" || file.url)
       .map((file) => {
-        if (file.status === "done" && file.response?.url) {
+        if (file.response?.url) {
           return file.response.url;
         } else if (file.url) {
           return file.url.startsWith('http://localhost:3001')
@@ -113,7 +126,7 @@ const ProductAdminPage = () => {
     // Construct the product data object to be sent to the backend
     const productData = {
       ...values,
-      sizeVariants: values.sizeVariants || [],
+      variants: values.variants || [],
       mainImage: mainImageUrl,
       image: mainImageUrl,
       galleryImages: galleryImageUrls,
@@ -150,11 +163,58 @@ const ProductAdminPage = () => {
     setEditingProduct(null); // Clear editing product state
     setFileList([]); // Clear main image file list
     setGalleryFileList([]); // Clear gallery image file list
+    setSelectedAttributes([]); // Clear selected attributes
   };
 
-  // Navigate to dedicated edit page
+  // Handle edit in modal
   const handleEdit = (record) => {
-    navigate(`/admin/products/edit/${record._id}`);
+    setEditingProduct(record);
+    setSelectedAttributes([]); // Will be populated from product data
+    
+    // Extract attributes from variants
+    if (record.variants && record.variants.length > 0) {
+      const attrs = new Set();
+      record.variants.forEach(v => {
+        if (v.attributes) {
+          Object.keys(v.attributes).forEach(key => attrs.add(key));
+        }
+      });
+      setSelectedAttributes(Array.from(attrs));
+    }
+    
+    form.setFieldsValue({
+      name: record.name,
+      slug: record.slug,
+      description: record.description,
+      price: record.price,
+      originalPrice: record.originalPrice,
+      category: record.category,
+      variants: record.variants || [],
+      isFeatured: record.isFeatured,
+      isActive: record.isActive,
+    });
+    
+    if (record.mainImage) {
+      setFileList([{
+        uid: 'main',
+        name: record.mainImage.split('/').pop(),
+        status: 'done',
+        url: `http://localhost:3001${record.mainImage}`,
+        response: { url: record.mainImage }
+      }]);
+    }
+    
+    if (record.galleryImages?.length > 0) {
+      setGalleryFileList(record.galleryImages.map((url, i) => ({
+        uid: `gallery-${i}`,
+        name: url.split('/').pop(),
+        status: 'done',
+        url: `http://localhost:3001${url}`,
+        response: { url }
+      })));
+    }
+    
+    setModalVisible(true);
   };
 
   // Handles product deletion
@@ -175,7 +235,8 @@ const ProductAdminPage = () => {
 
     try {
       const response = await apiService.uploadImage(file);
-      onSuccess(response, file);
+      const url = response.data?.url || response.url;
+      onSuccess({ url }, file);
       message.success(`${file.name} uploaded successfully!`);
     } catch (error) {
       console.error("Upload error:", error);
@@ -190,7 +251,8 @@ const ProductAdminPage = () => {
 
     try {
       const response = await apiService.uploadImage(file);
-      onSuccess(response, file);
+      const url = response.data?.url || response.url;
+      onSuccess({ url }, file);
       message.success(`${file.name} uploaded successfully!`);
     } catch (error) {
       console.error("Upload error:", error);
@@ -245,13 +307,6 @@ const ProductAdminPage = () => {
     },
     { title: "Name", dataIndex: "name", key: "name", sorter: (a, b) => a.name.localeCompare(b.name) },
     { title: "Slug", dataIndex: "slug", key: "slug" },
-
-    { 
-      title: "Type", 
-      dataIndex: "productType", 
-      key: "productType",
-      render: (type) => type === 'ashta-dhatu' ? 'Ashta Dhatu' : 'Fashion Jewelry'
-    },
     { 
       title: "Category", 
       dataIndex: "category", 
@@ -271,10 +326,10 @@ const ProductAdminPage = () => {
       sorter: (a, b) => a.totalStock - b.totalStock
     },
     {
-      title: "Sizes",
-      dataIndex: "sizeVariants",
-      key: "sizeVariants",
-      render: (variants) => variants?.map(v => v.size).join(", ") || "N/A",
+      title: "Variants",
+      dataIndex: "variants",
+      key: "variants",
+      render: (variants) => variants?.length || 0,
     },
     {
       title: "Rating",
@@ -522,10 +577,9 @@ const ProductAdminPage = () => {
           layout="vertical"
           onFinish={onFinish} // Callback when form is submitted and validated
           initialValues={{
-            sizeVariants: [],
+            variants: [],
             price: 0,
             originalPrice: null,
-            productType: 'ashta-dhatu',
             isFeatured: false,
             isActive: true,
             slug: "",
@@ -576,24 +630,15 @@ const ProductAdminPage = () => {
                     <Form.Item
                       label="Category"
                       name="category"
-                      rules={[{ required: true, message: "Please enter category" }]}
+                      rules={[{ required: true, message: "Please select category" }]}
                     >
-                      <Input placeholder="e.g., Rings, Necklaces, Earrings" />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      label="Product Type"
-                      name="productType"
-                      rules={[{ required: true, message: "Please select product type" }]}
-                    >
-                      <Select placeholder="Select product type">
-                        <Option value="ashta-dhatu">Ashta Dhatu</Option>
-                        <Option value="fashion-jewelry">Fashion Jewelry</Option>
+                      <Select placeholder="Select a category" showSearch>
+                        {categories.map(cat => (
+                          <Option key={cat._id} value={cat.name}>{cat.name}</Option>
+                        ))}
                       </Select>
                     </Form.Item>
                   </Col>
-
                   <Col xs={24} sm={12}>
                     <Form.Item
                       label="Original Price (₹)"
@@ -613,95 +658,91 @@ const ProductAdminPage = () => {
               children: (
                 <Row gutter={16}>
                   <Col span={24}>
-                    <Form.Item label="Material" name="material">
-                      <Input placeholder="e.g., Gold, Silver, Ashta Dhatu" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={24}>
-                    <Form.Item label="Available Colors" name="availableColors">
-                      <Select mode="tags" placeholder="Add colors (e.g., gold, silver, rose-gold)">
-                        <Option value="gold">Gold</Option>
-                        <Option value="silver">Silver</Option>
-                        <Option value="rose-gold">Rose Gold</Option>
-                        <Option value="black">Black</Option>
-                        <Option value="white">White</Option>
+                    <Divider orientation="left">Step 1: Select Attributes</Divider>
+                    <Form.Item label="Which attributes does this product have?">
+                      <Select
+                        mode="multiple"
+                        placeholder="Select attributes (e.g., Color, Size)"
+                        value={selectedAttributes}
+                        onChange={setSelectedAttributes}
+                        style={{ width: "100%" }}
+                      >
+                        <Option value="Color">Color</Option>
+                        <Option value="Size">Size</Option>
+                        <Option value="Weight">Weight</Option>
+                        <Option value="Capacity">Capacity</Option>
                       </Select>
                     </Form.Item>
                   </Col>
-                  <Col span={24}>
-                    <Form.Item label="Metal Details" name="metalDetails">
-                      <Select mode="tags" placeholder="Add metal details">
-                        <Option value="Ashta Dhatu alloy base">Ashta Dhatu alloy base</Option>
-                        <Option value="Precise gold plating">Precise gold plating</Option>
-                        <Option value="Premium quality finish">Premium quality finish</Option>
-                        <Option value="Hypoallergenic material">Hypoallergenic material</Option>
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={24}>
-                    <Form.Item label="Benefits" name="benefits">
-                      <Select mode="tags" placeholder="Add product benefits">
-                        <Option value="Hypoallergenic & skin-friendly">Hypoallergenic & skin-friendly</Option>
-                        <Option value="Durable & long-lasting finish">Durable & long-lasting finish</Option>
-                        <Option value="Lightweight & comfortable">Lightweight & comfortable</Option>
-                        <Option value="Tarnish resistant">Tarnish resistant</Option>
-                        <Option value="Spiritual significance">Spiritual significance</Option>
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={24}>
-                    <Divider orientation="left">Size Variants</Divider>
-                    <Form.List name="sizeVariants">
-                      {(fields, { add, remove }) => (
-                        <>
-                          {fields.map(({ key, name, ...restField }) => (
-                            <Row key={key} gutter={16} align="middle" style={{ marginBottom: 8 }}>
-                              <Col xs={24} sm={10}>
-                                <Form.Item
-                                  {...restField}
-                                  name={[name, 'size']}
-                                  label="Size"
-                                  rules={[{ required: true, message: 'Size required' }]}
-                                >
-                                  <Input placeholder="e.g., Small, 7, One Size" style={{ width: "100%" }} />
-                                </Form.Item>
-                              </Col>
-                              <Col xs={24} sm={10}>
-                                <Form.Item
-                                  {...restField}
-                                  name={[name, 'stock']}
-                                  label="Stock"
-                                  rules={[{ required: true, message: 'Stock required' }]}
-                                >
-                                  <InputNumber min={0} placeholder="Stock" style={{ width: "100%" }} />
-                                </Form.Item>
-                              </Col>
-                              <Col xs={24} sm={4}>
-                                <Button
-                                  type="text"
-                                  danger
-                                  icon={<MinusCircleOutlined />}
-                                  onClick={() => remove(name)}
-                                  style={{ marginTop: 30 }}
-                                />
-                              </Col>
-                            </Row>
-                          ))}
-                          <Form.Item>
-                            <Button
-                              type="dashed"
-                              onClick={() => add()}
-                              block
-                              icon={<PlusOutlined />}
-                            >
-                              Add Size Variant
-                            </Button>
-                          </Form.Item>
-                        </>
-                      )}
-                    </Form.List>
-                  </Col>
-                  {/* Removed Rating and Reviews Count as they are user-generated */}
+
+                  {selectedAttributes.length > 0 && (
+                    <Col span={24}>
+                      <Divider orientation="left">Step 2: Create Variants</Divider>
+                      <Form.List name="variants">
+                        {(fields, { add, remove }) => (
+                          <>
+                            {fields.map(({ key, name, ...restField }) => (
+                              <Card key={key} size="small" style={{ marginBottom: 16 }} title={`Variant ${name + 1}`}>
+                                <Row gutter={16}>
+                                  {selectedAttributes.map(attr => (
+                                    <Col span={8} key={attr}>
+                                      <Form.Item
+                                        {...restField}
+                                        name={[name, 'attributes', attr]}
+                                        label={attr}
+                                        rules={[{ required: true, message: `${attr} required` }]}
+                                      >
+                                        <Input placeholder={`Enter ${attr}`} />
+                                      </Form.Item>
+                                    </Col>
+                                  ))}
+                                  <Col span={8}>
+                                    <Form.Item
+                                      {...restField}
+                                      name={[name, 'stock']}
+                                      label="Stock"
+                                      rules={[{ required: true, message: 'Stock required' }]}
+                                    >
+                                      <InputNumber min={0} placeholder="Stock" style={{ width: "100%" }} />
+                                    </Form.Item>
+                                  </Col>
+                                  <Col span={8}>
+                                    <Form.Item
+                                      {...restField}
+                                      name={[name, 'sku']}
+                                      label="SKU (Optional)"
+                                    >
+                                      <Input placeholder="Variant SKU" style={{ width: "100%" }} />
+                                    </Form.Item>
+                                  </Col>
+                                  <Col span={24} style={{ textAlign: 'right' }}>
+                                    <Button
+                                      type="text"
+                                      danger
+                                      icon={<MinusCircleOutlined />}
+                                      onClick={() => remove(name)}
+                                    >
+                                      Remove Variant
+                                    </Button>
+                                  </Col>
+                                </Row>
+                              </Card>
+                            ))}
+                            <Form.Item>
+                              <Button
+                                type="dashed"
+                                onClick={() => add()}
+                                block
+                                icon={<PlusOutlined />}
+                              >
+                                Add Variant
+                              </Button>
+                            </Form.Item>
+                          </>
+                        )}
+                      </Form.List>
+                    </Col>
+                  )}
 
                   <Col xs={24} sm={12}>
                     <Form.Item label="Featured Product" name="isFeatured" valuePropName="checked">

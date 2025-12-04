@@ -42,11 +42,11 @@ export const UserProvider = ({ children }) => {
   const addToWishlist = async (product) => {
     try {
       if (user) {
-        await apiService.addToWishlist(product._id || product.id);
+        await apiService.addToWishlist(product._id);
       }
       setWishlist(prev => {
-        const productId = product._id || product.id;
-        if (prev.find(item => (item._id || item.id) === productId)) {
+        const productId = product._id;
+        if (prev.find(item => item._id === productId)) {
           return prev;
         }
         return [...prev, product];
@@ -61,14 +61,14 @@ export const UserProvider = ({ children }) => {
       if (user) {
         await apiService.removeFromWishlist(productId);
       }
-      setWishlist(prev => prev.filter(item => (item._id || item.id) !== productId));
+      setWishlist(prev => prev.filter(item => item._id !== productId));
     } catch (error) {
       console.error('Failed to remove from wishlist:', error);
     }
   };
 
   const isInWishlist = (productId) => {
-    return wishlist.some(item => (item._id || item.id) === productId);
+    return wishlist.some(item => item._id === productId);
   };
 
   const fetchWishlist = async () => {

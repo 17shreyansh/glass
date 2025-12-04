@@ -52,7 +52,7 @@ const JewelleryCircleBanner = () => {
     color: "black",
     border: "none",
     fontSize: "clamp(16px, 2.5vw, 20px)",
-    fontFamily: "Josefin Sans, sans-serif",
+    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
     padding: "10px 50px",
     borderRadius: "0",
     height: "auto",
@@ -78,7 +78,7 @@ const JewelleryCircleBanner = () => {
       <div
         style={{
           textAlign: isMobile ? "center" : "right",
-          fontFamily: "Josefin Sans, sans-serif",
+          fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
           color: "white",
         }}
       >

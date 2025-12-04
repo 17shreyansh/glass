@@ -31,7 +31,7 @@ const Signup = () => {
   return (
     <div style={{ 
       minHeight: '100vh',
-      fontFamily: "'Josefin Sans', sans-serif"
+      fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif"
     }}>
       <Row style={{ minHeight: '100vh' }}>
         {/* Left Side - Image */}
@@ -52,7 +52,7 @@ const Signup = () => {
             <Title level={1} className="auth-hero-title" style={{ 
               color: 'white', 
               fontSize: '48px',
-              fontFamily: "'Josefin Sans', sans-serif",
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
               fontWeight: 300,
               marginBottom: '20px'
             }}>
@@ -61,7 +61,7 @@ const Signup = () => {
             <Text className="auth-hero-text" style={{ 
               color: 'rgba(255,255,255,0.9)', 
               fontSize: '18px',
-              fontFamily: "'Josefin Sans', sans-serif"
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif"
             }}>
               Become part of our exclusive jewelry community and discover handcrafted treasures
             </Text>
@@ -94,7 +94,7 @@ const Signup = () => {
               style={{ 
                 marginBottom: '30px',
                 color: '#8E6A4E',
-                fontFamily: "'Josefin Sans', sans-serif",
+                fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                 fontSize: '14px',
                 transition: 'all 0.3s ease'
               }}
@@ -116,7 +116,7 @@ const Signup = () => {
               <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                 <Title level={2} style={{ 
                   color: '#8E6A4E',
-                  fontFamily: "'Josefin Sans', sans-serif",
+                  fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                   fontWeight: 400,
                   marginBottom: '8px'
                 }}>
@@ -125,7 +125,7 @@ const Signup = () => {
                 <Text style={{ 
                   color: '#666',
                   fontSize: '16px',
-                  fontFamily: "'Josefin Sans', sans-serif"
+                  fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif"
                 }}>
                   Join the Delicorn family today
                 </Text>
@@ -145,7 +145,7 @@ const Signup = () => {
                     style={{
                       borderRadius: '8px',
                       border: '1px solid #e0e0e0',
-                      fontFamily: "'Josefin Sans', sans-serif",
+                      fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                       transition: 'all 0.3s ease'
                     }}
                   />
@@ -166,7 +166,7 @@ const Signup = () => {
                     style={{
                       borderRadius: '8px',
                       border: '1px solid #e0e0e0',
-                      fontFamily: "'Josefin Sans', sans-serif",
+                      fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                       transition: 'all 0.3s ease'
                     }}
                   />
@@ -187,7 +187,7 @@ const Signup = () => {
                     style={{
                       borderRadius: '8px',
                       border: '1px solid #e0e0e0',
-                      fontFamily: "'Josefin Sans', sans-serif",
+                      fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                       transition: 'all 0.3s ease'
                     }}
                   />
@@ -208,7 +208,7 @@ const Signup = () => {
                     style={{
                       borderRadius: '8px',
                       border: '1px solid #e0e0e0',
-                      fontFamily: "'Josefin Sans', sans-serif",
+                      fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                       transition: 'all 0.3s ease'
                     }}
                   />
@@ -237,7 +237,7 @@ const Signup = () => {
                     style={{
                       borderRadius: '8px',
                       border: '1px solid #e0e0e0',
-                      fontFamily: "'Josefin Sans', sans-serif",
+                      fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                       transition: 'all 0.3s ease'
                     }}
                   />
@@ -250,7 +250,7 @@ const Signup = () => {
                     { validator: (_, value) => value ? Promise.resolve() : Promise.reject(new Error('Please accept the terms and conditions')) }
                   ]}
                 >
-                  <Checkbox style={{ fontFamily: "'Josefin Sans', sans-serif" }}>
+                  <Checkbox style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>
                     I agree to the <Link to="/terms" className="auth-link" style={{ color: '#8E6A4E', transition: 'all 0.3s ease' }}>Terms & Conditions</Link> and <Link to="/privacy" className="auth-link" style={{ color: '#8E6A4E', transition: 'all 0.3s ease' }}>Privacy Policy</Link>
                   </Checkbox>
                 </Form.Item>
@@ -268,7 +268,7 @@ const Signup = () => {
                       height: '48px',
                       borderRadius: '8px',
                       fontSize: '16px',
-                      fontFamily: "'Josefin Sans', sans-serif",
+                      fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                       fontWeight: 500,
                       transition: 'all 0.3s ease'
                     }}
@@ -284,7 +284,7 @@ const Signup = () => {
               <div style={{ textAlign: 'center' }}>
                 <Text style={{ 
                   color: '#666',
-                  fontFamily: "'Josefin Sans', sans-serif"
+                  fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif"
                 }}>
                   Already have an account?{' '}
                   <Link 
@@ -292,7 +292,7 @@ const Signup = () => {
                     className="auth-link"
                     style={{ 
                       color: '#8E6A4E',
-                      fontFamily: "'Josefin Sans', sans-serif",
+                      fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                       fontWeight: 500,
                       textDecoration: 'none',
                       transition: 'all 0.3s ease'
@@ -310,7 +310,7 @@ const Signup = () => {
               marginTop: '30px',
               color: '#999',
               fontSize: '14px',
-              fontFamily: "'Josefin Sans', sans-serif"
+              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif"
             }}>
               <div style={{ marginBottom: '10px' }}>
                 🔒 Your information is secure and encrypted

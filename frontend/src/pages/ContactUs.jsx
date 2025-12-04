@@ -19,7 +19,7 @@ const ContactUs = () => {
           maxWidth: "1100px",
           margin: "0 auto",
           padding: "60px 20px 100px",
-          fontFamily: "'Josefin Sans', sans-serif",
+          fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
           color: "#8E6A4E",
         }}
       >
@@ -108,7 +108,7 @@ const ContactUs = () => {
                     padding: "10px 14px",
                     borderRadius: "4px",
                     border: "1px solid #d9d9d9",
-                    fontFamily: "'Josefin Sans', sans-serif",
+                    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                   }}
                 />
               </Form.Item>
@@ -126,7 +126,7 @@ const ContactUs = () => {
                     padding: "10px 14px",
                     borderRadius: "4px",
                     border: "1px solid #d9d9d9",
-                    fontFamily: "'Josefin Sans', sans-serif",
+                    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                   }}
                 />
               </Form.Item>
@@ -138,7 +138,7 @@ const ContactUs = () => {
                     padding: "10px 14px",
                     borderRadius: "4px",
                     border: "1px solid #d9d9d9",
-                    fontFamily: "'Josefin Sans', sans-serif",
+                    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                   }}
                 />
               </Form.Item>
@@ -154,7 +154,7 @@ const ContactUs = () => {
                     padding: "10px 14px",
                     borderRadius: "4px",
                     border: "1px solid #d9d9d9",
-                    fontFamily: "'Josefin Sans', sans-serif",
+                    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                     resize: "none",
                   }}
                 />
@@ -170,7 +170,7 @@ const ContactUs = () => {
                     border: "none",
                     borderRadius: "4px",
                     fontSize: "15px",
-                    fontFamily: "'Josefin Sans', sans-serif",
+                    fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                     cursor: "pointer",
                   }}
                 >

@@ -73,8 +73,8 @@ const Navbar = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await apiService.getCategories();
-        setCategories(response.data || []);
+        const categories = await apiService.getCategories();
+        setCategories(categories || []);
       } catch (error) {
         console.error('Failed to fetch categories:', error);
       }
@@ -99,7 +99,7 @@ const Navbar = () => {
         navigate(`/product/${suggestion.slug}`);
         break;
       case 'category':
-        navigate(`/shop?category=${suggestion.slug}`);
+        navigate(`/category/${suggestion.slug}`);
         break;
       case 'brand':
         navigate(`/shop?brand=${suggestion.slug}`);
@@ -129,10 +129,7 @@ const Navbar = () => {
   return (
     <>
       {/* Google Font */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600&display=swap"
-        rel="stylesheet"
-      />
+
 
       {/* Top Promo Bar */}
       <div
@@ -201,21 +198,21 @@ const Navbar = () => {
               }}
               trigger={['hover']}
             >
-              <Link 
-                to="/shop" 
+              <span
                 style={{ 
                   color: '#594131', 
                   textDecoration: 'none',
                   transition: 'color 0.3s ease',
                   display: 'inline-block',
-                  lineHeight: '1'
+                  lineHeight: '1',
+                  cursor: 'pointer'
                 }}
               >
                 Shop
-              </Link>
+              </span>
             </Dropdown>
             <Link 
-              to="/brands" 
+              to="/shop" 
               style={{ 
                 color: '#594131', 
                 textDecoration: 'none',
@@ -224,7 +221,7 @@ const Navbar = () => {
                 lineHeight: '1'
               }}
             >
-              Brands
+              Collections
             </Link>
             <Link 
               to="/about-us" 
@@ -299,23 +296,31 @@ const Navbar = () => {
               />
               {showSuggestions && searchSuggestions.length > 0 && (
                 <div className="search-suggestions" ref={suggestionsRef}>
-                  {searchSuggestions.map((suggestion, index) => (
-                    <div
-                      key={index}
-                      className="suggestion-item"
-                      onClick={() => handleSuggestionClick(suggestion)}
-                    >
-                      <span className="suggestion-icon">
-                        {getSuggestionIcon(suggestion.type)}
-                      </span>
-                      <span className="suggestion-text">
-                        {suggestion.name || suggestion.term}
-                      </span>
-                      <span className="suggestion-type">
-                        {suggestion.type}
-                      </span>
-                    </div>
-                  ))}
+                  {searchSuggestions.map((suggestion, index) => {
+                    const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+                    const imageUrl = suggestion.image ? `${backendUrl}${suggestion.image}` : null;
+                    return (
+                      <div
+                        key={index}
+                        className="suggestion-item"
+                        onClick={() => handleSuggestionClick(suggestion)}
+                      >
+                        {imageUrl ? (
+                          <img src={imageUrl} alt="" className="suggestion-image" />
+                        ) : (
+                          <span className="suggestion-icon">
+                            {getSuggestionIcon(suggestion.type)}
+                          </span>
+                        )}
+                        <span className="suggestion-text">
+                          {suggestion.name || suggestion.term}
+                        </span>
+                        <span className="suggestion-type">
+                          {suggestion.type}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -451,23 +456,31 @@ const Navbar = () => {
             />
             {showSuggestions && searchSuggestions.length > 0 && (
               <div className="mobile-search-suggestions">
-                {searchSuggestions.map((suggestion, index) => (
-                  <div
-                    key={index}
-                    className="suggestion-item"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                  >
-                    <span className="suggestion-icon">
-                      {getSuggestionIcon(suggestion.type)}
-                    </span>
-                    <span className="suggestion-text">
-                      {suggestion.name || suggestion.term}
-                    </span>
-                    <span className="suggestion-type">
-                      {suggestion.type}
-                    </span>
-                  </div>
-                ))}
+                {searchSuggestions.map((suggestion, index) => {
+                  const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+                  const imageUrl = suggestion.image ? `${backendUrl}${suggestion.image}` : null;
+                  return (
+                    <div
+                      key={index}
+                      className="suggestion-item"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                    >
+                      {imageUrl ? (
+                        <img src={imageUrl} alt="" className="suggestion-image" />
+                      ) : (
+                        <span className="suggestion-icon">
+                          {getSuggestionIcon(suggestion.type)}
+                        </span>
+                      )}
+                      <span className="suggestion-text">
+                        {suggestion.name || suggestion.term}
+                      </span>
+                      <span className="suggestion-type">
+                        {suggestion.type}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -557,38 +570,17 @@ const Navbar = () => {
                 </Button>
               </>
             )}
-            <Link 
-              to="/shop" 
-              style={{ 
-                color: '#594131', 
-                textDecoration: 'none', 
-                fontSize: '16px', 
-                padding: '15px 0',
-                display: 'block',
-                borderBottom: '1px solid #f5f5f5',
-                fontFamily: "'HK Grotesk', sans-serif",
-                fontWeight: 500
-              }}
-              onClick={() => setDrawerVisible(false)}
-            >
+            <div style={{ 
+              color: '#594131', 
+              fontSize: '16px', 
+              padding: '15px 0',
+              display: 'block',
+              borderBottom: '1px solid #f5f5f5',
+              fontFamily: "'HK Grotesk', sans-serif",
+              fontWeight: 600
+            }}>
               Shop
-            </Link>
-            <Link 
-              to="/collections" 
-              style={{ 
-                color: '#594131', 
-                textDecoration: 'none', 
-                fontSize: '16px', 
-                padding: '15px 0',
-                display: 'block',
-                borderBottom: '1px solid #f5f5f5',
-                fontFamily: "'HK Grotesk', sans-serif",
-                fontWeight: 500
-              }}
-              onClick={() => setDrawerVisible(false)}
-            >
-              Collections
-            </Link>
+            </div>
             {categories.map(category => (
               <Link 
                 key={category._id}
@@ -609,7 +601,7 @@ const Navbar = () => {
               </Link>
             ))}
             <Link 
-              to="/brands" 
+              to="/shop" 
               style={{ 
                 color: '#594131', 
                 textDecoration: 'none', 
@@ -622,7 +614,7 @@ const Navbar = () => {
               }}
               onClick={() => setDrawerVisible(false)}
             >
-              Brands
+              Collections
             </Link>
             <Link 
               to="/about-us" 
@@ -765,6 +757,15 @@ const Navbar = () => {
           width: 16px;
           display: flex;
           justify-content: center;
+        }
+        
+        .suggestion-image {
+          width: 40px;
+          height: 40px;
+          object-fit: cover;
+          border-radius: 6px;
+          margin-right: 12px;
+          border: 1px solid #f0f0f0;
         }
         
         .suggestion-text {

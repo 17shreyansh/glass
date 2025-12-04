@@ -22,7 +22,11 @@ export { default as Offer2 } from './Offer2';
 export { default as Ring } from './Ring';
 export { default as Slider } from './Slider';
 export { default as ServewareSection } from './ServewareSection';
+export { default as GlassCollage } from './GlassCollage';
 
 // Account Components
 export { default as AccountContent } from './AccountContent';
 export { default as AccountLayout } from './AccountLayout';
+
+// Category Components
+export { default as CategoryPage } from './CategoryPage';

@@ -3,7 +3,6 @@ const {
   createProduct,
   getProducts,
   getProductById,
-  getProductsByType,
   getRelatedProducts,
   updateProduct,
   deleteProduct,
@@ -21,7 +20,6 @@ router.patch("/:id/stock", protect, isAdmin, updateStock);
 
 // Public routes
 router.get("/", getProducts);
-router.get("/type/:type", getProductsByType);
 router.get("/:identifier/related", getRelatedProducts);
 router.get("/:identifier", getProductById);
 

@@ -14,16 +14,18 @@ export default function ServewareSection() {
           backgroundColor: "#fff",
           display: "flex",
           alignItems: "center",
-          justifyContent: "flex-start",
+          justifyContent: window.innerWidth <= 768 ? "center" : "flex-start",
           boxSizing: "border-box",
+          padding: window.innerWidth <= 768 ? "20px 0" : "0",
         }}
       >
         <img
           src={glassImg}
           alt="glass-serveware"
           style={{
-            width: "800px",
-            height: "80%",
+            width: window.innerWidth <= 768 ? "90%" : "800px",
+            maxWidth: window.innerWidth <= 768 ? "400px" : "800px",
+            height: "auto",
             objectFit: "contain",
           }}
         />
@@ -33,12 +35,12 @@ export default function ServewareSection() {
         style={{
           width: "100%",
           textAlign: "center",
-          padding: "20px 0",
+          padding: window.innerWidth <= 768 ? "15px 0" : "20px 0",
           backgroundColor: "#594131",
         }}
       >
         <Title 
-          level={2} 
+          level={window.innerWidth <= 768 ? 3 : 2}
           style={{
             fontWeight: 500,
             fontFamily: "'FONTSPRING DEMO - The Seasons', 'Playfair Display', serif",

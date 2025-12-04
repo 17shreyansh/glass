@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const Brand = require('../models/Brand');
 const Category = require('../models/Category');
+const slugify = require('slugify');
 require('dotenv').config();
 
 const connectDB = async () => {
@@ -26,21 +27,18 @@ const seedProducts = async () => {
     const ashtaDhatuProducts = [
       {
         name: "Traditional Ashta Dhatu Ring",
+        slug: slugify("Traditional Ashta Dhatu Ring", { lower: true, strict: true }),
+        sku: "JW001",
         description: "Handcrafted ring made from eight sacred metals with intricate traditional designs. Perfect for daily wear and spiritual practices.",
         price: 2500,
         originalPrice: 3000,
-        productType: "ashta-dhatu",
-        sizeVariants: [
-          { size: "6", stock: 10 },
-          { size: "7", stock: 15 },
-          { size: "8", stock: 20 },
-          { size: "9", stock: 12 },
-          { size: "10", stock: 8 }
+        variants: [
+          { attributes: { Size: "6", Color: "Gold" }, stock: 10 },
+          { attributes: { Size: "7", Color: "Gold" }, stock: 15 },
+          { attributes: { Size: "8", Color: "Gold" }, stock: 20 },
+          { attributes: { Size: "9", Color: "Silver" }, stock: 12 },
+          { attributes: { Size: "10", Color: "Silver" }, stock: 8 }
         ],
-        availableColors: ["gold", "silver"],
-        material: "Ashta Dhatu Alloy",
-        metalDetails: ["Ashta Dhatu alloy base", "Precise gold plating", "Premium quality finish"],
-        benefits: ["Hypoallergenic & skin-friendly", "Spiritual significance", "Durable & long-lasting finish"],
         image: "/uploads/products/ashta-dhatu-ring-1.jpg",
         mainImage: "/uploads/products/ashta-dhatu-ring-1.jpg",
         galleryImages: [
@@ -55,12 +53,13 @@ const seedProducts = async () => {
       },
       {
         name: "Ashta Dhatu Pendant",
+        slug: slugify("Ashta Dhatu Pendant", { lower: true, strict: true }),
+        sku: "JW002",
         description: "Sacred pendant with intricate designs representing divine energy. Comes with adjustable chain.",
         price: 1800,
         originalPrice: 2200,
-        productType: "ashta-dhatu",
-        sizeVariants: [
-          { size: "One Size", stock: 25 }
+        variants: [
+          { attributes: { Size: "One Size" }, stock: 25 }
         ],
         image: "/uploads/products/ashta-dhatu-pendant-1.jpg",
         mainImage: "/uploads/products/ashta-dhatu-pendant-1.jpg",
@@ -70,18 +69,19 @@ const seedProducts = async () => {
         category: "Pendants",
         rating: 4.8,
         reviewsCount: 15,
-        isFeatured: false,
+        isFeatured: true,
         isActive: true
       },
       {
         name: "Ashta Dhatu Bracelet",
+        slug: slugify("Ashta Dhatu Bracelet", { lower: true, strict: true }),
+        sku: "JW003",
         description: "Elegant bracelet with traditional motifs. Adjustable size for comfortable fit.",
         price: 3200,
-        productType: "ashta-dhatu",
-        sizeVariants: [
-          { size: "Small", stock: 12 },
-          { size: "Medium", stock: 8 },
-          { size: "Large", stock: 6 }
+        variants: [
+          { attributes: { Size: "Small" }, stock: 12 },
+          { attributes: { Size: "Medium" }, stock: 8 },
+          { attributes: { Size: "Large" }, stock: 6 }
         ],
         image: "/uploads/products/ashta-dhatu-bracelet-1.jpg",
         mainImage: "/uploads/products/ashta-dhatu-bracelet-1.jpg",
@@ -97,17 +97,15 @@ const seedProducts = async () => {
     const fashionJewelryProducts = [
       {
         name: "Diamond Stud Earrings",
+        slug: slugify("Diamond Stud Earrings", { lower: true, strict: true }),
+        sku: "JW004",
         description: "Classic diamond studs for everyday elegance. Premium quality with secure backing.",
         price: 8500,
         originalPrice: 10000,
-        productType: "fashion-jewelry",
-        sizeVariants: [
-          { size: "One Size", stock: 15 }
+        variants: [
+          { attributes: { Color: "White" }, stock: 15 },
+          { attributes: { Color: "Rose Gold" }, stock: 10 }
         ],
-        availableColors: ["white", "rose-gold"],
-        material: "Sterling Silver with Diamonds",
-        metalDetails: ["Sterling silver base", "Genuine diamond stones", "Secure backing system"],
-        benefits: ["Hypoallergenic & skin-friendly", "Lightweight & comfortable", "Tarnish resistant"],
         image: "/uploads/products/diamond-studs-1.jpg",
         mainImage: "/uploads/products/diamond-studs-1.jpg",
         galleryImages: [
@@ -122,37 +120,39 @@ const seedProducts = async () => {
       },
       {
         name: "Pearl Necklace",
+        slug: slugify("Pearl Necklace", { lower: true, strict: true }),
+        sku: "JW005",
         description: "Elegant pearl necklace for special occasions. Lustrous pearls with secure clasp.",
         price: 4200,
-        productType: "fashion-jewelry",
-        sizeVariants: [
-          { size: "16 inch", stock: 8 },
-          { size: "18 inch", stock: 12 },
-          { size: "20 inch", stock: 6 }
+        variants: [
+          { attributes: { Size: "16 inch" }, stock: 8 },
+          { attributes: { Size: "18 inch" }, stock: 12 },
+          { attributes: { Size: "20 inch" }, stock: 6 }
         ],
         image: "/uploads/products/pearl-necklace-1.jpg",
         mainImage: "/uploads/products/pearl-necklace-1.jpg",
         category: "Necklaces",
         rating: 4.6,
         reviewsCount: 34,
-        isFeatured: false,
+        isFeatured: true,
         isActive: true
       },
       {
         name: "Gold Chain Bracelet",
+        slug: slugify("Gold Chain Bracelet", { lower: true, strict: true }),
+        sku: "JW006",
         description: "Delicate gold chain bracelet perfect for layering or wearing alone.",
         price: 3800,
-        productType: "fashion-jewelry",
-        sizeVariants: [
-          { size: "7 inch", stock: 10 },
-          { size: "8 inch", stock: 15 }
+        variants: [
+          { attributes: { Size: "7 inch" }, stock: 10 },
+          { attributes: { Size: "8 inch" }, stock: 15 }
         ],
         image: "/uploads/products/gold-chain-bracelet-1.jpg",
         mainImage: "/uploads/products/gold-chain-bracelet-1.jpg",
         category: "Bracelets",
         rating: 4.5,
         reviewsCount: 28,
-        isFeatured: false,
+        isFeatured: true,
         isActive: true
       }
     ];
