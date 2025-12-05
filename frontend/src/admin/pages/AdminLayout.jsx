@@ -18,7 +18,8 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   SettingOutlined,
-  FolderOutlined
+  FolderOutlined,
+  MailOutlined
 } from '@ant-design/icons';
 import { Link, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Dashboard from './Dashboard';
@@ -30,7 +31,7 @@ import Coupon from './Coupon';
 import Deleverycharges from './Deleverycharges';
 import AdminSupport from './adminSupport';
 import AdminMenu from './Menu';
-
+import Contacts from './Contacts';
 import FileManager from './FileManager';
 import './styles/layout.css'; // Import custom CSS for additional styling
 
@@ -165,7 +166,11 @@ const AdminLayout = () => {
               icon: <UserAddOutlined />,
               label: <Link to="/admin/users">Users</Link>
             },
-
+            {
+              key: '/admin/contacts',
+              icon: <MailOutlined />,
+              label: <Link to="/admin/contacts">Contacts</Link>
+            },
             {
               key: '/admin/file-manager',
               icon: <FolderOutlined />,
@@ -209,6 +214,7 @@ const AdminLayout = () => {
             <Route path="delivery-charges" element={<Deleverycharges />} />
             <Route path="support" element={<AdminSupport />} />
             <Route path="menu" element={<AdminMenu />} />
+            <Route path="contacts" element={<Contacts />} />
             <Route path="file-manager" element={<FileManager />} />
 
           </Routes>

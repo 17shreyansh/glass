@@ -9,6 +9,7 @@ import apiService from '../services/api';
 import hero1 from '../assets/jewelleryImage.jpg';
 import p1 from '../assets/c1.jpg';
 import glass from '../assets/glass1.jpg';
+import cate from '../assets/cate.jpg';
 
 const { Title } = Typography;
 
@@ -96,7 +97,7 @@ const Shop = () => {
       {/* Hero Header */}
       <div 
         style={{
-          backgroundImage: `url(${hero1})`,
+          backgroundImage: `url(${cate})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           height: '400px',

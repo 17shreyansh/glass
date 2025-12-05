@@ -25,6 +25,7 @@ const searchRoutes = require('./routes/searchRoutes'); // Import search routes
 const deliveryRoutes = require('./routes/deliveryRoutes'); // Import delivery routes
 const addressRoutes = require('./routes/addressRoutes'); // Import address routes
 const returnRoutes = require('./routes/returnRoutes'); // Import return routes
+const contactRoutes = require('./routes/contactRoutes'); // Import contact routes
 const OrderService = require('./services/OrderService');
 const cron = require('node-cron');
 
@@ -102,6 +103,7 @@ app.use('/api/search', searchRoutes); // NEW: Search routes
 app.use('/api/delivery', deliveryRoutes); // NEW: Delivery routes
 app.use('/api/user/addresses', addressRoutes); // NEW: Address routes
 app.use('/api/returns', returnRoutes); // NEW: Return routes
+app.use('/api/contacts', contactRoutes); // NEW: Contact routes
 
 
 
