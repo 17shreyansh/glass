@@ -64,7 +64,7 @@ const ProductAdminPage = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const data = await apiService.getProducts();
+      const data = await apiService.getProducts({ admin: 'true' });
       setProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       message.error("Failed to fetch products");

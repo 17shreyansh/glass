@@ -46,7 +46,7 @@ class ApiService {
       }
     });
     const response = await this.request(`/products?${params.toString()}`);
-    return response;
+    return response.data || response;
   }
 
   // Get single product by slug

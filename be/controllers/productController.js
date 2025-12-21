@@ -32,10 +32,16 @@ exports.getProducts = async (req, res) => {
       inStock,
       featured,
       limit,
-      skip 
+      skip,
+      admin 
     } = req.query;
     
-    let query = { isActive: true };
+    let query = {};
+    
+    // Only filter by isActive if not an admin request
+    if (admin !== 'true') {
+      query.isActive = true;
+    }
 
     // Category filter - support both slug and ObjectId
     if (category) {
