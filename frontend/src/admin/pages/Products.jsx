@@ -46,6 +46,8 @@ const { Option } = Select;
 const { TextArea } = Input;
 const { Text } = Typography;
 
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+
 const ProductAdminPage = () => {
   const navigate = useNavigate();
   // State variables for products, loading status, modal visibility, and form
@@ -103,8 +105,8 @@ const ProductAdminPage = () => {
       if (mainFile.response?.url) {
         mainImageUrl = mainFile.response.url;
       } else if (mainFile.url) {
-        mainImageUrl = mainFile.url.startsWith('http://localhost:3001')
-          ? mainFile.url.substring('http://localhost:3001'.length)
+        mainImageUrl = mainFile.url.startsWith(API_BASE_URL)
+          ? mainFile.url.substring(API_BASE_URL.length)
           : mainFile.url;
       }
     }
@@ -115,8 +117,8 @@ const ProductAdminPage = () => {
         if (file.response?.url) {
           return file.response.url;
         } else if (file.url) {
-          return file.url.startsWith('http://localhost:3001')
-            ? file.url.substring('http://localhost:3001'.length)
+          return file.url.startsWith(API_BASE_URL)
+            ? file.url.substring(API_BASE_URL.length)
             : file.url;
         }
         return null;
@@ -199,7 +201,7 @@ const ProductAdminPage = () => {
         uid: 'main',
         name: record.mainImage.split('/').pop(),
         status: 'done',
-        url: `http://localhost:3001${record.mainImage}`,
+        url: `${API_BASE_URL}${record.mainImage}`,
         response: { url: record.mainImage }
       }]);
     }
@@ -209,7 +211,7 @@ const ProductAdminPage = () => {
         uid: `gallery-${i}`,
         name: url.split('/').pop(),
         status: 'done',
-        url: `http://localhost:3001${url}`,
+        url: `${API_BASE_URL}${url}`,
         response: { url }
       })));
     }
@@ -299,7 +301,7 @@ const ProductAdminPage = () => {
       key: "mainImage",
       render: (text) => (
         <img
-          src={text ? `http://localhost:3001${text}` : "https://via.placeholder.com/50/0000FF/FFFFFF?text=No+Image"}
+          src={text ? `${API_BASE_URL}${text}` : "https://via.placeholder.com/50/0000FF/FFFFFF?text=No+Image"}
           alt="Product"
           style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 4 }}
         />
@@ -387,7 +389,7 @@ const ProductAdminPage = () => {
             alt={product.name}
             src={
               product.mainImage
-                ? `http://localhost:3001${product.mainImage}`
+                ? `${API_BASE_URL}${product.mainImage}`
                 : "https://via.placeholder.com/200x150/EEEEEE/888888?text=No+Image"
             }
             style={{
