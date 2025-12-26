@@ -40,34 +40,11 @@ const CategoryPage = ({
       
       const response = await apiService.getProducts(queryParams);
       console.log('API Response:', response);
-      setProducts(response.data || []);
+      const productsData = Array.isArray(response) ? response : (response.data || []);
+      setProducts(productsData);
     } catch (error) {
       console.error('Failed to fetch products:', error);
-      // Fallback sample data for testing
-      const sampleProducts = [
-        {
-          _id: '1',
-          name: 'Wine Glass Set',
-          slug: 'wine-glass-set',
-          price: 1299,
-          originalPrice: 1599,
-          mainImage: '/api/uploads/wine-glass.jpg',
-          isActive: true,
-          inStock: true,
-          rating: 4.5
-        },
-        {
-          _id: '2', 
-          name: 'Cocktail Glass',
-          slug: 'cocktail-glass',
-          price: 899,
-          mainImage: '/api/uploads/cocktail-glass.jpg',
-          isActive: true,
-          inStock: true,
-          rating: 4.2
-        }
-      ];
-      setProducts(sampleProducts);
+      setProducts([]);
     } finally {
       setLoading(false);
     }

@@ -32,9 +32,32 @@ const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = React.useState(false);
   const [imageError, setImageError] = React.useState(false);
 
-  const imageUrl = product.mainImage
-    ? `${import.meta.env.VITE_API_URL?.replace("/api", "")}${product.mainImage}`
-    : product.image;
+  // Handle image URL properly
+  const getImageUrl = () => {
+    if (!product.mainImage && !product.image) return null;
+    
+    const imageSource = product.mainImage || product.image;
+    
+    // Check if it's already a full URL or a valid data URL
+    if (imageSource.startsWith('http') || imageSource.startsWith('https')) {
+      return imageSource;
+    }
+    
+    // Check for malformed data URLs
+    if (imageSource.startsWith('data:')) {
+      // Validate data URL format
+      if (imageSource.includes('base64,') && imageSource.split('base64,')[1]) {
+        return imageSource;
+      }
+      return null; // Invalid data URL
+    }
+    
+    // It's a relative path, prepend API URL
+    const apiUrl = import.meta.env.VITE_API_URL?.replace("/api", "") || "";
+    return `${apiUrl}${imageSource}`;
+  };
+
+  const imageUrl = getImageUrl();
 
   return (
     <div

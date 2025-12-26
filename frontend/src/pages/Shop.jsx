@@ -24,7 +24,7 @@ const Shop = () => {
     const fetchProducts = async () => {
       try {
         const response = await apiService.getProducts({ sortBy: 'featured' });
-        const fetchedProducts = response.data || [];
+        const fetchedProducts = Array.isArray(response) ? response : (response.data || []);
         setAllProducts(fetchedProducts);
         setProducts(fetchedProducts);
       } catch (error) {
