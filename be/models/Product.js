@@ -42,7 +42,7 @@ const productSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Pre-save hook to generate slug, SKU and calculate stock
-productSchema.pre("save", function(next) {
+productSchema.pre("save", async function(next) {
   if (this.isModified("name") || this.isNew) {
     this.slug = slugify(this.name, { lower: true, strict: true });
   }
@@ -56,6 +56,16 @@ productSchema.pre("save", function(next) {
   this.inStock = this.totalStock > 0;
   this.reviews = this.reviewsCount;
   this.image = this.mainImage; // Sync for frontend compatibility
+  
+  // Set category string from first category for backward compatibility
+  if (this.categories && this.categories.length > 0 && this.isModified('categories')) {
+    const Category = require('./Category');
+    const firstCat = await Category.findById(this.categories[0]);
+    if (firstCat) {
+      this.category = firstCat.name;
+    }
+  }
+  
   next();
 });
 

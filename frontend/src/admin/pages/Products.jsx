@@ -190,7 +190,7 @@ const ProductAdminPage = () => {
       description: record.description,
       price: record.price,
       originalPrice: record.originalPrice,
-      category: record.category,
+      categories: record.categories?.map(cat => typeof cat === 'string' ? cat : cat._id) || [],
       variants: record.variants || [],
       isFeatured: record.isFeatured,
       isActive: record.isActive,
@@ -310,9 +310,13 @@ const ProductAdminPage = () => {
     { title: "Name", dataIndex: "name", key: "name", sorter: (a, b) => a.name.localeCompare(b.name) },
     { title: "Slug", dataIndex: "slug", key: "slug" },
     { 
-      title: "Category", 
-      dataIndex: "category", 
-      key: "category"
+      title: "Categories", 
+      dataIndex: "categories", 
+      key: "categories",
+      render: (categories) => {
+        if (!categories || categories.length === 0) return '-';
+        return categories.map(cat => typeof cat === 'object' ? cat.name : cat).join(', ');
+      }
     },
     {
       title: "Price",
@@ -431,9 +435,9 @@ const ProductAdminPage = () => {
                 {product.description || "No description provided."}
               </Text>
               <div style={{ marginTop: 8 }}>
-                <Space wrap>                  {product.category && (
+                <Space wrap>                  {product.categories && product.categories.length > 0 && (
                     <Tag icon={<TagOutlined />} color="blue">
-                      {product.category}
+                      {product.categories.map(cat => typeof cat === 'object' ? cat.name : cat).join(', ')}
                     </Tag>
                   )}
                   <Tag icon={<DollarCircleOutlined />} color="green">
@@ -631,12 +635,12 @@ const ProductAdminPage = () => {
                   <Col xs={24} sm={12}>
                     <Form.Item
                       label="Category"
-                      name="category"
-                      rules={[{ required: true, message: "Please select category" }]}
+                      name="categories"
+                      rules={[{ required: true, message: "Please select at least one category" }]}
                     >
-                      <Select placeholder="Select a category" showSearch>
+                      <Select mode="multiple" placeholder="Select categories" showSearch>
                         {categories.map(cat => (
-                          <Option key={cat._id} value={cat.name}>{cat.name}</Option>
+                          <Option key={cat._id} value={cat._id}>{cat.name}</Option>
                         ))}
                       </Select>
                     </Form.Item>

@@ -79,7 +79,7 @@ const CategoryPage = ({
   return (
     <div>
       {/* Hero Section */}
-      {heroImage && (
+      {heroImage ? (
         <div 
           style={{
             backgroundImage: `url(${heroImage})`,
@@ -100,6 +100,23 @@ const CategoryPage = ({
             bottom: 0,
             backgroundColor: 'rgba(0,0,0,0.4)'
           }} />
+        </div>
+      ) : (
+        <div 
+          style={{
+            backgroundColor: '#f5f5f5',
+            height: '300px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+            border: '2px dashed #d9d9d9'
+          }}
+        >
+          <div style={{ textAlign: 'center', color: '#999' }}>
+            <div style={{ fontSize: '48px', marginBottom: '10px' }}>📷</div>
+            <div style={{ fontSize: '16px' }}>No Banner Image</div>
+          </div>
         </div>
       )}
 

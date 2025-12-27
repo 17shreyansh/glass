@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import CategoryPage from '../components/CategoryPage';
 import { Offer } from '../components';
 import apiService from '../services/api';
-import hero1 from '../assets/jewelleryImage.jpg';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -28,7 +27,7 @@ const Category = () => {
     if (category?.heroImage) {
       return `${API_BASE_URL.replace('/api', '')}${category.heroImage}`;
     }
-    return hero1;
+    return null; // No fallback image
   };
 
   return (

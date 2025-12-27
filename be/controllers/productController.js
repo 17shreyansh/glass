@@ -78,7 +78,7 @@ exports.getProducts = async (req, res) => {
       ];
     }
 
-    let productsQuery = Product.find(query);
+    let productsQuery = Product.find(query).populate('categories', 'name slug');
 
     // Sorting
     if (sortBy === "priceAsc") productsQuery = productsQuery.sort({ price: 1 });
@@ -110,11 +110,11 @@ exports.getProductById = async (req, res) => {
     let product;
 
     // First try to find by slug
-    product = await Product.findOne({ slug: identifier, isActive: true });
+    product = await Product.findOne({ slug: identifier, isActive: true }).populate('categories', 'name slug');
     
     // If not found and identifier looks like an ObjectId, try finding by ID
     if (!product && mongoose.Types.ObjectId.isValid(identifier)) {
-      product = await Product.findOne({ _id: identifier, isActive: true });
+      product = await Product.findOne({ _id: identifier, isActive: true }).populate('categories', 'name slug');
       if (product) {
         // Redirect to slug-based URL
         return res.redirect(301, `/api/products/${product.slug}`);
@@ -144,9 +144,9 @@ exports.getRelatedProducts = async (req, res) => {
     
     let product;
     // Try to find by slug first, then by ID
-    product = await Product.findOne({ slug: identifier, isActive: true });
+    product = await Product.findOne({ slug: identifier, isActive: true }).populate('categories', 'name slug');
     if (!product && mongoose.Types.ObjectId.isValid(identifier)) {
-      product = await Product.findOne({ _id: identifier, isActive: true });
+      product = await Product.findOne({ _id: identifier, isActive: true }).populate('categories', 'name slug');
     }
     
     if (!product) {
@@ -158,6 +158,7 @@ exports.getRelatedProducts = async (req, res) => {
       categories: { $in: product.categories },
       isActive: true
     })
+    .populate('categories', 'name slug')
     .limit(parseInt(limit))
     .sort({ rating: -1, createdAt: -1 });
 
