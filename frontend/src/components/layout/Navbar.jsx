@@ -141,20 +141,10 @@ const Navbar = () => {
           fontSize: '14px',
           fontWeight: 500,
           fontFamily: "'HK Grotesk', sans-serif",
-          overflow: 'hidden',
           width: '100%',
         }}
       >
-        <div
-          style={{
-            display: 'inline-block',
-            whiteSpace: 'nowrap',
-            animation: 'scrollText 20s linear infinite',
-          }}
-        >
-          4L+ Happy Customers | Gifts For Her @ 50% OFF | Ships in 24 hours &nbsp;&nbsp;&nbsp;
-          4L+ Happy Customers | Gifts For Her @ 50% OFF | Ships in 24 hours
-        </div>
+        4L+ Happy Customers | Gifts For Her @ 50% OFF | Ships in 24 hours
       </div>
 
       {/* Main Navbar */}
@@ -263,7 +253,7 @@ const Navbar = () => {
               src={logo} 
               alt="Delicorn Logo" 
               style={{ 
-                height: isMobile ? '35px' : '45px',
+                height: isMobile ? '60px' : '85px',
                 width: 'auto',
                 objectFit: 'contain',
                 display: 'block'
@@ -655,11 +645,6 @@ const Navbar = () => {
 
       {/* Custom CSS for search input focus */}
       <style>{`
-        @keyframes scrollText {
-          0% { transform: translateX(100%); }
-          100% { transform: translateX(-100%); }
-        }
-        
         .search-container {
           position: relative;
           display: flex;

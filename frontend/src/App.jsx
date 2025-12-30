@@ -42,6 +42,7 @@ import Users from './admin/pages/users';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ProtectedRoute from './components/ProtectedRoute';
+import ScrollToTop from './components/ScrollToTop';
 
 // Constants
 import { ROUTES } from './constants/routes';
@@ -61,6 +62,7 @@ function App() {
         <UserProvider>
           <CartProvider>
             <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <ScrollToTop />
               <div className="App">
                 <Routes>
                   {/* Admin Routes - No Navbar */}

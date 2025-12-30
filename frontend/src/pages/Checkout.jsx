@@ -163,7 +163,8 @@ const Checkout = () => {
 
   const subtotal = getCartTotal();
   const shipping = 0;
-  const total = subtotal;
+  const gst = Math.round((subtotal * 0.18) * 100) / 100;
+  const total = subtotal + gst;
 
   const styles = {
     page: { marginTop: 80, padding: '20px 5%', fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", background: '#fff' },
@@ -242,6 +243,8 @@ const Checkout = () => {
                 <Title level={4} style={{ marginBottom: 20 }}>Order Summary</Title>
                 <div style={styles.summaryRow}><span>Subtotal ({cartItems.length} items):</span><span>₹{subtotal.toFixed(2)}</span></div>
                 <Divider style={styles.divider} />
+                <div style={styles.summaryRow}><span>GST (18%):</span><span>₹{gst.toFixed(2)}</span></div>
+                <Divider style={styles.divider} />
                 <div style={styles.summaryRow}><span>Shipping:</span><span style={{ color: '#52c41a' }}>FREE</span></div>
                 <Divider style={styles.divider} />
                 {coupon && (
@@ -297,6 +300,8 @@ const Checkout = () => {
               <Card style={styles.summaryCard}>
                 <Title level={4} style={{ marginBottom: 20 }}>Order Summary</Title>
                 <div style={styles.summaryRow}><span>Subtotal ({cartItems.length} items):</span><span>₹{subtotal.toFixed(2)}</span></div>
+                <Divider style={styles.divider} />
+                <div style={styles.summaryRow}><span>GST (18%):</span><span>₹{gst.toFixed(2)}</span></div>
                 <Divider style={styles.divider} />
                 <div style={styles.summaryRow}><span>Shipping:</span><span style={{ color: '#52c41a' }}>FREE</span></div>
                 <Divider style={styles.divider} />

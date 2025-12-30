@@ -180,6 +180,14 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    // Check if SKU is being changed and if it's already in use by another product
+    if (req.body.sku && req.body.sku !== existingProduct.sku) {
+      const skuExists = await Product.findOne({ sku: req.body.sku, _id: { $ne: req.params.id } });
+      if (skuExists) {
+        return res.status(400).json({ error: "SKU already exists for another product" });
+      }
+    }
+
     // Delete old main image if new one is provided
     if (req.body.mainImage && existingProduct.mainImage && req.body.mainImage !== existingProduct.mainImage) {
       await uploadService.deleteFileByUrl(existingProduct.mainImage);

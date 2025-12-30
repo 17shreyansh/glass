@@ -187,6 +187,7 @@ const ProductAdminPage = () => {
     form.setFieldsValue({
       name: record.name,
       slug: record.slug,
+      sku: record.sku,
       description: record.description,
       price: record.price,
       originalPrice: record.originalPrice,
@@ -308,6 +309,7 @@ const ProductAdminPage = () => {
       ),
     },
     { title: "Name", dataIndex: "name", key: "name", sorter: (a, b) => a.name.localeCompare(b.name) },
+    { title: "SKU", dataIndex: "sku", key: "sku" },
     { title: "Slug", dataIndex: "slug", key: "slug" },
     { 
       title: "Categories", 
@@ -607,7 +609,7 @@ const ProductAdminPage = () => {
                       <Input placeholder="e.g., Running Shoes Alpha" />
                     </Form.Item>
                   </Col>
-                  <Col span={24}>
+                  <Col xs={24} sm={12}>
                     <Form.Item
                       label="Product Slug"
                       name="slug"
@@ -616,6 +618,15 @@ const ProductAdminPage = () => {
                       extra="A unique, URL-friendly version of the product name (e.g., 'running-shoes-alpha'). Auto-generated if left blank on new product."
                     >
                       <Input placeholder="e.g., running-shoes-alpha" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <Form.Item
+                      label="Product SKU"
+                      name="sku"
+                      extra="Stock Keeping Unit - Auto-generated if left blank on new product."
+                    >
+                      <Input placeholder="e.g., JW123456" />
                     </Form.Item>
                   </Col>
                   <Col span={24}>

@@ -179,7 +179,11 @@ class OrderService {
             discountOnDelivery = 0;
         }
 
-        const totalAmount = Math.max(0, subtotal - discountAmount + deliveryCharge - discountOnDelivery);
+        // Calculate GST (18% on subtotal after discount)
+        const taxableAmount = subtotal - discountAmount;
+        const gstAmount = Math.round((taxableAmount * 0.18) * 100) / 100;
+        
+        const totalAmount = Math.max(0, subtotal - discountAmount + gstAmount + deliveryCharge - discountOnDelivery);
         
         // Final validation of total amount
         if (typeof totalAmount !== 'number' || isNaN(totalAmount) || totalAmount < 0) {
@@ -192,6 +196,7 @@ class OrderService {
             deliveryCharge: deliveryCharge,
             discountAmount: discountAmount,
             discountOnDelivery: discountOnDelivery,
+            gstAmount: gstAmount,
             totalAmount: totalAmount,
             couponUsed: couponUsed,
             productUpdates: productUpdates
@@ -230,6 +235,7 @@ class OrderService {
             deliveryCharge: calculation.deliveryCharge,
             discountAmount: calculation.discountAmount,
             discountOnDelivery: calculation.discountOnDelivery,
+            gstAmount: calculation.gstAmount,
             totalAmount: calculation.totalAmount,
             couponUsed: calculation.couponUsed,
             payment: {

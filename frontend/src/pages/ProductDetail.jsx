@@ -74,6 +74,8 @@ const ProductDetail = () => {
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
   const [reviewForm] = Form.useForm();
   const { isAuthenticated } = useUser();
+  const [showZoom, setShowZoom] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   
   React.useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -254,7 +256,7 @@ const ProductDetail = () => {
             />
           )}
 
-          <Row gutter={isMobile ? [0, 0] : [40, 40]}>
+          <Row gutter={isMobile ? [0, 0] : [40, 40]} style={{ position: 'relative' }}>
             {/* Image Section */}
             <Col xs={24} md={10}>
               <div style={{ 
@@ -275,7 +277,21 @@ const ProductDetail = () => {
                     justifyContent: 'center',
                     overflow: 'hidden',
                     borderRadius: isMobile ? 0 : 8,
-                    background: '#f8f9fa'
+                    background: '#f8f9fa',
+                    cursor: !isMobile ? 'crosshair' : 'default'
+                  }}
+                  onMouseEnter={() => !isMobile && setShowZoom(true)}
+                  onMouseLeave={() => !isMobile && setShowZoom(false)}
+                  onMouseMove={(e) => {
+                    if (!isMobile) {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = ((e.clientX - rect.left) / rect.width) * 100;
+                      const y = ((e.clientY - rect.top) / rect.height) * 100;
+                      setZoomPosition({ 
+                        x: Math.max(20, Math.min(80, x)),
+                        y: Math.max(20, Math.min(80, y))
+                      });
+                    }
                   }}
                 >
                   <img
@@ -287,6 +303,23 @@ const ProductDetail = () => {
                       objectFit: 'contain'
                     }}
                   />
+                  
+                  {/* Zoom Lens Indicator */}
+                  {!isMobile && showZoom && (
+                    <div style={{
+                      position: 'absolute',
+                      width: '40%',
+                      height: '40%',
+                      border: '2px solid rgba(142, 106, 78, 0.8)',
+                      background: 'rgba(142, 106, 78, 0.1)',
+                      pointerEvents: 'none',
+                      left: `${zoomPosition.x}%`,
+                      top: `${zoomPosition.y}%`,
+                      transform: 'translate(-50%, -50%)',
+                      boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.3)',
+                      cursor: 'crosshair'
+                    }} />
+                  )}
                   
                   {/* Left Arrow */}
                   <Button
@@ -393,7 +426,34 @@ const ProductDetail = () => {
             </Col>
 
             {/* Product Info and Reviews */}
-            <Col xs={24} md={14}>
+            <Col xs={24} md={14} style={{ position: 'relative' }}>
+              {/* Zoomed Image - Desktop only */}
+              {!isMobile && showZoom && (
+                <div style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 480,
+                  height: 480,
+                  borderRadius: 8,
+                  overflow: 'hidden',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+                  background: '#fff',
+                  zIndex: 100,
+                  pointerEvents: 'none',
+                  border: '3px solid #8E6A4E'
+                }}>
+                  <div style={{
+                    width: '100%',
+                    height: '100%',
+                    backgroundImage: `url(${mainImage})`,
+                    backgroundSize: '250%',
+                    backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                    backgroundRepeat: 'no-repeat',
+                    imageRendering: 'high-quality'
+                  }} />
+                </div>
+              )}
               <div style={{ 
                 padding: isMobile ? '20px 16px' : 0
               }}>

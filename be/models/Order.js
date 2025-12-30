@@ -77,6 +77,7 @@ const orderSchema = new mongoose.Schema({
   deliveryCharge: { type: Number, default: 0 },
   discountAmount: { type: Number, default: 0 },
   discountOnDelivery: { type: Number, default: 0 },
+  gstAmount: { type: Number, default: 0 },
   totalAmount: { type: Number, required: true },
   
   // Coupon

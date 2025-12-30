@@ -1,5 +1,6 @@
 import React from "react";
 import { Layout, Row, Col, Input, Button, Typography, Space } from "antd";
+import { Link } from "react-router-dom";
 import {
   InstagramOutlined,
   FacebookOutlined,
@@ -95,8 +96,7 @@ const Footer = () => {
               fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
             }}
           >
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            Discover premium eyewear that combines style, quality, and comfort. Your vision, our passion.
           </Text>
         </Col>
 
@@ -114,15 +114,14 @@ const Footer = () => {
             Quick Links
           </Title>
           <Space direction="vertical" size="small">
-            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Shop</Text>
-            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Collections</Text>
-            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Brands</Text>
-            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>About Us</Text>
-            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Contact Us</Text>
+            <Link to="/shop" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Shop</Link>
+            <Link to="/shop" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Collections</Link>
+            <Link to="/about-us" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>About Us</Link>
+            <Link to="/contact-us" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Contact Us</Link>
           </Space>
         </Col>
 
-        {/* Policies 1 */}
+        {/* Policies */}
         <Col xs={12} sm={8} md={4}>
           <Title
             level={5}
@@ -136,14 +135,14 @@ const Footer = () => {
             Policies
           </Title>
           <Space direction="vertical" size="small">
-            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Shipping</Text>
-            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Returns</Text>
-            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Privacy Policy</Text>
-            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Terms</Text>
+            <Link to="/return-refund" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Shipping</Link>
+            <Link to="/return-refund" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Returns</Link>
+            <Link to="/return-refund" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Privacy Policy</Link>
+            <Link to="/return-refund" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Terms</Link>
           </Space>
         </Col>
 
-        {/* Policies 2 */}
+        {/* Customer Service */}
         <Col xs={24} sm={8} md={4}>
           <Title
             level={5}
@@ -154,13 +153,13 @@ const Footer = () => {
               fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
             }}
           >
-            Policies
+            Customer Service
           </Title>
           <Space direction="vertical" size="small">
-            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Shipping</Text>
-            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Returns</Text>
-            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Privacy Policy</Text>
-            <Text style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white" }}>Terms</Text>
+            <Link to="/contact-us" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>FAQ</Link>
+            <Link to="/contact-us" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Support</Link>
+            <Link to="/account/orders" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Track Order</Link>
+            <Link to="/shop" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Size Guide</Link>
           </Space>
         </Col>
       </Row>
@@ -180,10 +179,18 @@ const Footer = () => {
         <Text style={{ marginRight: window.innerWidth <= 768 ? "5px" : "10px", color: "white", fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>
           Follow us
         </Text>
-        <InstagramOutlined style={{ fontSize: window.innerWidth <= 768 ? "18px" : "20px", cursor: "pointer", color: "white" }} />
-        <FacebookOutlined style={{ fontSize: window.innerWidth <= 768 ? "18px" : "20px", cursor: "pointer", color: "white" }} />
-        <TwitterOutlined style={{ fontSize: window.innerWidth <= 768 ? "18px" : "20px", cursor: "pointer", color: "white" }} />
-        <YoutubeOutlined style={{ fontSize: window.innerWidth <= 768 ? "18px" : "20px", cursor: "pointer", color: "white" }} />
+        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+          <InstagramOutlined style={{ fontSize: window.innerWidth <= 768 ? "18px" : "20px", cursor: "pointer", color: "white" }} />
+        </a>
+        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+          <FacebookOutlined style={{ fontSize: window.innerWidth <= 768 ? "18px" : "20px", cursor: "pointer", color: "white" }} />
+        </a>
+        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+          <TwitterOutlined style={{ fontSize: window.innerWidth <= 768 ? "18px" : "20px", cursor: "pointer", color: "white" }} />
+        </a>
+        <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
+          <YoutubeOutlined style={{ fontSize: window.innerWidth <= 768 ? "18px" : "20px", cursor: "pointer", color: "white" }} />
+        </a>
       </div>
 
       {/* Bottom Strip */}
@@ -200,12 +207,12 @@ const Footer = () => {
         }}
       >
         <Text style={{ color: "white", fontSize: window.innerWidth <= 768 ? "11px" : "14px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>
-          <span style={{ cursor: "pointer" }}>Privacy Policy</span>
+          <Link to="/return-refund" style={{ color: "white", textDecoration: "none" }}>Privacy Policy</Link>
           {" | "}
-          <span style={{ cursor: "pointer" }}>Terms and Conditions</span>
+          <Link to="/return-refund" style={{ color: "white", textDecoration: "none" }}>Terms and Conditions</Link>
           {window.innerWidth > 768 && " | "}
           {window.innerWidth <= 768 && <br />}
-          Made with love and craft by AFFOBE
+          © {new Date().getFullYear()} Delicorn. All rights reserved.
         </Text>
       </div>
       </div>

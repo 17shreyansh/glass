@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import image1 from "../assets/sc1.png"; // Whiskey (Wide)
-import image2 from "../assets/sc2.png"; // Sunlight (Square/Tall)
-import image3 from "../assets/sc3.png"; // Blue Drinks
-import image4 from "../assets/sc4.png"; // Tall Vase
-import image5 from "../assets/sc5.png"; // Decanter
-import image6 from "../assets/sc6.png"; // Hand with ice
-import image7 from "../assets/sc7.png"; // Lavender drink
+import { useNavigate } from "react-router-dom";
+import image1 from "../assets/images/gc1.jpg";
+import image2 from "../assets/images/gc2.jpg";
+import image3 from "../assets/images/gc3.jpg";
+import image4 from "../assets/images/gc4.jpg";
+import image5 from "../assets/images/gc5.jpg";
+import image6 from "../assets/images/gc6.jpg";
 
 const GlassCollage = () => {
+  const navigate = useNavigate();
   const [hovered, setHovered] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -17,7 +18,6 @@ const GlassCollage = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // Grid logic: 4 Columns, 3 Rows for desktop, 2 columns for mobile
   const items = isMobile ? [
     { id: 1, img: image1, area: "1 / 1 / 2 / 3" },
     { id: 2, img: image2, area: "2 / 1 / 3 / 2" },
@@ -25,28 +25,13 @@ const GlassCollage = () => {
     { id: 4, img: image4, area: "3 / 1 / 4 / 2" },
     { id: 5, img: image5, area: "3 / 2 / 4 / 3" },
     { id: 6, img: image6, area: "4 / 1 / 5 / 2" },
-    { id: 7, img: image7, area: "4 / 2 / 5 / 3" },
   ] : [
-    // 1. Top Left (Whiskey on wood) - Spans 2 cols, 1 row
     { id: 1, img: image1, area: "1 / 1 / 2 / 3" },
-
-    // 2. Bottom Left (Sunlight glass) - Spans 1 col, 2 rows
     { id: 2, img: image2, area: "2 / 1 / 4 / 2" },
-
-    // 3. Bottom Mid-Left (Blue drinks) - Spans 1 col, 2 rows
     { id: 3, img: image3, area: "2 / 2 / 4 / 3" },
-
-    // 4. Center (Tall Vase) - Spans 1 col, Full Height (3 rows)
     { id: 4, img: image4, area: "1 / 3 / 4 / 4" },
-
-    // 5. Right Top (Decanter)
     { id: 5, img: image5, area: "1 / 4 / 2 / 5" },
-
-    // 6. Right Middle (Hand)
-    { id: 6, img: image6, area: "2 / 4 / 3 / 5" },
-
-    // 7. Right Bottom (Lavender)
-    { id: 7, img: image7, area: "3 / 4 / 4 / 5" },
+    { id: 6, img: image6, area: "2 / 4 / 4 / 5" },
   ];
   
   return (
@@ -83,6 +68,7 @@ const GlassCollage = () => {
           }}
           onMouseEnter={() => setHovered(item.id)}
           onMouseLeave={() => setHovered(null)}
+          onClick={() => navigate('/shop')}
         >
           <img
             src={item.img}

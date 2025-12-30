@@ -98,6 +98,7 @@ const createOrder = async (req, res) => {
                 deliveryCharge: calculation.deliveryCharge,
                 discountAmount: calculation.discountAmount,
                 discountOnDelivery: calculation.discountOnDelivery,
+                gstAmount: calculation.gstAmount,
                 totalAmount: calculation.totalAmount,
                 savings: calculation.discountAmount + calculation.discountOnDelivery
             }
@@ -185,6 +186,7 @@ const applyCoupon = async (req, res) => {
                 deliveryCharge: calculation.deliveryCharge,
                 discountAmount: calculation.discountAmount,
                 discountOnDelivery: calculation.discountOnDelivery,
+                gstAmount: calculation.gstAmount,
                 totalAmount: calculation.totalAmount,
                 savings: calculation.discountAmount + calculation.discountOnDelivery,
                 coupon: calculation.couponUsed
@@ -490,6 +492,11 @@ const generateInvoicePDF = (order) => {
                     .text('Discount:', summaryX, summaryY)
                     .text(`-${formatCurrency(order.discountAmount)}`, 450, summaryY, { width: 85, align: 'right' });
             }
+
+            summaryY += 20;
+            doc.fillColor('#666')
+                .text('GST (18%):', summaryX, summaryY)
+                .text(formatCurrency(order.gstAmount || 0), 450, summaryY, { width: 85, align: 'right' });
 
             summaryY += 25;
             doc.moveTo(370, summaryY - 5).lineTo(545, summaryY - 5).stroke('#333');
