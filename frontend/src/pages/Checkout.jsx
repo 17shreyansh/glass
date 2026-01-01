@@ -20,6 +20,9 @@ const Checkout = () => {
   const { cartItems, clearCart, getCartTotal, updateQuantity, removeFromCart } = useCart();
   const { user, isAuthenticated } = useUser();
   const [coupon, setCoupon] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponError, setCouponError] = useState('');
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -39,6 +42,41 @@ const Checkout = () => {
       }
     } catch (error) {
       console.error('Failed to fetch addresses:', error);
+    }
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!coupon.trim()) {
+      message.warning('Please enter a coupon code');
+      return;
+    }
+
+    setApplyingCoupon(true);
+    setCouponError('');
+    
+    try {
+      const response = await apiService.request(`/coupons/validate/${coupon}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          orderAmount: subtotal,
+          items: cartItems.map(item => ({
+            productId: item._id || item.id,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        })
+      });
+
+      if (response.discount || response.discountOnDelivery) {
+        setCouponDiscount(response.discount || 0);
+        message.success(`Coupon applied! You saved ₹${response.discount || response.discountOnDelivery}`);
+      }
+    } catch (error) {
+      setCouponError(error.message || 'Invalid coupon code');
+      setCouponDiscount(0);
+      message.error(error.message || 'Invalid coupon code');
+    } finally {
+      setApplyingCoupon(false);
     }
   };
 
@@ -164,7 +202,7 @@ const Checkout = () => {
   const subtotal = getCartTotal();
   const shipping = 0;
   const gst = Math.round((subtotal * 0.18) * 100) / 100;
-  const total = subtotal + gst;
+  const total = subtotal + gst - couponDiscount;
 
   const styles = {
     page: { marginTop: 80, padding: '20px 5%', fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", background: '#fff' },
@@ -232,9 +270,28 @@ const Checkout = () => {
               <Card style={{ ...styles.card, marginTop: 20 }}>
                 <div style={styles.sectionTitle}>APPLY COUPON</div>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <Input placeholder="Enter coupon code" value={coupon} onChange={(e) => setCoupon(e.target.value)} size="large" />
-                  <Button icon={<RightOutlined />} style={{ background: '#8E6A4E', color: '#fff', borderRadius: 6 }} size="large">APPLY</Button>
+                  <Input 
+                    placeholder="Enter coupon code" 
+                    value={coupon} 
+                    onChange={(e) => {
+                      setCoupon(e.target.value.toUpperCase());
+                      setCouponError('');
+                    }} 
+                    size="large"
+                    status={couponError ? 'error' : ''}
+                  />
+                  <Button 
+                    icon={<RightOutlined />} 
+                    style={{ background: '#8E6A4E', color: '#fff', borderRadius: 6 }} 
+                    size="large"
+                    onClick={handleApplyCoupon}
+                    loading={applyingCoupon}
+                  >
+                    APPLY
+                  </Button>
                 </div>
+                {couponError && <Text type="danger" style={{ fontSize: 12, marginTop: 5, display: 'block' }}>{couponError}</Text>}
+                {couponDiscount > 0 && <Text type="success" style={{ fontSize: 12, marginTop: 5, display: 'block', color: '#52c41a' }}>✓ Coupon applied successfully!</Text>}
               </Card>
             </Col>
 
@@ -247,9 +304,9 @@ const Checkout = () => {
                 <Divider style={styles.divider} />
                 <div style={styles.summaryRow}><span>Shipping:</span><span style={{ color: '#52c41a' }}>FREE</span></div>
                 <Divider style={styles.divider} />
-                {coupon && (
+                {couponDiscount > 0 && (
                   <>
-                    <div style={{ ...styles.summaryRow, color: '#52c41a' }}><span>Coupon Discount:</span><span>-₹0</span></div>
+                    <div style={{ ...styles.summaryRow, color: '#52c41a' }}><span>Coupon Discount ({coupon}):</span><span>-₹{couponDiscount.toFixed(2)}</span></div>
                     <Divider style={styles.divider} />
                   </>
                 )}
@@ -305,9 +362,9 @@ const Checkout = () => {
                 <Divider style={styles.divider} />
                 <div style={styles.summaryRow}><span>Shipping:</span><span style={{ color: '#52c41a' }}>FREE</span></div>
                 <Divider style={styles.divider} />
-                {coupon && (
+                {couponDiscount > 0 && (
                   <>
-                    <div style={{ ...styles.summaryRow, color: '#52c41a' }}><span>Coupon Discount:</span><span>-₹0</span></div>
+                    <div style={{ ...styles.summaryRow, color: '#52c41a' }}><span>Coupon Discount ({coupon}):</span><span>-₹{couponDiscount.toFixed(2)}</span></div>
                     <Divider style={styles.divider} />
                   </>
                 )}

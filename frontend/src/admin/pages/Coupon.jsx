@@ -129,26 +129,17 @@ const CouponManagement = () => {
       };
       delete payload.validPeriod;
 
-      const url = editingCoupon
-        ? `${API_BASE}/api/coupons/admin/${editingCoupon._id}`
-        : `${API_BASE}/api/coupons/admin`;
-
-      const method = editingCoupon ? 'PUT' : 'POST';
-
-      const response = await axios({
-        method,
-        url,
-        data: payload,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      });
+      if (editingCoupon) {
+        await adminApi.updateCoupon(editingCoupon._id, payload);
+      } else {
+        await adminApi.createCoupon(payload);
+      }
 
       message.success(`Coupon ${editingCoupon ? 'updated' : 'created'} successfully`);
       setIsModalVisible(false);
       form.resetFields();
       setEditingCoupon(null);
-      fetchCoupons(); // Re-fetch data after successful operation
+      fetchCoupons();
     } catch (error) {
       console.error('Error saving coupon:', error);
       message.error(error.response?.data?.message || 'Error saving coupon');
@@ -158,9 +149,9 @@ const CouponManagement = () => {
   // Delete coupon
   const handleDelete = async (couponId) => {
     try {
-      await axios.delete(`${API_BASE}/api/coupons/admin/${couponId}`);
+      await adminApi.deleteCoupon(couponId);
       message.success('Coupon deleted successfully');
-      fetchCoupons(); // Re-fetch data after successful deletion
+      fetchCoupons();
     } catch (error) {
       console.error('Error deleting coupon:', error);
       message.error(error.response?.data?.message || 'Failed to delete coupon');
@@ -170,9 +161,9 @@ const CouponManagement = () => {
   // Toggle coupon status
   const handleToggleStatus = async (couponId) => {
     try {
-      await axios.patch(`${API_BASE}/api/coupons/admin/${couponId}/toggle-status`);
+      await adminApi.toggleCouponStatus(couponId);
       message.success('Coupon status updated');
-      fetchCoupons(); // Re-fetch data after status change
+      fetchCoupons();
     } catch (error) {
       console.error('Error toggling coupon status:', error);
       message.error(error.response?.data?.message || 'Failed to update status');
@@ -187,15 +178,11 @@ const CouponManagement = () => {
     }
 
     try {
-      const response = await axios.post(`${API_BASE}/api/coupons/admin/bulk-operations`, {
-        operation,
-        couponIds: selectedRowKeys
-      });
-
-      message.success(`${response.data.message} (${response.data.modifiedCount} items affected)`);
-      setSelectedRowKeys([]); // Clear selection after bulk operation
+      const response = await adminApi.bulkCouponOperations({ operation, couponIds: selectedRowKeys });
+      message.success(`${response.message} (${response.modifiedCount} items affected)`);
+      setSelectedRowKeys([]);
       setBulkModalVisible(false);
-      fetchCoupons(); // Re-fetch data after bulk operation
+      fetchCoupons();
     } catch (error) {
       console.error('Error performing bulk operation:', error);
       message.error(error.response?.data?.message || 'Bulk operation failed');
@@ -205,8 +192,8 @@ const CouponManagement = () => {
   // Fetch analytics
   const fetchAnalytics = async (period = '30d') => {
     try {
-      const response = await axios.get(`${API_BASE}/api/coupons/admin/analytics?period=${period}`);
-      setAnalytics(response.data.analytics); // Assuming analytics is an array of coupon stats
+      const response = await adminApi.getCouponAnalytics(period);
+      setAnalytics(response.analytics);
     } catch (error) {
       console.error('Error fetching analytics:', error);
       message.error(error.response?.data?.message || 'Failed to fetch analytics');
@@ -216,11 +203,8 @@ const CouponManagement = () => {
   // View coupon details
   const viewCouponDetails = async (couponId) => {
     try {
-      // Assuming your backend /api/coupons/admin/:id endpoint now returns both coupon and its usage stats
-      const response = await axios.get(`${API_BASE}/api/coupons/admin/${couponId}`);
-      // The response.data should contain the coupon details and usage stats.
-      // E.g., { coupon: { ...couponData }, usageStats: { totalOrders: 5, totalDiscount: 100, ... } }
-      setSelectedCoupon(response.data);
+      const response = await adminApi.getCoupon(couponId);
+      setSelectedCoupon(response);
       setViewDrawerVisible(true);
     } catch (error) {
       console.error('Error fetching coupon details:', error);

@@ -199,7 +199,7 @@ const getCoupon = async (req, res) => {
 
     // Get usage statistics
     const usageStats = await Order.aggregate([
-      { $match: { 'couponUsed.couponId': mongoose.Types.ObjectId(couponId) } },
+      { $match: { 'couponUsed.couponId': new mongoose.Types.ObjectId(couponId) } },
       {
         $group: {
           _id: null,
