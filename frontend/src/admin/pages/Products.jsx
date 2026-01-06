@@ -209,6 +209,7 @@ const ProductAdminPage = () => {
       categories: record.categories?.map(cat => typeof cat === 'string' ? cat : cat._id) || [],
       variants: formVariants,
       isFeatured: record.isFeatured,
+      isNewArrival: record.isNewArrival,
       isActive: record.isActive,
     });
     
@@ -367,6 +368,12 @@ const ProductAdminPage = () => {
       render: (isFeatured) => (isFeatured ? <Tag color="gold"><CheckCircleOutlined /> Yes</Tag> : <Tag color="default"><CloseCircleOutlined /> No</Tag>),
     },
     {
+      title: "New Arrival",
+      dataIndex: "isNewArrival",
+      key: "isNewArrival",
+      render: (isNewArrival) => (isNewArrival ? <Tag color="cyan"><CheckCircleOutlined /> Yes</Tag> : <Tag color="default"><CloseCircleOutlined /> No</Tag>),
+    },
+    {
       title: "Active",
       dataIndex: "isActive",
       key: "isActive",
@@ -469,6 +476,11 @@ const ProductAdminPage = () => {
                   {product.isFeatured ? (
                     <Tag icon={<CheckCircleOutlined />} color="gold">
                       Featured
+                    </Tag>
+                  ) : null}
+                  {product.isNewArrival ? (
+                    <Tag icon={<CheckCircleOutlined />} color="cyan">
+                      New Arrival
                     </Tag>
                   ) : null}
                   {product.isActive ? (
@@ -604,6 +616,7 @@ const ProductAdminPage = () => {
             price: 0,
             originalPrice: null,
             isFeatured: false,
+            isNewArrival: false,
             isActive: true,
             slug: "",
           }}
@@ -778,6 +791,11 @@ const ProductAdminPage = () => {
 
                   <Col xs={24} sm={12}>
                     <Form.Item label="Featured Product" name="isFeatured" valuePropName="checked">
+                      <Switch checkedChildren="Yes" unCheckedChildren="No" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <Form.Item label="New Arrival" name="isNewArrival" valuePropName="checked">
                       <Switch checkedChildren="Yes" unCheckedChildren="No" />
                     </Form.Item>
                   </Col>

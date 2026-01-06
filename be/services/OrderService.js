@@ -196,11 +196,11 @@ class OrderService {
             discountOnDelivery = 0;
         }
 
-        // Calculate GST (18% on subtotal after discount)
+        // Calculate GST (18% on subtotal after discount) - REMOVED
         const taxableAmount = subtotal - discountAmount;
-        const gstAmount = Math.round((taxableAmount * 0.18) * 100) / 100;
+        const gstAmount = 0; // GST removed
         
-        const totalAmount = Math.max(0, subtotal - discountAmount + gstAmount + deliveryCharge - discountOnDelivery);
+        const totalAmount = Math.max(0, subtotal - discountAmount + deliveryCharge - discountOnDelivery);
         
         // Final validation of total amount
         if (typeof totalAmount !== 'number' || isNaN(totalAmount) || totalAmount < 0) {

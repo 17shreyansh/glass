@@ -36,6 +36,7 @@ const productSchema = new mongoose.Schema({
   sku: { type: String, unique: true },
   
   isFeatured: { type: Boolean, default: false },
+  isNewArrival: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 

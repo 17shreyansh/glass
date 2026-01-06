@@ -533,24 +533,6 @@ const ProductDetail = () => {
                       </div>
                     )}
                   </div>
-
-                  <div style={{ marginBottom: 16 }}>
-                    <Text type="secondary" style={{ 
-                      display: 'block',
-                      fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
-                      fontSize: '14px',
-                      marginBottom: 4
-                    }}>
-                      Or 3 interest free payments of ₹{Math.round(product.price / 3)}
-                    </Text>
-                    <Text type="secondary" style={{ 
-                      display: 'block',
-                      fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
-                      fontSize: '14px'
-                    }}>
-                      Inclusive of all taxes
-                    </Text>
-                  </div>
                 </div>
 
                 {/* SKU */}

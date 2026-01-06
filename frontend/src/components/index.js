@@ -15,6 +15,7 @@ export { default as Hero } from './Hero';
 export { default as Collections } from './Collections';
 export { default as CTA } from './CTA';
 export { default as FeaturedProducts } from './FeaturedProducts';
+export { default as NewArrivals } from './NewArrivals';
 export { default as Jewellery } from './Jewellery';
 export { default as JewellerySale } from './JewellerySale';
 export { default as Offer } from './Offer';

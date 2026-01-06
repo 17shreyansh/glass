@@ -17,25 +17,19 @@ import { ProductCategories } from '../components/product';
 import { Footer } from '../components/layout';
 import TestConnection from '../components/TestConnection';
 import MissionSection from '../components/MissionSection';
+import NewArrivals from '../components/NewArrivals';
 
 const Home = () => {
   return (
     <Layout>
       <Hero />
       <Collections />
-      {/* <TestConnection /> */}
-      {/* <ProductCategories /> */}
-      {/* <Jewellery/> */}
-      {/* <CTA /> */}
-      {/* <JewellerySale /> */}
       <FeaturedProducts limit={8} skip={0} title="Featured Collection" />
       <MissionSection />
-      <FeaturedProducts limit={8} skip={8} title="New Arrivals" />
+      <NewArrivals limit={8} title="New Arrivals" />
       <ServewareSection />
       <GlassShowcase />
       <GlassCollage />
-      {/* <Ring /> */}
-      {/* <Slider /> */}
       <Footer />
     </Layout>
   );

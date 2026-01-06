@@ -100,10 +100,10 @@ const Hero = () => {
           whiteSpace: "nowrap",
         }}
       >
-        <marquee style={{ color: "#594131" }} behavior="scroll" direction="left" scrollamount="6">
+        <div style={{ color: "#594131" }}>
           4L+ Happy Customers | Gifts For Her @ 50% OFF | Ships in 24 hours &nbsp;&nbsp;&nbsp;
           4L+ Happy Customers | Gifts For Her @ 50% OFF | Ships in 24 hours
-        </marquee>
+        </div>
       </div>
     </>
   );

@@ -78,6 +78,12 @@ class ApiService {
     return response.data || response;
   }
 
+  // Get new arrival products
+  async getNewArrivals(limit = 8, skip = 0) {
+    const response = await this.request(`/products?sortBy=createdAt&limit=${limit}&skip=${skip}`);
+    return response.data || response;
+  }
+
   // ============ ADMIN PRODUCT METHODS ============
   
   createProduct(productData) {

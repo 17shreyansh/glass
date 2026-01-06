@@ -144,7 +144,7 @@ const Navbar = () => {
           width: '100%',
         }}
       >
-        4L+ Happy Customers | Gifts For Her @ 50% OFF | Ships in 24 hours
+         FREE SHIPPING PAN INDIA
       </div>
 
       {/* Main Navbar */}
