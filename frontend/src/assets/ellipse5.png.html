@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="canvas" width="647" height="620"></canvas>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#B26C54';
+const path = new Path2D('M599.263 70.5C422.93 226 689.764 548 182.764 612.5C-324.237 677 -233.736 300.527 -233.736 70.5C-233.736 -159.527 -47.2629 -346 182.764 -346C412.79 -346 775.597 -85 599.263 70.5Z');
+ctx.translate(233.736, 346);
+ctx.fill(path);
+canvas.toBlob(blob => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ellipse5.png';
+  a.click();
+});
+</script>
+</body>
+</html>

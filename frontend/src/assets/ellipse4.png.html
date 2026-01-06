@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="canvas" width="989" height="482"></canvas>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#B26C54';
+ctx.beginPath();
+ctx.arc(574, 574.001 - 92, 574, 0, 2 * Math.PI);
+ctx.fill();
+canvas.toBlob(blob => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ellipse4.png';
+  a.click();
+});
+</script>
+</body>
+</html>

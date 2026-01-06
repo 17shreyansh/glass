@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import ellipse4 from '../assets/Ellipse 4.svg';
-import ellipse5 from '../assets/Ellipse 5.svg';
+import { useNavigate } from 'react-router-dom';
 import g1 from '../assets/g1.png';
 import g2 from '../assets/g2.png';
 import g3 from '../assets/g3.png';
@@ -24,9 +23,10 @@ const useIsMobile = () => {
 
 const GlassShowcase = () => {
   const [currentGlass, setCurrentGlass] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   
-  // Customizable gap between glasses (0.25 = 90 degrees, 0.125 = 45 degrees, etc.)
   const glassGap = 0.28;
 
   const glassData = [
@@ -93,11 +93,12 @@ const GlassShowcase = () => {
   ];
 
   useEffect(() => {
+    if (isPaused) return;
     const interval = setInterval(() => {
       setCurrentGlass((prev) => (prev + 1) % glassData.length);
-    }, 3000);
+    }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isPaused]);
 
   const currentData = glassData[currentGlass];
   
@@ -134,71 +135,93 @@ const GlassShowcase = () => {
         pointerEvents: 'none',
         zIndex: 1
       }}>
-        <div style={{
-          position: 'absolute',
-          top: '-50px',
-          left: '-50px',
-          width: isMobile ? '300px' : '700px',
-          height: isMobile ? '300px' : '700px',
-          backgroundImage: `url(${ellipse5})`,
-          backgroundSize: 'contain',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          filter: `hue-rotate(${currentData.ellipseColor === '#667eea' ? '0deg' : currentData.ellipseColor === '#4facfe' ? '20deg' : currentData.ellipseColor === '#f093fb' ? '280deg' : currentData.ellipseColor === '#00f2fe' ? '180deg' : currentData.ellipseColor === '#fbc7aa' ? '30deg' : '160deg'})`,
-          transition: 'filter 0.8s ease'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-30%',
-          right: '0%',
-          width: isMobile ? '400px' : '800px',
-          height: isMobile ? '400px' : '800px',
-          backgroundImage: `url(${ellipse4})`,
-          backgroundSize: 'contain',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          filter: `hue-rotate(${currentData.ellipseColor === '#667eea' ? '0deg' : currentData.ellipseColor === '#4facfe' ? '20deg' : currentData.ellipseColor === '#f093fb' ? '280deg' : currentData.ellipseColor === '#00f2fe' ? '180deg' : currentData.ellipseColor === '#fbc7aa' ? '30deg' : '160deg'})`,
-          transition: 'filter 0.8s ease'
-        }} />
+        <motion.svg
+          width={isMobile ? '300' : '700'}
+          height={isMobile ? '300' : '700'}
+          viewBox="0 0 647 620"
+          animate={{ opacity: [0.6, 0.8, 0.6] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            position: 'absolute',
+            top: '-50px',
+            left: '-50px'
+          }}
+        >
+          <path d="M599.263 70.5C422.93 226 689.764 548 182.764 612.5C-324.237 677 -233.736 300.527 -233.736 70.5C-233.736 -159.527 -47.2629 -346 182.764 -346C412.79 -346 775.597 -85 599.263 70.5Z" fill={currentData.ellipseColor}/>
+        </motion.svg>
+        <motion.svg
+          width={isMobile ? '400' : '800'}
+          height={isMobile ? '400' : '800'}
+          viewBox="0 0 989 482"
+          animate={{ opacity: [0.6, 0.8, 0.6] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+          style={{
+            position: 'absolute',
+            bottom: '-30%',
+            right: '0%'
+          }}
+        >
+          <circle cx="574" cy="574.001" r="574" transform="rotate(0.285801 574 574.001)" fill={currentData.ellipseColor}/>
+        </motion.svg>
       </div>
 
       {/* Title, paragraph and button on ellipse5 - upper left */}
-      <div style={{
-        position: 'absolute',
-        top: isMobile ? '15%' : '10%',
-        left: isMobile ? '10px' : '5%',
-        right: isMobile ? '10px' : 'auto',
-        zIndex: 3,
-        maxWidth: isMobile ? 'none' : '400px',
-        textAlign: isMobile ? 'center' : 'left'
-      }}>
+      <motion.div 
+        key={currentGlass}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        style={{
+          position: 'absolute',
+          top: isMobile ? '15%' : '10%',
+          left: isMobile ? '10px' : '5%',
+          right: isMobile ? '10px' : 'auto',
+          zIndex: 3,
+          maxWidth: isMobile ? 'none' : '450px',
+          textAlign: isMobile ? 'center' : 'left'
+        }}
+      >
         <h1 style={{
-          fontSize: isMobile ? '2rem' : '3rem',
+          fontSize: isMobile ? '2.5rem' : '3.5rem',
           fontWeight: 'bold',
-          marginBottom: '1rem'
+          marginBottom: '1rem',
+          lineHeight: 1.2
         }}>{currentData.name}</h1>
         <p style={{
-          fontSize: isMobile ? '1rem' : '1.2rem',
+          fontSize: isMobile ? '1rem' : '1.25rem',
           opacity: 0.9,
-          marginBottom: '2rem'
+          marginBottom: '2rem',
+          lineHeight: 1.6
         }}>{currentData.description}</p>
         <button 
+          onClick={() => navigate('/shop')}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
           style={{ 
-            padding: isMobile ? '0.8rem 1.5rem' : '1rem 2rem',
-            fontSize: isMobile ? '0.9rem' : '1rem',
-            fontWeight: 'bold',
+            padding: isMobile ? '0.9rem 2rem' : '1.1rem 2.5rem',
+            fontSize: isMobile ? '0.95rem' : '1.05rem',
+            fontWeight: '600',
             color: 'white',
             border: '2px solid',
             borderRadius: '50px',
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             backgroundColor: currentData.accentColor,
-            borderColor: currentData.accentColor
+            borderColor: currentData.accentColor,
+            boxShadow: `0 4px 15px ${currentData.accentColor}40`
+          }}
+          onMouseOver={(e) => {
+            e.target.style.transform = 'translateY(-2px)';
+            e.target.style.boxShadow = `0 6px 20px ${currentData.accentColor}60`;
+          }}
+          onMouseOut={(e) => {
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = `0 4px 15px ${currentData.accentColor}40`;
           }}
         >
           Shop Now
         </button>
-      </div>
+      </motion.div>
 
         <div style={{
           position: 'relative',
@@ -252,13 +275,16 @@ const GlassShowcase = () => {
                     height: '80px'
                   }}
                 >
-                  <img
+                  <motion.img
                     src={glass.asset}
                     alt={glass.name}
+                    whileHover={{ scale: relativeIndex === 0 ? 1.1 : 1 }}
                     style={{
                       width: isMobile ? '150px' : '400px',
                       objectFit: 'contain',
-                      transition: 'filter 0.3s ease'
+                      transition: 'filter 0.3s ease',
+                      filter: relativeIndex === 0 ? 'drop-shadow(0 10px 30px rgba(0,0,0,0.3))' : 'none',
+                      cursor: relativeIndex === 0 ? 'pointer' : 'default'
                     }}
                   />
                 </motion.div>
@@ -269,25 +295,33 @@ const GlassShowcase = () => {
 
       <div style={{
         position: 'absolute',
-        bottom: isMobile ? '1rem' : '2rem',
+        bottom: isMobile ? '1.5rem' : '2.5rem',
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
-        gap: isMobile ? '0.5rem' : '1rem',
-        zIndex: 3
+        gap: isMobile ? '0.6rem' : '1rem',
+        zIndex: 3,
+        alignItems: 'center'
       }}>
         {glassData.map((_, index) => (
-          <div
+          <motion.div
             key={index}
+            whileHover={{ scale: 1.3 }}
+            whileTap={{ scale: 0.9 }}
             style={{ 
-              width: isMobile ? '8px' : '12px',
-              height: isMobile ? '8px' : '12px',
-              borderRadius: '50%',
+              width: index === currentGlass ? (isMobile ? '24px' : '32px') : (isMobile ? '10px' : '12px'),
+              height: isMobile ? '10px' : '12px',
+              borderRadius: '50px',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              backgroundColor: index === currentGlass ? currentData.accentColor : 'rgba(255,255,255,0.3)'
+              transition: 'all 0.4s ease',
+              backgroundColor: index === currentGlass ? currentData.accentColor : 'rgba(255,255,255,0.4)',
+              boxShadow: index === currentGlass ? `0 0 10px ${currentData.accentColor}` : 'none'
             }}
-            onClick={() => setCurrentGlass(index)}
+            onClick={() => {
+              setCurrentGlass(index);
+              setIsPaused(true);
+              setTimeout(() => setIsPaused(false), 5000);
+            }}
           />
         ))}
       </div>
