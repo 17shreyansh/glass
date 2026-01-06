@@ -9,7 +9,7 @@ import apiService from '../services/api';
 import hero1 from '../assets/jewelleryImage.jpg';
 import p1 from '../assets/c1.jpg';
 import glass from '../assets/glass1.jpg';
-import cate from '../assets/cate.jpg';
+import cate from '../assets/shop.jpeg';
 
 const { Title } = Typography;
 

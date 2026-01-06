@@ -225,8 +225,29 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    // add quantity copies to cart
-    for (let i = 0; i < quantity; i++) addToCart(product);
+    // Get size and color from selected attributes or variant
+    let size = selectedAttributes.Size || selectedAttributes.size;
+    let color = selectedAttributes.Color || selectedAttributes.color;
+    
+    // If product has variants but none selected, add with null to select later in checkout
+    if (product.variants && product.variants.length > 0) {
+      if (!size || !color) {
+        // Add with null values - will be selected in checkout
+        size = null;
+        color = null;
+      }
+    } else {
+      // No variants - use defaults
+      size = 'Standard';
+      color = 'Default';
+    }
+    
+    // Add to cart with variant info
+    for (let i = 0; i < quantity; i++) {
+      addToCart(product, size, color);
+    }
+    
+    message.success('Added to cart!');
   };
 
   const handleWishlist = () => {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Layout,
   Row,
@@ -9,6 +9,8 @@ import {
   InputNumber,
   Divider,
   Empty,
+  Select,
+  message,
 } from "antd";
 import {
   DeleteOutlined,
@@ -18,12 +20,55 @@ import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
 
 const { Title, Text } = Typography;
+const { Option } = Select;
+
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
 
 const CartCheckout = () => {
-  const { cartItems, updateQuantity, removeFromCart, getCartTotal } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, getCartTotal, addToCart } = useCart();
+  const [variantSelections, setVariantSelections] = useState({});
 
   const subtotal = getCartTotal();
   const total = subtotal;
+
+  // Check if any item needs variant selection
+  const needsVariantSelection = cartItems.some(item => 
+    item.variants && item.variants.length > 0 && (!item.size || !item.color)
+  );
+
+  const handleVariantChange = (itemIndex, type, value) => {
+    const item = cartItems[itemIndex];
+    const newSelections = {
+      ...variantSelections[itemIndex],
+      [type]: value
+    };
+    setVariantSelections(prev => ({
+      ...prev,
+      [itemIndex]: newSelections
+    }));
+    
+    // Update cart item with new variant
+    const newSize = type === 'size' ? value : (newSelections.size || item.size);
+    const newColor = type === 'color' ? value : (newSelections.color || item.color);
+    
+    // Remove old item and add with new variant
+    if (newSize && newColor) {
+      removeFromCart(item._id, item.size, item.color);
+      setTimeout(() => {
+        const updatedItem = { ...item, size: newSize, color: newColor };
+        for (let i = 0; i < item.quantity; i++) {
+          addToCart(updatedItem, newSize, newColor);
+        }
+      }, 100);
+    }
+  };
+
+  const getImageUrl = (item) => {
+    const imageUrl = item.image || item.mainImage;
+    if (!imageUrl) return 'https://via.placeholder.com/80';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `${API_BASE_URL}${imageUrl}`;
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -75,12 +120,31 @@ const CartCheckout = () => {
 
         <Row gutter={[32, 32]}>
           <Col xs={24} lg={16}>
-            {cartItems.map((item, i) => (
-              <Card key={item._id || i} style={styles.card}>
+            {cartItems.map((item, i) => {
+              const hasVariants = item.variants && item.variants.length > 0;
+              const needsSelection = hasVariants && (!item.size || !item.color);
+              
+              // Get available attributes
+              let availableSizes = [];
+              let availableColors = [];
+              if (hasVariants) {
+                const sizeSet = new Set();
+                const colorSet = new Set();
+                item.variants.forEach(v => {
+                  const attrs = v.attributes || {};
+                  if (attrs.Size || attrs.size) sizeSet.add(attrs.Size || attrs.size);
+                  if (attrs.Color || attrs.color) colorSet.add(attrs.Color || attrs.color);
+                });
+                availableSizes = Array.from(sizeSet);
+                availableColors = Array.from(colorSet);
+              }
+              
+              return (
+              <Card key={`${item._id}-${i}`} style={styles.card}>
                 <Row align="middle" gutter={[8, 16]}>
                   <Col xs={6} sm={4}>
                     <img
-                      src={item.image || item.mainImage || 'https://via.placeholder.com/80'}
+                      src={getImageUrl(item)}
                       alt={item.name}
                       style={{
                         width: "100%",
@@ -93,9 +157,44 @@ const CartCheckout = () => {
                     <Title level={5} style={{ marginBottom: 0, fontSize: '16px' }}>
                       {item.name}
                     </Title>
-                    <Text type="secondary" style={{ fontSize: '12px' }}>
-                      {item.productType || 'Product'}
-                    </Text>
+                    
+                    {needsSelection ? (
+                      <div style={{ marginTop: 8 }}>
+                        <Text type="warning" style={{ fontSize: '12px', display: 'block', marginBottom: 8 }}>
+                          ⚠️ Please select variant
+                        </Text>
+                        {availableSizes.length > 0 && (
+                          <Select
+                            placeholder="Select Size"
+                            style={{ width: '100%', marginBottom: 4 }}
+                            size="small"
+                            value={variantSelections[i]?.size || item.size}
+                            onChange={(val) => handleVariantChange(i, 'size', val)}
+                          >
+                            {availableSizes.map(s => <Option key={s} value={s}>{s}</Option>)}
+                          </Select>
+                        )}
+                        {availableColors.length > 0 && (
+                          <Select
+                            placeholder="Select Color"
+                            style={{ width: '100%' }}
+                            size="small"
+                            value={variantSelections[i]?.color || item.color}
+                            onChange={(val) => handleVariantChange(i, 'color', val)}
+                          >
+                            {availableColors.map(c => <Option key={c} value={c}>{c}</Option>)}
+                          </Select>
+                        )}
+                      </div>
+                    ) : (
+                      (item.size || item.color) && (
+                        <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>
+                          {item.size && `Size: ${item.size}`}
+                          {item.size && item.color && ' • '}
+                          {item.color && `Color: ${item.color}`}
+                        </Text>
+                      )
+                    )}
                     <br />
                     <Text strong>₹{item.price}</Text>
                   </Col>
@@ -105,7 +204,7 @@ const CartCheckout = () => {
                       min={1} 
                       max={10} 
                       value={item.quantity || 1}
-                      onChange={(value) => updateQuantity(item._id || item.id, value)}
+                      onChange={(value) => updateQuantity(item._id || item.id, value, item.size, item.color)}
                       style={{ width: '100%' }}
                     />
                   </Col>
@@ -118,14 +217,14 @@ const CartCheckout = () => {
                       icon={<DeleteOutlined />}
                       size="small"
                       style={{ marginTop: 5 }}
-                      onClick={() => removeFromCart(item._id || item.id)}
+                      onClick={() => removeFromCart(item._id || item.id, item.size, item.color)}
                     >
                       Remove
                     </Button>
                   </Col>
                 </Row>
               </Card>
-            ))}
+            )})}}
           </Col>
 
           <Col xs={24} lg={8}>
@@ -160,16 +259,22 @@ const CartCheckout = () => {
                 type="primary"
                 block
                 size="large"
+                disabled={needsVariantSelection}
                 style={{
-                  background: "#8E6A4E",
-                  borderColor: "#8E6A4E",
+                  background: needsVariantSelection ? "#ccc" : "#8E6A4E",
+                  borderColor: needsVariantSelection ? "#ccc" : "#8E6A4E",
                   marginTop: 20,
                   height: 50,
                   fontSize: 16,
                   fontWeight: 600
                 }}
+                onClick={() => {
+                  if (needsVariantSelection) {
+                    message.warning('Please select variants for all items');
+                  }
+                }}
               >
-                PROCEED TO CHECKOUT
+                {needsVariantSelection ? 'SELECT VARIANTS TO PROCEED' : 'PROCEED TO CHECKOUT'}
               </Button>
             </Link>
 

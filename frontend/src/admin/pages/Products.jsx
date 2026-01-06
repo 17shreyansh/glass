@@ -97,6 +97,11 @@ const ProductAdminPage = () => {
   // Handles form submission for creating or updating a product
   const onFinish = async (values) => {
 
+    // Validate that product has variants with stock
+    if (!values.variants || values.variants.length === 0) {
+      message.error('Please add at least one variant with stock!');
+      return;
+    }
 
     // Handle main image URL for submission
     let mainImageUrl = null;
@@ -178,11 +183,21 @@ const ProductAdminPage = () => {
       const attrs = new Set();
       record.variants.forEach(v => {
         if (v.attributes) {
-          Object.keys(v.attributes).forEach(key => attrs.add(key));
+          // Handle both Map and plain object
+          const attrObj = v.attributes instanceof Map ? 
+            Object.fromEntries(v.attributes) : v.attributes;
+          Object.keys(attrObj).forEach(key => attrs.add(key));
         }
       });
       setSelectedAttributes(Array.from(attrs));
     }
+    
+    // Convert variants attributes from Map to plain object for form
+    const formVariants = record.variants?.map(v => ({
+      ...v,
+      attributes: v.attributes instanceof Map ? 
+        Object.fromEntries(v.attributes) : v.attributes
+    })) || [];
     
     form.setFieldsValue({
       name: record.name,
@@ -192,7 +207,7 @@ const ProductAdminPage = () => {
       price: record.price,
       originalPrice: record.originalPrice,
       categories: record.categories?.map(cat => typeof cat === 'string' ? cat : cat._id) || [],
-      variants: record.variants || [],
+      variants: formVariants,
       isFeatured: record.isFeatured,
       isActive: record.isActive,
     });

@@ -202,17 +202,7 @@ const ProductCard = ({ product }) => {
           )}
         </div>
 
-        {/* Stars */}
-        <div
-          style={{
-            marginTop: 6,
-            fontSize: 16,
-            color: "#f2c94c",
-          }}
-        >
-          {"⭐".repeat(Math.floor(product.rating || 4))}
-          {"☆".repeat(5 - Math.floor(product.rating || 4))}
-        </div>
+        {/* Stars - removed */}
       </div>
     </div>
   );

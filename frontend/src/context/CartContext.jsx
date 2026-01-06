@@ -6,33 +6,55 @@ const cartReducer = (state, action) => {
   switch (action.type) {
     case 'ADD_TO_CART':
       const productId = action.payload._id || action.payload.id;
-      const existingItem = state.items.find(item => (item._id || item.id) === productId);
+      const size = action.payload.size || action.payload.selectedSize || null;
+      const color = action.payload.color || action.payload.selectedColor || null;
+      
+      // Check if same product with same variant exists
+      const existingItem = state.items.find(item => 
+        (item._id || item.id) === productId && 
+        item.size === size && 
+        item.color === color
+      );
+      
       if (existingItem) {
         return {
           ...state,
           items: state.items.map(item =>
-            (item._id || item.id) === productId
+            (item._id || item.id) === productId && item.size === size && item.color === color
               ? { ...item, quantity: (item.quantity || 0) + 1 }
               : item
           )
         };
       }
+      
       return {
         ...state,
-        items: [...state.items, { ...action.payload, _id: productId, quantity: 1 }]
+        items: [...state.items, { 
+          ...action.payload, 
+          _id: productId, 
+          size,
+          color,
+          quantity: 1 
+        }]
       };
     
     case 'REMOVE_FROM_CART':
       return {
         ...state,
-        items: state.items.filter(item => (item._id || item.id) !== action.payload)
+        items: state.items.filter(item => 
+          !((item._id || item.id) === action.payload.id && 
+            item.size === action.payload.size && 
+            item.color === action.payload.color)
+        )
       };
     
     case 'UPDATE_QUANTITY':
       return {
         ...state,
         items: state.items.map(item =>
-          (item._id || item.id) === action.payload.id
+          (item._id || item.id) === action.payload.id && 
+          item.size === action.payload.size && 
+          item.color === action.payload.color
             ? { ...item, quantity: Number(action.payload.quantity) || 1 }
             : item
         )
@@ -49,16 +71,23 @@ const cartReducer = (state, action) => {
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
 
-  const addToCart = (product) => {
-    dispatch({ type: 'ADD_TO_CART', payload: product });
+  const addToCart = (product, selectedSize, selectedColor) => {
+    dispatch({ 
+      type: 'ADD_TO_CART', 
+      payload: { 
+        ...product, 
+        selectedSize, 
+        selectedColor 
+      } 
+    });
   };
 
-  const removeFromCart = (productId) => {
-    dispatch({ type: 'REMOVE_FROM_CART', payload: productId });
+  const removeFromCart = (productId, size, color) => {
+    dispatch({ type: 'REMOVE_FROM_CART', payload: { id: productId, size, color } });
   };
 
-  const updateQuantity = (productId, quantity) => {
-    dispatch({ type: 'UPDATE_QUANTITY', payload: { id: productId, quantity } });
+  const updateQuantity = (productId, quantity, size, color) => {
+    dispatch({ type: 'UPDATE_QUANTITY', payload: { id: productId, quantity, size, color } });
   };
 
   const clearCart = () => {

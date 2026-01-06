@@ -8,7 +8,16 @@ const { uploadService } = require('./uploadController');
 // @access  Private/Admin
 exports.createProduct = async (req, res) => {
   try {
-    const product = new Product(req.body);
+    const productData = req.body;
+    
+    // Ensure variants have stock, if no variants provided, create empty array
+    if (!productData.variants || productData.variants.length === 0) {
+      productData.variants = [];
+      productData.totalStock = 0;
+      productData.inStock = false;
+    }
+    
+    const product = new Product(productData);
     await product.save();
     
     res.status(201).json({ success: true, data: product });
@@ -244,27 +253,92 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-// @desc    Update size variant stock
+// @desc    Update variant stock
 // @route   PATCH /api/products/:id/stock
 // @access  Private/Admin
 exports.updateStock = async (req, res) => {
   try {
-    const { size, stock } = req.body;
+    const { variantIndex, stock, size, color } = req.body;
     const product = await Product.findById(req.params.id);
     
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    const variantIndex = req.body.variantIndex;
+    // Update by variant index
     if (variantIndex !== undefined && product.variants[variantIndex]) {
-      product.variants[variantIndex].stock = stock;
+      product.variants[variantIndex].stock = Math.max(0, stock);
+      await product.save();
+      return res.json({ 
+        success: true,
+        message: "Stock updated successfully", 
+        totalStock: product.totalStock,
+        variant: product.variants[variantIndex]
+      });
+    }
+    
+    // Update by size and color
+    if (size && color) {
+      const success = product.updateVariantStock(size, color, stock);
+      if (success) {
+        await product.save();
+        return res.json({ 
+          success: true,
+          message: "Stock updated successfully", 
+          totalStock: product.totalStock
+        });
+      } else {
+        return res.status(404).json({ 
+          message: `Variant not found with Size: ${size}, Color: ${color}` 
+        });
+      }
     }
 
-    await product.save();
-    res.json({ message: "Stock updated successfully", totalStock: product.totalStock });
+    return res.status(400).json({ 
+      message: "Please provide either variantIndex or both size and color" 
+    });
   } catch (err) {
     console.error("Error updating stock:", err);
     res.status(400).json({ error: err.message });
+  }
+};
+
+// @desc    Get stock for a specific variant
+// @route   GET /api/products/:id/stock
+// @access  Public
+exports.getVariantStock = async (req, res) => {
+  try {
+    const { size, color } = req.query;
+    const product = await Product.findById(req.params.id);
+    
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (size && color) {
+      const stock = product.getStockForVariant(size, color);
+      return res.json({ 
+        success: true,
+        stock,
+        inStock: stock > 0
+      });
+    }
+
+    // Return all variants with stock
+    const variantsWithStock = product.variants.map((v, index) => ({
+      index,
+      attributes: Object.fromEntries(v.attributes || new Map()),
+      stock: v.stock,
+      sku: v.sku
+    }));
+
+    res.json({ 
+      success: true,
+      totalStock: product.totalStock,
+      variants: variantsWithStock
+    });
+  } catch (err) {
+    console.error("Error fetching stock:", err);
+    res.status(500).json({ error: "Failed to fetch stock" });
   }
 };

@@ -26,6 +26,7 @@ const deliveryRoutes = require('./routes/deliveryRoutes'); // Import delivery ro
 const addressRoutes = require('./routes/addressRoutes'); // Import address routes
 const returnRoutes = require('./routes/returnRoutes'); // Import return routes
 const contactRoutes = require('./routes/contactRoutes'); // Import contact routes
+const stockRoutes = require('./routes/stockRoutes'); // Import stock routes
 const OrderService = require('./services/OrderService');
 const cron = require('node-cron');
 
@@ -104,6 +105,7 @@ app.use('/api/delivery', deliveryRoutes); // NEW: Delivery routes
 app.use('/api/user/addresses', addressRoutes); // NEW: Address routes
 app.use('/api/returns', returnRoutes); // NEW: Return routes
 app.use('/api/contacts', contactRoutes); // NEW: Contact routes
+app.use('/api/stock', stockRoutes); // NEW: Stock management routes
 
 
 

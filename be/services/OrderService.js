@@ -30,57 +30,74 @@ class OrderService {
         }
 
         for (const item of items) {
-            // FIX: Use item._id as productId, as per your cart data
+            // Validate item data
             if (!item._id || !item.quantity || item.quantity <= 0) {
-                throw new Error('Invalid item data provided. Missing product ID or quantity, or quantity is invalid.');
+                throw new Error('Invalid item data provided. Missing product ID or quantity.');
             }
-            if (!item.size || !item.color) { // Ensure size and color are present for variant lookup
-                throw new Error('Invalid item data provided. Missing size or color for a product.');
-            }            // Find the product
+            
+            // Find the product
             const product = await Product.findById(item._id);
             if (!product) {
                 throw new Error(`Product with ID ${item._id} not found.`);
-            }            let itemPrice = product.price;
-            let availableStock = 999; // Default high stock
+            }
 
-            // Check if product uses stock variants
-            if (Array.isArray(product.stockVariants) && product.stockVariants.length > 0) {
-                availableStock = product.getStockForVariant(parseFloat(item.size), item.color);
-                
-                const variant = product.stockVariants.find(
-                    v => v.size === parseFloat(item.size) && v.color.toLowerCase() === item.color.toLowerCase()
-                );
+            if (!product.isActive) {
+                throw new Error(`Product ${product.name} is no longer available.`);
+            }
 
-                if (!variant) {
-                    throw new Error(`Product ${product.name} does not have a variant with Size: ${item.size}, Color: ${item.color}.`);
+            let itemPrice = product.price;
+            let availableStock = 0;
+            let selectedVariant = null;
+
+            // Check if product uses variants
+            if (Array.isArray(product.variants) && product.variants.length > 0) {
+                // If size and color provided, find matching variant
+                if (item.size && item.color) {
+                    selectedVariant = product.variants.find(v => {
+                        const attrs = v.attributes instanceof Map ? v.attributes : new Map(Object.entries(v.attributes || {}));
+                        const vSize = attrs.get('Size') || attrs.get('size');
+                        const vColor = attrs.get('Color') || attrs.get('color');
+                        return vSize?.toString().toLowerCase() === item.size?.toString().toLowerCase() && 
+                               vColor?.toLowerCase() === item.color?.toLowerCase();
+                    });
+
+                    if (!selectedVariant) {
+                        throw new Error(`Product "${product.name}" does not have variant: Size "${item.size}", Color "${item.color}". Please select a valid variant.`);
+                    }
+                    
+                    availableStock = selectedVariant.stock || 0;
+                } else {
+                    // No size/color specified, use first variant
+                    selectedVariant = product.variants[0];
+                    availableStock = selectedVariant.stock || 0;
                 }
-                itemPrice = product.price;
-            } else if (product.stock !== undefined) {
-                // Fallback to simple stock field
-                availableStock = product.stock;
+            } else {
+                // No variants - check totalStock
+                availableStock = product.totalStock || 0;
             }
 
             // Check stock
             if (availableStock < item.quantity) {
-                throw new Error(`Insufficient stock for ${product.name} (Size: ${item.size}, Color: ${item.color}). Available: ${availableStock}, Requested: ${item.quantity}`);
+                throw new Error(`Insufficient stock for "${product.name}". Available: ${availableStock}, Requested: ${item.quantity}`);
             }
 
             subtotal += itemPrice * item.quantity;
             validatedItems.push({
-                productId: product._id, // Store as productId in your internal order
+                productId: product._id,
                 name: product.name,
                 image: product.mainImage,
-                size: item.size,
-                color: item.color,
+                size: item.size || (selectedVariant ? Object.fromEntries(selectedVariant.attributes || new Map()).Size : 'N/A'),
+                color: item.color || (selectedVariant ? Object.fromEntries(selectedVariant.attributes || new Map()).Color : 'N/A'),
                 quantity: item.quantity,
                 price: itemPrice,
             });
-            // Only track stock updates if product has stock management
-            if (Array.isArray(product.stockVariants) && product.stockVariants.length > 0) {
+            
+            // Track stock updates for products with variants
+            if (selectedVariant) {
                 productUpdates.push({
                     productId: product._id,
-                    size: item.size,
-                    color: item.color,
+                    size: validatedItems[validatedItems.length - 1].size,
+                    color: validatedItems[validatedItems.length - 1].color,
                     quantity: item.quantity
                 });
             }
@@ -281,18 +298,18 @@ class OrderService {
                         continue;
                     }
 
-                    if (product.getStockForVariant && product.updateVariantStock) {
-                        const currentStock = product.getStockForVariant(parseFloat(itemUpdate.size), itemUpdate.color);
-                        const success = product.updateVariantStock(
-                            parseFloat(itemUpdate.size),
-                            itemUpdate.color,
-                            currentStock - itemUpdate.quantity
-                        );
+                    const currentStock = product.getStockForVariant(itemUpdate.size, itemUpdate.color);
+                    const success = product.updateVariantStock(
+                        itemUpdate.size,
+                        itemUpdate.color,
+                        currentStock - itemUpdate.quantity
+                    );
 
-                        if (success) {
-                            await product.save();
-                            console.log(`Updated stock for ${product.name} (Size: ${itemUpdate.size}, Color: ${itemUpdate.color})`);
-                        }
+                    if (success) {
+                        await product.save();
+                        console.log(`Updated stock for ${product.name} (Size: ${itemUpdate.size}, Color: ${itemUpdate.color})`);
+                    } else {
+                        console.error(`Failed to update stock for ${product.name} (Size: ${itemUpdate.size}, Color: ${itemUpdate.color})`);
                     }
                 }
             }
@@ -363,9 +380,9 @@ class OrderService {
                 continue;
             }
 
-            const currentStock = product.getStockForVariant(parseFloat(item.size), item.color);
+            const currentStock = product.getStockForVariant(item.size, item.color);
             const success = product.updateVariantStock(
-                parseFloat(item.size),
+                item.size,
                 item.color,
                 currentStock - item.quantity
             );
@@ -373,6 +390,8 @@ class OrderService {
             if (success) {
                 await product.save();
                 console.log(`Updated stock for ${product.name} (Size: ${item.size}, Color: ${item.color})`);
+            } else {
+                console.error(`Failed to update stock for ${product.name} (Size: ${item.size}, Color: ${item.color})`);
             }
         }
 
@@ -460,22 +479,25 @@ class OrderService {
             }
         }
 
+        // Revert stock for cancelled orders
         for (const item of order.items) {
             const product = await Product.findById(item.productId);
-            if (product) {
-                const variantIndex = product.variants.findIndex(
-                    v => v.size === item.size && v.color === item.color
+            if (product && product.variants && product.variants.length > 0) {
+                const currentStock = product.getStockForVariant(item.size, item.color);
+                const success = product.updateVariantStock(
+                    item.size,
+                    item.color,
+                    currentStock + item.quantity
                 );
 
-                if (variantIndex !== -1) {
-                    product.variants[variantIndex].stock += item.quantity;
+                if (success) {
                     await product.save();
                     console.log(`Reverted stock for ${product.name} (Size: ${item.size}, Color: ${item.color}) by ${item.quantity}`);
                 } else {
-                    console.warn(`Variant not found for product ${product.name} (Size: ${item.size}, Color: ${item.color}) during stock reversion.`);
+                    console.warn(`Failed to revert stock for product ${product.name} (Size: ${item.size}, Color: ${item.color}) during order cancellation.`);
                 }
             } else {
-                console.warn(`Product ${item.productId} not found during stock reversion for order ${orderId}.`);
+                console.warn(`Product ${item.productId} not found or has no variants during stock reversion for order ${orderId}.`);
             }
         }
 
@@ -551,15 +573,19 @@ class OrderService {
                         throw new Error(`Order status updated to CANCELLED, but refund failed: ${refundResult.error}`);
                     }
                 }
+                // Revert stock
                 for (const item of order.items) {
                     const product = await Product.findById(item.productId);
-                    if (product) {
-                        const variantIndex = product.variants.findIndex(
-                            v => v.size === item.size && v.color === item.color
+                    if (product && product.variants && product.variants.length > 0) {
+                        const currentStock = product.getStockForVariant(item.size, item.color);
+                        const success = product.updateVariantStock(
+                            item.size,
+                            item.color,
+                            currentStock + item.quantity
                         );
-                        if (variantIndex !== -1) {
-                            product.variants[variantIndex].stock += item.quantity;
+                        if (success) {
                             await product.save();
+                            console.log(`Reverted stock for ${product.name} (Size: ${item.size}, Color: ${item.color})`);
                         }
                     }
                 }
