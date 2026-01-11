@@ -51,12 +51,19 @@ export default function MissionSection() {
         }}
       >
         <Title level={2} style={{
-          marginBottom: "10px", fontWeight: 500, fontFamily: "'FONTSPRING DEMO - The Seasons', 'Playfair Display', serif",
+          marginBottom: "10px", 
+          fontWeight: 500, 
+          fontFamily: "'FONTSPRING DEMO - The Seasons', 'Playfair Display', serif",
+          fontSize: window.innerWidth <= 480 ? "28px" : window.innerWidth <= 768 ? "32px" : "38px"
         }}>
           Our Mission
         </Title>
 
-        <Paragraph style={{ fontStyle: "italic", color: "#8E6A4E" }}>
+        <Paragraph style={{ 
+          fontStyle: "italic", 
+          color: "#8E6A4E",
+          fontSize: window.innerWidth <= 480 ? "16px" : window.innerWidth <= 768 ? "18px" : "20px"
+        }}>
           To redefine glassware for modern homes&nbsp;– sustainable, stunning,
           and made to be cherished
         </Paragraph>
@@ -64,7 +71,7 @@ export default function MissionSection() {
         <Paragraph
           style={{
             marginTop: window.innerWidth <= 768 ? "15px" : "20px",
-            fontSize: window.innerWidth <= 768 ? "14px" : "18px",
+            fontSize: window.innerWidth <= 480 ? "16px" : window.innerWidth <= 768 ? "18px" : "22px",
             lineHeight: "1.7",
             color: "#8E6A4E",
             fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
@@ -76,12 +83,10 @@ export default function MissionSection() {
         <Paragraph
           style={{
             marginTop: window.innerWidth <= 768 ? "15px" : "20px",
-            fontSize: window.innerWidth <= 768 ? "14px" : "18px",
+            fontSize: window.innerWidth <= 480 ? "16px" : window.innerWidth <= 768 ? "18px" : "22px",
             lineHeight: "1.7",
             color: "#8E6A4E",
             fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
-
-
           }}
         >
           Founded with a passion for design and craftsmanship, we create
@@ -91,11 +96,10 @@ export default function MissionSection() {
         <Paragraph
           style={{
             marginTop: window.innerWidth <= 768 ? "15px" : "20px",
-            fontSize: window.innerWidth <= 768 ? "14px" : "18px",
+            fontSize: window.innerWidth <= 480 ? "16px" : window.innerWidth <= 768 ? "18px" : "22px",
             lineHeight: "1.7",
             color: "#8E6A4E",
             fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
-
           }}
         >
           From artisanal makers to modern innovation, our pieces reflect
@@ -114,13 +118,14 @@ export default function MissionSection() {
       }}
     >
       <Title 
-        level={window.innerWidth <= 768 ? 3 : 2}
+        level={2}
         style={{
           fontWeight: 500,
           fontFamily: "'FONTSPRING DEMO - The Seasons', 'Playfair Display', serif",
           color: "white",
           verticalAlign: "center",
           margin: "0",
+          fontSize: window.innerWidth <= 480 ? "28px" : window.innerWidth <= 768 ? "32px" : "38px"
         }}
       >
         Gift Sets

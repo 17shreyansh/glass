@@ -87,24 +87,6 @@ const Hero = () => {
           </Link>
         </div>
       </div>
-
-      {/* Promotional Banner */}
-      <div
-        style={{
-          backgroundColor: "#f5f5f5",
-          textAlign: "center",
-          padding: window.innerWidth <= 768 ? "8px 0" : "6px 0",
-          fontSize: window.innerWidth <= 768 ? "12px" : "14px",
-          fontWeight: 500,
-          fontFamily: "'Hanken Grotesk', sans-serif",
-          whiteSpace: "nowrap",
-        }}
-      >
-        <div style={{ color: "#594131" }}>
-          4L+ Happy Customers | Gifts For Her @ 50% OFF | Ships in 24 hours &nbsp;&nbsp;&nbsp;
-          4L+ Happy Customers | Gifts For Her @ 50% OFF | Ships in 24 hours
-        </div>
-      </div>
     </>
   );
 };

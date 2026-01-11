@@ -55,7 +55,7 @@ const ContactUs = () => {
           textAlign: "center",
           paddingTop: isMobile ? "30px" : "50px",
           marginBottom: isMobile ? "30px" : "40px",
-          fontSize: "clamp(28px, 5vw, 36px)",
+          fontSize: "clamp(32px, 5vw, 42px)",
           fontWeight: 400,
           padding: "0 20px",
         }}
@@ -68,7 +68,7 @@ const ContactUs = () => {
         <p
           style={{
             fontFamily: "'HK Grotesk', sans-serif",
-            fontSize: isMobile ? "14px" : "15px",
+            fontSize: isMobile ? "16px" : "18px",
             opacity: 0.8,
             marginBottom: "25px",
             lineHeight: "1.6",
@@ -150,8 +150,8 @@ const ContactUs = () => {
           {/* Address */}
           <div style={{ marginBottom: isMobile ? "30px" : "40px" }}>
             <EnvironmentOutlined style={{ fontSize: "20px", marginRight: "10px" }} />
-            <span style={{ fontSize: isMobile ? "15px" : "16px" }}>MV CRAFTED IMPEX</span>
-            <p style={{ marginTop: "10px", lineHeight: "1.8", opacity: 0.9, fontSize: isMobile ? "14px" : "16px" }}>
+            <span style={{ fontSize: isMobile ? "18px" : "20px" }}>MV CRAFTED IMPEX</span>
+            <p style={{ marginTop: "10px", lineHeight: "1.8", opacity: 0.9, fontSize: isMobile ? "16px" : "18px" }}>
               A-44, RENUKA BAGH <br />
               KAMLA NAGAR <br />
               AGRA – 282005 (U.P.) <br />
@@ -162,13 +162,13 @@ const ContactUs = () => {
           {/* Phone */}
           <div style={{ marginBottom: "30px" }}>
             <PhoneOutlined style={{ fontSize: "20px", marginRight: "10px" }} />
-            <span style={{ fontSize: isMobile ? "15px" : "16px", wordBreak: "break-word" }}>+91 9084250567 (WHATSAPP)</span>
+            <span style={{ fontSize: isMobile ? "18px" : "20px", wordBreak: "break-word" }}>+91 9084250567 (WHATSAPP)</span>
           </div>
 
           {/* Email */}
           <div>
             <MailOutlined style={{ fontSize: "20px", marginRight: "10px" }} />
-            <span style={{ fontSize: isMobile ? "15px" : "16px", wordBreak: "break-word" }}>MVCRAFTEDIMPEX@GMAIL.COM</span>
+            <span style={{ fontSize: isMobile ? "18px" : "20px", wordBreak: "break-word" }}>MVCRAFTEDIMPEX@GMAIL.COM</span>
           </div>
 
           {/* Phone */}
