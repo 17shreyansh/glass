@@ -37,7 +37,7 @@ const Signup = () => {
         {/* Left Side - Image */}
         <Col xs={0} md={12} lg={14} xl={16}
           style={{
-            backgroundImage: `linear-gradient(rgba(142, 106, 78, 0.7), rgba(142, 106, 78, 0.7)), url(${heroImage})`,
+            backgroundImage: `linear-gradient(rgba(89, 65, 49, 0.7), rgba(89, 65, 49, 0.7)), url(${heroImage})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             display: 'flex',
@@ -52,23 +52,23 @@ const Signup = () => {
             <Title level={1} className="auth-hero-title" style={{ 
               color: 'white', 
               fontSize: '48px',
-              fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
+              fontFamily: "'FONTSPRING DEMO - The Seasons', 'Playfair Display', serif",
               fontWeight: 300,
               marginBottom: '20px'
             }}>
-              Join Delicorn
+              Join Our Community
             </Title>
             <Text className="auth-hero-text" style={{ 
               color: 'rgba(255,255,255,0.9)', 
               fontSize: '18px',
               fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif"
             }}>
-              Become part of our exclusive jewelry community and discover handcrafted treasures
+              Elevate every moment with premium glassware and serveware
             </Text>
             <div className="auth-benefits" style={{ marginTop: '40px', fontSize: '16px' }}>
-              <div style={{ marginBottom: '15px' }}>✨ Exclusive member discounts</div>
-              <div style={{ marginBottom: '15px' }}>🎁 Early access to new collections</div>
-              <div>📦 Free shipping on orders above ₹999</div>
+              <div style={{ marginBottom: '15px' }}>✨ Exclusive member benefits</div>
+              <div style={{ marginBottom: '15px' }}>🎁 Early access to new arrivals</div>
+              <div>📦 Free shipping pan India</div>
             </div>
           </div>
         </Col>
@@ -93,7 +93,7 @@ const Signup = () => {
               className="auth-back-button"
               style={{ 
                 marginBottom: '30px',
-                color: '#8E6A4E',
+                color: '#594131',
                 fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                 fontSize: '14px',
                 transition: 'all 0.3s ease'
@@ -115,7 +115,7 @@ const Signup = () => {
               {/* Header */}
               <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                 <Title level={2} style={{ 
-                  color: '#8E6A4E',
+                  color: '#594131',
                   fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                   fontWeight: 400,
                   marginBottom: '8px'
@@ -127,7 +127,7 @@ const Signup = () => {
                   fontSize: '16px',
                   fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif"
                 }}>
-                  Join the Delicorn family today
+                  Start your journey with us
                 </Text>
               </div>
 
@@ -138,7 +138,7 @@ const Signup = () => {
                   rules={[{ required: true, message: 'Please enter your full name' }]}
                 >
                   <Input 
-                    prefix={<UserOutlined style={{ color: '#8E6A4E' }} />} 
+                    prefix={<UserOutlined style={{ color: '#594131' }} />} 
                     placeholder="Full Name" 
                     className="auth-input"
                     autoComplete="name"
@@ -159,7 +159,7 @@ const Signup = () => {
                   ]}
                 >
                   <Input 
-                    prefix={<MailOutlined style={{ color: '#8E6A4E' }} />} 
+                    prefix={<MailOutlined style={{ color: '#594131' }} />} 
                     placeholder="Email Address" 
                     className="auth-input"
                     autoComplete="email"
@@ -180,7 +180,7 @@ const Signup = () => {
                   ]}
                 >
                   <Input 
-                    prefix={<PhoneOutlined style={{ color: '#8E6A4E' }} />} 
+                    prefix={<PhoneOutlined style={{ color: '#594131' }} />} 
                     placeholder="Phone Number" 
                     className="auth-input"
                     autoComplete="tel"
@@ -201,7 +201,7 @@ const Signup = () => {
                   ]}
                 >
                   <Input.Password 
-                    prefix={<LockOutlined style={{ color: '#8E6A4E' }} />} 
+                    prefix={<LockOutlined style={{ color: '#594131' }} />} 
                     placeholder="Password" 
                     className="auth-input"
                     autoComplete="new-password"
@@ -230,7 +230,7 @@ const Signup = () => {
                   ]}
                 >
                   <Input.Password 
-                    prefix={<LockOutlined style={{ color: '#8E6A4E' }} />} 
+                    prefix={<LockOutlined style={{ color: '#594131' }} />} 
                     placeholder="Confirm Password" 
                     className="auth-input"
                     autoComplete="new-password"
@@ -251,7 +251,7 @@ const Signup = () => {
                   ]}
                 >
                   <Checkbox style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>
-                    I agree to the <Link to="/terms" className="auth-link" style={{ color: '#8E6A4E', transition: 'all 0.3s ease' }}>Terms & Conditions</Link> and <Link to="/privacy" className="auth-link" style={{ color: '#8E6A4E', transition: 'all 0.3s ease' }}>Privacy Policy</Link>
+                    I agree to the <Link to="/terms" className="auth-link" style={{ color: '#594131', transition: 'all 0.3s ease' }}>Terms & Conditions</Link> and <Link to="/privacy" className="auth-link" style={{ color: '#594131', transition: 'all 0.3s ease' }}>Privacy Policy</Link>
                   </Checkbox>
                 </Form.Item>
 
@@ -263,8 +263,8 @@ const Signup = () => {
                     block
                     className="auth-button"
                     style={{ 
-                      background: '#8E6A4E',
-                      borderColor: '#8E6A4E',
+                      background: '#594131',
+                      borderColor: '#594131',
                       height: '48px',
                       borderRadius: '8px',
                       fontSize: '16px',
@@ -291,7 +291,7 @@ const Signup = () => {
                     to="/login"
                     className="auth-link"
                     style={{ 
-                      color: '#8E6A4E',
+                      color: '#594131',
                       fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
                       fontWeight: 500,
                       textDecoration: 'none',
@@ -313,10 +313,10 @@ const Signup = () => {
               fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif"
             }}>
               <div style={{ marginBottom: '10px' }}>
-                🔒 Your information is secure and encrypted
+                🔒 Secure and encrypted
               </div>
               <div>
-                ⭐ Join 4L+ happy customers worldwide
+                ⭐ Trusted by thousands
               </div>
             </div>
           </div>

@@ -44,7 +44,7 @@ const Login = () => {
         top: '30px',
         left: '30px'
       }}>
-        <img src={logo} alt="Delicorn" style={{ height: '45px' }} />
+        <img src={logo} alt="MV Crafted" style={{ height: '45px' }} />
       </div>
       
       {/* Back Button */}

@@ -41,7 +41,7 @@ const Footer = () => {
           <div style={{ marginBottom: window.innerWidth <= 768 ? "16px" : "24px" }}>
             <img
               src={logo}
-              alt="Delicorn Logo"
+              alt="MV Crafted"
               style={{ width: window.innerWidth <= 768 ? "140px" : "180px", marginBottom: window.innerWidth <= 768 ? "16px" : "24px" }}
             />
           </div>
@@ -96,7 +96,7 @@ const Footer = () => {
               fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif",
             }}
           >
-            Discover premium eyewear that combines style, quality, and comfort. Your vision, our passion.
+            Premium glassware and serveware crafted for elegance and durability.
           </Text>
         </Col>
 
@@ -212,7 +212,7 @@ const Footer = () => {
           <Link to="/return-refund" style={{ color: "white", textDecoration: "none" }}>Terms and Conditions</Link>
           {window.innerWidth > 768 && " | "}
           {window.innerWidth <= 768 && <br />}
-          © {new Date().getFullYear()} Delicorn. All rights reserved.
+          © {new Date().getFullYear()} MV Crafted. All rights reserved.
         </Text>
       </div>
       </div>

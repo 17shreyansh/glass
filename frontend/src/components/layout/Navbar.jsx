@@ -251,7 +251,7 @@ const Navbar = () => {
           <Link to="/" style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
             <img 
               src={logo} 
-              alt="Delicorn Logo" 
+              alt="MV Crafted" 
               style={{ 
                 height: isMobile ? '60px' : '85px',
                 width: 'auto',

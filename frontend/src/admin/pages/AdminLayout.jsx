@@ -118,7 +118,7 @@ const AdminLayout = () => {
       >
         {/* Logo/title for the admin panel */}
         <div className="logo">
-          {collapsed ? '💎' : '💎 Delicorn Admin'}
+          {collapsed ? '🍷' : '🍷 MV Crafted Admin'}
         </div>
         {/* Navigation Menu */}
         <Menu 
@@ -189,7 +189,7 @@ const AdminLayout = () => {
             onClick={() => setCollapsed(!collapsed)} 
             style={{ fontSize: '16px', marginRight: 16 }}
           />
-          <Title level={4} style={{ margin: 0, flex: 1 }}>Delicorn Admin Panel</Title>
+          <Title level={4} style={{ margin: 0, flex: 1 }}>MV Crafted Admin Panel</Title>
           <Space size="large">
             <Dropdown menu={{ items: notificationMenuItems, style: { width: 300 } }} trigger={['click']} placement="bottomRight">
               <Button type="text" icon={<BellOutlined style={{ fontSize: '18px' }} />} />
