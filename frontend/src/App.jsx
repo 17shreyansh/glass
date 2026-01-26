@@ -41,6 +41,7 @@ import Users from './admin/pages/users';
 // Auth Pages
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
 import VerifyEmail from './pages/VerifyEmail';
 import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -89,6 +90,7 @@ function App() {
                         <Route path="/login" element={<Login />} />
                         <Route path="/signup" element={<Signup />} />
                         <Route path="/auth" element={<Login />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/verify-email/:token" element={<VerifyEmail />} />
                         <Route path="/reset-password/:token" element={<ResetPassword />} />
                         
