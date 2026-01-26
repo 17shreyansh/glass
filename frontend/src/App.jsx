@@ -41,6 +41,8 @@ import Users from './admin/pages/users';
 // Auth Pages
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import VerifyEmail from './pages/VerifyEmail';
+import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -87,6 +89,8 @@ function App() {
                         <Route path="/login" element={<Login />} />
                         <Route path="/signup" element={<Signup />} />
                         <Route path="/auth" element={<Login />} />
+                        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+                        <Route path="/reset-password/:token" element={<ResetPassword />} />
                         
                         {/* Product & Shopping */}
                         <Route path={ROUTES.PRODUCT_DETAIL} element={<ProductDetail />} />

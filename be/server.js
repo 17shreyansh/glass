@@ -66,13 +66,17 @@ initializeServices().catch(error => {
 });
 
 // Middleware setup
-app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174', "https://mvcrafted.com", "https://www.mvcrafted.com"],
+const corsOptions = {
+    origin: process.env.NODE_ENV === 'production' 
+        ? ['https://mvcrafted.com', 'https://www.mvcrafted.com']
+        : ['http://localhost:5173', 'http://localhost:5174'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     optionsSuccessStatus: 200
-}));
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json()); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: false })); // Parse URL-encoded request bodies
@@ -123,13 +127,10 @@ app.get("/api/health", (req, res) => {
 // Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`\n🚀 Delicorn E-commerce API Server`);
+    console.log(`\n🚀 MV Crafted E-commerce API Server`);
     console.log(`📡 Server running on port ${PORT}`);
+    console.log(`🌐 Environment: ${process.env.NODE_ENV}`);
     console.log(`🌐 API URL: http://localhost:${PORT}`);
     console.log(`📊 Health Check: http://localhost:${PORT}/api/health`);
-    console.log(`\n📝 Available endpoints:`);
-    console.log(`   - Products: http://localhost:${PORT}/api/products`);
-    console.log(`   - Auth: http://localhost:${PORT}/api/auth`);
-    console.log(`   - Admin: http://localhost:${PORT}/admin`);
     console.log(`\n✅ Ready for connections!\n`);
 });

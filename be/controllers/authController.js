@@ -12,11 +12,11 @@ const sendTokenResponse = (user, statusCode, res) => {
     });
 
     const options = {
-        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000), // Cookie expiration
-        httpOnly: true, // Makes the cookie inaccessible to client-side scripts
-        secure: false, // Set to false for development
-        sameSite: 'Lax', // Lax for development
-        path: '/' // Ensure cookie is available for all paths
+        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
+        path: '/'
     };
 
     // Update user's last login timestamp
@@ -75,18 +75,18 @@ exports.register = async (req, res) => {
         await user.save({ validateBeforeSave: false }); // Save the token to the user document
 
         // Construct the verification URL
-        const verifyURL = `${req.protocol}://${req.get('host')}/api/auth/verify-email/${verifyToken}`;
+        const verifyURL = `${process.env.FRONTEND_URL}/verify-email/${verifyToken}`;
 
         // Email message content for verification
         const message = `
-            <h1>Welcome to Your Shoe Store!</h1>
+            <h1>Welcome to <strong>MV Crafted</strong>!</h1>
             <p>Thank you for registering with us. To activate your account, please verify your email by clicking the link below:</p>
-            <a href="${verifyURL}" style="background: #007cba; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Verify Your Email Now</a>
+            <a href="${verifyURL}" style="background: #8E6A4E; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Verify Your Email Now</a>
             <p style="margin-top: 20px;">This verification link will expire in 24 hours.</p>
             <p>If you did not create this account, please ignore this email.</p>
             <br>
             <p>Happy Shopping!</p>
-            <p>The Your Shoe Store Team</p>
+            <p>The <strong>MV Crafted</strong> Team</p>
         `;
 
         // Send the verification email
@@ -95,7 +95,7 @@ exports.register = async (req, res) => {
             await transporter.sendMail({
                 from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
                 to: user.email,
-                subject: `Verify Your Email for Your Shoe Store Account`,
+                subject: `Verify Your Email for MV Crafted Account`,
                 html: message,
             });
 
@@ -281,17 +281,17 @@ exports.forgotPassword = async (req, res) => {
         await user.save({ validateBeforeSave: false }); // Save the token to the user document
 
         // Construct the reset URL
-        const resetURL = `${req.protocol}://${req.get('host')}/api/auth/reset-password/${resetToken}`;
+        const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
         // Email message content for password reset
         const message = `
-            <h1>Password Reset Request for Your Shoe Store</h1>
+            <h1>Password Reset Request for <strong>MV Crafted</strong></h1>
             <p>You have requested to reset your password. Please click the link below to set a new password:</p>
-            <a href="${resetURL}" style="background: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset My Password</a>
+            <a href="${resetURL}" style="background: #8E6A4E; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset My Password</a>
             <p style="margin-top: 20px;">This password reset link will expire in 15 minutes.</p>
             <p>If you did not request a password reset, please ignore this email.</p>
             <br>
-            <p>The Your Shoe Store Team</p>
+            <p>The <strong>MV Crafted</strong> Team</p>
         `;
 
         // Send the reset email
@@ -427,17 +427,17 @@ exports.resendVerification = async (req, res) => {
         await user.save({ validateBeforeSave: false }); // Save the new token
 
         // Construct the new verification URL
-        const verifyURL = `${req.protocol}://${req.get('host')}/api/auth/verify-email/${verifyToken}`;
+        const verifyURL = `${process.env.FRONTEND_URL}/verify-email/${verifyToken}`;
 
         // Email message content
         const message = `
-            <h1>Resend Email Verification for Your Shoe Store</h1>
+            <h1>Resend Email Verification for <strong>MV Crafted</strong></h1>
             <p>You recently requested to resend your email verification. Please verify your email by clicking the link below:</p>
-            <a href="${verifyURL}" style="background: #007cba; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Verify Your Email</a>
+            <a href="${verifyURL}" style="background: #8E6A4E; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Verify Your Email</a>
             <p style="margin-top: 20px;">This link will expire in 24 hours.</p>
             <p>If you did not request this, please ignore this email.</p>
             <br>
-            <p>The Your Shoe Store Team</p>
+            <p>The <strong>MV Crafted</strong> Team</p>
         `;
 
         // Send the new verification email
@@ -446,7 +446,7 @@ exports.resendVerification = async (req, res) => {
             await transporter.sendMail({
                 from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
                 to: user.email,
-                subject: `Resend Email Verification for Your Shoe Store`,
+                subject: `Resend Email Verification for MV Crafted`,
                 html: message,
             });
 
