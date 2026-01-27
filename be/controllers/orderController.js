@@ -494,6 +494,13 @@ const generateInvoicePDF = (order) => {
                     .text(`-${formatCurrency(order.discountAmount)}`, 450, summaryY, { width: 85, align: 'right' });
             }
 
+            if (order.discountOnDelivery > 0) {
+                summaryY += 20;
+                doc.fillColor('#6B8E23')
+                    .text('Delivery Discount:', summaryX, summaryY)
+                    .text(`-${formatCurrency(order.discountOnDelivery)}`, 450, summaryY, { width: 85, align: 'right' });
+            }
+
             summaryY += 20;
             doc.fillColor('#666')
                 .text('GST (18%):', summaryX, summaryY)

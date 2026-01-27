@@ -2,8 +2,8 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Coupon = require('../models/Coupon');
-const DeliveryCharge = require('../models/DeliveryCharge');
 const PaymentService = require('./PaymentService');
+const shiprocketService = require('./shiprocket.service');
 
 class OrderService {
     constructor() {
@@ -103,14 +103,34 @@ class OrderService {
             }
         }
 
-        // Calculate Delivery Charge
-        const deliveryChargeDoc = await DeliveryCharge.findOne({
-            city: shippingAddress.city?.toLowerCase(),
-            state: shippingAddress.state?.toLowerCase()
-        });
+        // Calculate Delivery Charge from Shiprocket
+        let deliveryCharge = 0;
         
-        // Default delivery charge if no specific city/state charge is found
-        let deliveryCharge = deliveryChargeDoc ? deliveryChargeDoc.charge : 50; // Default to 50 if no charge found
+        if (shippingAddress.pincode) {
+            try {
+                const pickupPincode = process.env.SHIPROCKET_PICKUP_PINCODE || '110001';
+                const weight = validatedItems.reduce((sum, item) => sum + (item.quantity * 0.5), 0);
+                
+                const serviceability = await shiprocketService.checkServiceability(
+                    pickupPincode,
+                    shippingAddress.pincode,
+                    0,
+                    weight
+                );
+                
+                if (serviceability.success && serviceability.couriers && serviceability.couriers.length > 0) {
+                    const charges = serviceability.couriers.map(c => c.rate || c.freight_charge || 0);
+                    deliveryCharge = Math.min(...charges);
+                } else {
+                    deliveryCharge = 100;
+                }
+            } catch (error) {
+                console.error('Shiprocket delivery charge error:', error);
+                deliveryCharge = 100;
+            }
+        } else {
+            deliveryCharge = 100;
+        }
         
         // Validate numeric values
         if (typeof subtotal !== 'number' || isNaN(subtotal)) {
@@ -196,11 +216,11 @@ class OrderService {
             discountOnDelivery = 0;
         }
 
-        // Calculate GST (18% on subtotal after discount) - REMOVED
+        // Calculate GST (18% on subtotal after discount)
         const taxableAmount = subtotal - discountAmount;
-        const gstAmount = 0; // GST removed
+        const gstAmount = Math.round((taxableAmount * 0.18) * 100) / 100;
         
-        const totalAmount = Math.max(0, subtotal - discountAmount + deliveryCharge - discountOnDelivery);
+        const totalAmount = Math.max(0, subtotal - discountAmount + deliveryCharge - discountOnDelivery + gstAmount);
         
         // Final validation of total amount
         if (typeof totalAmount !== 'number' || isNaN(totalAmount) || totalAmount < 0) {

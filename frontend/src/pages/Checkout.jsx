@@ -20,15 +20,16 @@ const Checkout = () => {
   const { cartItems, clearCart, getCartTotal, updateQuantity, removeFromCart } = useCart();
   const { user, isAuthenticated } = useUser();
   const [coupon, setCoupon] = useState('');
-  const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponError, setCouponError] = useState('');
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [guestInfo, setGuestInfo] = useState({ name: '', email: '', phone: '' });
-  const [isGuest, setIsGuest] = useState(false);
+  const [deliveryCharge, setDeliveryCharge] = useState(0);
+  const [loadingDelivery, setLoadingDelivery] = useState(false);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [discountOnDelivery, setDiscountOnDelivery] = useState(0);
 
   useEffect(() => {
     if (cartItems.length > 0 && !isAuthenticated()) {
-      // Allow guest checkout - don't redirect
       return;
     }
     if (isAuthenticated()) {
@@ -42,9 +43,29 @@ const Checkout = () => {
       setAddresses(response.data || []);
       if (response.data && response.data.length > 0) {
         setSelectedAddress(response.data[0]._id);
+        fetchDeliveryCharge(response.data[0].pincode);
       }
     } catch (error) {
       console.error('Failed to fetch addresses:', error);
+    }
+  };
+
+  const fetchDeliveryCharge = async (pincode) => {
+    if (!pincode) return;
+    setLoadingDelivery(true);
+    try {
+      const response = await apiService.request(`/orders/check-pincode?pincode=${pincode}`);
+      if (response.success && response.couriers && response.couriers.length > 0) {
+        const charges = response.couriers.map(c => c.rate || c.freight_charge || 0);
+        setDeliveryCharge(Math.min(...charges));
+      } else {
+        setDeliveryCharge(100);
+      }
+    } catch (error) {
+      console.error('Failed to fetch delivery charge:', error);
+      setDeliveryCharge(100);
+    } finally {
+      setLoadingDelivery(false);
     }
   };
 
@@ -54,29 +75,42 @@ const Checkout = () => {
       return;
     }
 
+    const address = addresses.find(a => a._id === selectedAddress);
+    if (!address || !address.pincode) {
+      message.warning('Please select a delivery address first');
+      return;
+    }
+
     setApplyingCoupon(true);
     setCouponError('');
     
     try {
-      const response = await apiService.request(`/coupons/validate/${coupon}`, {
-        method: 'POST',
-        body: JSON.stringify({
-          orderAmount: subtotal,
-          items: cartItems.map(item => ({
-            productId: item._id || item.id,
-            quantity: item.quantity,
-            price: item.price
-          }))
-        })
+      const response = await apiService.applyCoupon({
+        couponCode: coupon,
+        items: cartItems.map(item => ({
+          _id: item._id || item.id,
+          size: item.size || 'Standard',
+          color: item.color || 'Default',
+          quantity: item.quantity
+        })),
+        shippingAddress: {
+          city: address.city,
+          state: address.state,
+          pincode: address.pincode
+        }
       });
 
-      if (response.discount || response.discountOnDelivery) {
-        setCouponDiscount(response.discount || 0);
-        message.success(`Coupon applied! You saved ₹${response.discount || response.discountOnDelivery}`);
+      if (response.success) {
+        const calc = response.calculation;
+        setDiscountAmount(calc.discountAmount);
+        setDiscountOnDelivery(calc.discountOnDelivery);
+        setDeliveryCharge(calc.deliveryCharge);
+        message.success(`Coupon applied! You saved ₹${calc.savings}`);
       }
     } catch (error) {
       setCouponError(error.message || 'Invalid coupon code');
-      setCouponDiscount(0);
+      setDiscountAmount(0);
+      setDiscountOnDelivery(0);
       message.error(error.message || 'Invalid coupon code');
     } finally {
       setApplyingCoupon(false);
@@ -88,10 +122,10 @@ const Checkout = () => {
       const values = await form.validateFields();
       
       if (!isAuthenticated()) {
-        // For guests, just add to local state
         const newAddr = { ...values, _id: Date.now().toString() };
         setAddresses([...addresses, newAddr]);
         setSelectedAddress(newAddr._id);
+        fetchDeliveryCharge(values.pincode);
         message.success('Address added');
       } else {
         await apiService.request('/user/addresses', {
@@ -110,7 +144,7 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async () => {
-    if (!selectedAddress && !isGuest) {
+    if (!selectedAddress) {
       message.error('Please select a delivery address');
       return;
     }
@@ -123,7 +157,6 @@ const Checkout = () => {
     try {
       setLoading(true);
       
-      // Guest checkout: check if account exists, login or create
       if (!isAuthenticated()) {
         if (!guestInfo.name || !guestInfo.email || !guestInfo.phone) {
           message.error('Please fill in all required fields');
@@ -139,7 +172,6 @@ const Checkout = () => {
         }
 
         try {
-          // Try to register - if email exists, backend will return error
           const registerResponse = await apiService.request('/auth/register', {
             method: 'POST',
             body: JSON.stringify({
@@ -152,11 +184,10 @@ const Checkout = () => {
           });
           
           if (registerResponse.success) {
-            window.location.reload(); // Reload to update auth state
+            window.location.reload();
             return;
           }
         } catch (error) {
-          // If email already exists, show login prompt
           if (error.message?.includes('already registered')) {
             Modal.confirm({
               title: 'Account Already Exists',
@@ -265,9 +296,9 @@ const Checkout = () => {
   };
 
   const subtotal = getCartTotal();
-  const shipping = 0;
-  const gst = Math.round((subtotal * 0.18) * 100) / 100;
-  const total = subtotal + gst - couponDiscount;
+  const taxableAmount = subtotal - discountAmount;
+  const gst = Math.round((taxableAmount * 0.18) * 100) / 100;
+  const total = subtotal - discountAmount + deliveryCharge - discountOnDelivery + gst;
 
   const styles = {
     page: { marginTop: 80, padding: '20px 5%', fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", background: '#fff' },
@@ -356,7 +387,7 @@ const Checkout = () => {
                   </Button>
                 </div>
                 {couponError && <Text type="danger" style={{ fontSize: 12, marginTop: 5, display: 'block' }}>{couponError}</Text>}
-                {couponDiscount > 0 && <Text type="success" style={{ fontSize: 12, marginTop: 5, display: 'block', color: '#52c41a' }}>✓ Coupon applied successfully!</Text>}
+                {(discountAmount > 0 || discountOnDelivery > 0) && <Text type="success" style={{ fontSize: 12, marginTop: 5, display: 'block', color: '#52c41a' }}>✓ Coupon applied successfully!</Text>}
               </Card>
             </Col>
 
@@ -364,17 +395,23 @@ const Checkout = () => {
               <Card style={styles.summaryCard}>
                 <Title level={4} style={{ marginBottom: 20 }}>Order Summary</Title>
                 <div style={styles.summaryRow}><span>Subtotal ({cartItems.length} items):</span><span>₹{subtotal.toFixed(2)}</span></div>
+                {discountAmount > 0 && (
+                  <>
+                    <Divider style={styles.divider} />
+                    <div style={{ ...styles.summaryRow, color: '#52c41a' }}><span>Discount ({coupon}):</span><span>-₹{discountAmount.toFixed(2)}</span></div>
+                  </>
+                )}
                 <Divider style={styles.divider} />
                 <div style={styles.summaryRow}><span>GST (18%):</span><span>₹{gst.toFixed(2)}</span></div>
                 <Divider style={styles.divider} />
-                <div style={styles.summaryRow}><span>Shipping:</span><span style={{ color: '#52c41a' }}>FREE</span></div>
-                <Divider style={styles.divider} />
-                {couponDiscount > 0 && (
+                <div style={styles.summaryRow}><span>Shipping:</span><span>{loadingDelivery ? 'Calculating...' : deliveryCharge > 0 ? `₹${deliveryCharge.toFixed(2)}` : 'FREE'}</span></div>
+                {discountOnDelivery > 0 && (
                   <>
-                    <div style={{ ...styles.summaryRow, color: '#52c41a' }}><span>Coupon Discount ({coupon}):</span><span>-₹{couponDiscount.toFixed(2)}</span></div>
                     <Divider style={styles.divider} />
+                    <div style={{ ...styles.summaryRow, color: '#52c41a' }}><span>Delivery Discount:</span><span>-₹{discountOnDelivery.toFixed(2)}</span></div>
                   </>
                 )}
+                <Divider style={styles.divider} />
                 <div style={{ ...styles.summaryRow, fontWeight: 700, fontSize: 18, color: '#000', marginTop: 10 }}><span>Total:</span><span>₹{total.toFixed(2)}</span></div>
               </Card>
 
@@ -420,7 +457,10 @@ const Checkout = () => {
                   </Empty>
                 ) : (
                   addresses.map(addr => (
-                    <div key={addr._id} style={styles.addressCard(selectedAddress === addr._id)} onClick={() => setSelectedAddress(addr._id)}>
+                    <div key={addr._id} style={styles.addressCard(selectedAddress === addr._id)} onClick={() => {
+                      setSelectedAddress(addr._id);
+                      fetchDeliveryCharge(addr.pincode);
+                    }}>
                       <Radio checked={selectedAddress === addr._id} />
                       <div style={{ marginLeft: 10 }}>
                         <Text strong>{addr.type?.toUpperCase() || 'ADDRESS'}</Text>
@@ -445,17 +485,23 @@ const Checkout = () => {
               <Card style={styles.summaryCard}>
                 <Title level={4} style={{ marginBottom: 20 }}>Order Summary</Title>
                 <div style={styles.summaryRow}><span>Subtotal ({cartItems.length} items):</span><span>₹{subtotal.toFixed(2)}</span></div>
+                {discountAmount > 0 && (
+                  <>
+                    <Divider style={styles.divider} />
+                    <div style={{ ...styles.summaryRow, color: '#52c41a' }}><span>Discount ({coupon}):</span><span>-₹{discountAmount.toFixed(2)}</span></div>
+                  </>
+                )}
                 <Divider style={styles.divider} />
                 <div style={styles.summaryRow}><span>GST (18%):</span><span>₹{gst.toFixed(2)}</span></div>
                 <Divider style={styles.divider} />
-                <div style={styles.summaryRow}><span>Shipping:</span><span style={{ color: '#52c41a' }}>FREE</span></div>
-                <Divider style={styles.divider} />
-                {couponDiscount > 0 && (
+                <div style={styles.summaryRow}><span>Shipping:</span><span>{loadingDelivery ? 'Calculating...' : deliveryCharge > 0 ? `₹${deliveryCharge.toFixed(2)}` : 'FREE'}</span></div>
+                {discountOnDelivery > 0 && (
                   <>
-                    <div style={{ ...styles.summaryRow, color: '#52c41a' }}><span>Coupon Discount ({coupon}):</span><span>-₹{couponDiscount.toFixed(2)}</span></div>
                     <Divider style={styles.divider} />
+                    <div style={{ ...styles.summaryRow, color: '#52c41a' }}><span>Delivery Discount:</span><span>-₹{discountOnDelivery.toFixed(2)}</span></div>
                   </>
                 )}
+                <Divider style={styles.divider} />
                 <div style={{ ...styles.summaryRow, fontWeight: 700, fontSize: 18, color: '#000', marginTop: 10 }}><span>Total:</span><span>₹{total.toFixed(2)}</span></div>
               </Card>
             </Col>
