@@ -28,6 +28,7 @@ const returnRoutes = require('./routes/returnRoutes'); // Import return routes
 const contactRoutes = require('./routes/contactRoutes'); // Import contact routes
 const stockRoutes = require('./routes/stockRoutes'); // Import stock routes
 const webhookRoutes = require('./routes/webhookRoutes'); // Import webhook routes
+const settingsRoutes = require('./routes/settingsRoutes'); // Import settings routes
 const OrderService = require('./services/OrderService');
 const cron = require('node-cron');
 
@@ -112,6 +113,7 @@ app.use('/api/returns', returnRoutes); // NEW: Return routes
 app.use('/api/contacts', contactRoutes); // NEW: Contact routes
 app.use('/api/stock', stockRoutes); // NEW: Stock management routes
 app.use('/api/webhook', webhookRoutes); // NEW: Webhook routes for Shiprocket
+app.use('/api/settings', settingsRoutes); // NEW: Settings routes
 
 
 

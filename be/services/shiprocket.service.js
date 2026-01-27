@@ -1,4 +1,5 @@
 const axios = require('axios');
+const Settings = require('../models/Settings');
 
 class ShiprocketService {
     constructor() {
@@ -12,10 +13,10 @@ class ShiprocketService {
             return this.token;
         }
 
-        const { data } = await axios.post(`${this.baseURL}/auth/login`, {
-            email: process.env.SHIPROCKET_EMAIL,
-            password: process.env.SHIPROCKET_PASSWORD
-        });
+        const email = await Settings.getValue('SHIPROCKET_EMAIL', process.env.SHIPROCKET_EMAIL);
+        const password = await Settings.getValue('SHIPROCKET_PASSWORD', process.env.SHIPROCKET_PASSWORD);
+
+        const { data } = await axios.post(`${this.baseURL}/auth/login`, { email, password });
 
         this.token = data.token;
         this.tokenExpiry = Date.now() + (9 * 24 * 60 * 60 * 1000);
@@ -55,11 +56,12 @@ class ShiprocketService {
 
     async createOrder(orderData) {
         const headers = await this.getHeaders();
+        const pickupLocation = await Settings.getValue('SHIPROCKET_PICKUP_LOCATION', process.env.SHIPROCKET_PICKUP_LOCATION || 'Primary');
         
         const payload = {
             order_id: orderData.orderNumber,
             order_date: new Date().toISOString().split('T')[0],
-            pickup_location: process.env.SHIPROCKET_PICKUP_LOCATION || 'Primary',
+            pickup_location: pickupLocation,
             billing_customer_name: orderData.shippingAddress.fullName,
             billing_last_name: '',
             billing_address: orderData.shippingAddress.address,

@@ -135,6 +135,17 @@ class AdminApiService {
     return response.data;
   }
 
+  // ============ SETTINGS ============
+  async getSettings(category) {
+    const response = await axios.get(`${this.baseURL}/settings/${category}`);
+    return response.data;
+  }
+
+  async updateSettings(settings) {
+    const response = await axios.post(`${this.baseURL}/settings/bulk`, { settings });
+    return response.data;
+  }
+
   // ============ SUPPORT TICKETS ============
   async getTickets(params = {}) {
     const response = await axios.get(`${this.baseURL}/tickets/admin`, { params });
