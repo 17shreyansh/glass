@@ -10,9 +10,9 @@ const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const brandRoutes = require("./routes/brandRoutes");
-const isAdmin = require('./routes/isadmin'); // This is likely your route for checking admin status
-const uploadRoutes = require('./routes/uploadRoutes'); // <--- NEW: Import the upload routes
-const path = require('path'); // <--- NEW: Import the path module
+const isAdmin = require('./routes/isadmin');
+const uploadRoutes = require('./routes/uploadRoutes');
+const path = require('path');
 
 const orders = require('./routes/orderRoutes')
 const dummyPayment = require('./routes/paymentDummy');
@@ -26,9 +26,9 @@ const deliveryRoutes = require('./routes/deliveryRoutes'); // Import delivery ro
 const addressRoutes = require('./routes/addressRoutes'); // Import address routes
 const returnRoutes = require('./routes/returnRoutes'); // Import return routes
 const contactRoutes = require('./routes/contactRoutes'); // Import contact routes
-const stockRoutes = require('./routes/stockRoutes'); // Import stock routes
-const webhookRoutes = require('./routes/webhookRoutes'); // Import webhook routes
-const settingsRoutes = require('./routes/settingsRoutes'); // Import settings routes
+const stockRoutes = require('./routes/stockRoutes');
+const webhookRoutes = require('./routes/webhookRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
 const OrderService = require('./services/OrderService');
 const cron = require('node-cron');
 
@@ -96,8 +96,9 @@ app.use("/api/auth", authRoutes); // For user authentication (login, register, e
 app.use("/api/products", productRoutes); // For product-related API calls
 app.use("/api/categories", categoryRoutes); // For category-related API calls
 app.use("/api/brands", brandRoutes); // For brand-related API calls
-app.use("/api/admin", isAdmin); // Your specific admin check route
-app.use("/api/upload", uploadRoutes); // <--- NEW: For image upload API calls
+app.use("/api/admin", isAdmin);
+app.use("/api/admin", settingsRoutes);
+app.use("/api/upload", uploadRoutes);
  
 app.use("/api/orders", orders); 
 app.use('/api/payment', dummyPayment);
@@ -111,9 +112,8 @@ app.use('/api/delivery', deliveryRoutes); // NEW: Delivery routes
 app.use('/api/user/addresses', addressRoutes); // NEW: Address routes
 app.use('/api/returns', returnRoutes); // NEW: Return routes
 app.use('/api/contacts', contactRoutes); // NEW: Contact routes
-app.use('/api/stock', stockRoutes); // NEW: Stock management routes
-app.use('/api/webhook', webhookRoutes); // NEW: Webhook routes for Shiprocket
-app.use('/api/settings', settingsRoutes); // NEW: Settings routes
+app.use('/api/stock', stockRoutes);
+app.use('/api/webhook', webhookRoutes);
 
 
 

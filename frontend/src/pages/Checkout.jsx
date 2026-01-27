@@ -86,14 +86,24 @@ const Checkout = () => {
   const handleAddAddress = async () => {
     try {
       const values = await form.validateFields();
-      await apiService.request('/user/addresses', {
-        method: 'POST',
-        body: JSON.stringify(values)
-      });
-      message.success('Address added successfully');
+      
+      if (!isAuthenticated()) {
+        // For guests, just add to local state
+        const newAddr = { ...values, _id: Date.now().toString() };
+        setAddresses([...addresses, newAddr]);
+        setSelectedAddress(newAddr._id);
+        message.success('Address added');
+      } else {
+        await apiService.request('/user/addresses', {
+          method: 'POST',
+          body: JSON.stringify(values)
+        });
+        message.success('Address added successfully');
+        fetchAddresses();
+      }
+      
       setIsAddressModalVisible(false);
       form.resetFields();
-      fetchAddresses();
     } catch (error) {
       message.error('Failed to add address');
     }

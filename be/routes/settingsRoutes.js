@@ -3,29 +3,24 @@ const router = express.Router();
 const Settings = require('../models/Settings');
 const { protect, isAdmin } = require('../middleware/authMiddleware');
 
-// Get settings by category
-router.get('/:category', protect, isAdmin, async (req, res) => {
+// Get single setting
+router.get('/setting/:key', protect, isAdmin, async (req, res) => {
   try {
-    const settings = await Settings.getByCategory(req.params.category);
-    res.json({ success: true, data: settings });
+    const value = await Settings.getValue(req.params.key);
+    res.json({ success: true, value });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch settings' });
+    res.status(500).json({ message: 'Failed to fetch setting' });
   }
 });
 
-// Bulk update settings
-router.post('/bulk', protect, isAdmin, async (req, res) => {
+// Save setting
+router.post('/setting', protect, isAdmin, async (req, res) => {
   try {
-    const { settings } = req.body;
-    
-    const promises = settings.map(s => 
-      Settings.setValue(s.key, s.value, s.description || '')
-    );
-    
-    await Promise.all(promises);
-    res.json({ success: true, message: 'Settings updated successfully' });
+    const { key, value } = req.body;
+    await Settings.setValue(key, value);
+    res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to update settings' });
+    res.status(500).json({ message: 'Failed to save setting' });
   }
 });
 

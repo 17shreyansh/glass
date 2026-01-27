@@ -15,19 +15,19 @@ const ShiprocketSettings = () => {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const response = await adminApi.getSettings('DELIVERY');
-      const settings = response.data || [];
+      const email = await adminApi.getSetting('SHIPROCKET_EMAIL');
+      const password = await adminApi.getSetting('SHIPROCKET_PASSWORD');
+      const pickupLocation = await adminApi.getSetting('SHIPROCKET_PICKUP_LOCATION');
+      const pickupPincode = await adminApi.getSetting('SHIPROCKET_PICKUP_PINCODE');
+      const isEnabled = await adminApi.getSetting('SHIPROCKET_ENABLED');
       
-      const config = {};
-      settings.forEach(s => {
-        if (s.key === 'SHIPROCKET_EMAIL') config.email = s.value;
-        if (s.key === 'SHIPROCKET_PASSWORD') config.password = s.value;
-        if (s.key === 'SHIPROCKET_PICKUP_LOCATION') config.pickupLocation = s.value;
-        if (s.key === 'SHIPROCKET_PICKUP_PINCODE') config.pickupPincode = s.value;
-        if (s.key === 'SHIPROCKET_ENABLED') setEnabled(s.value);
+      form.setFieldsValue({
+        email: email.value,
+        password: password.value,
+        pickupLocation: pickupLocation.value,
+        pickupPincode: pickupPincode.value
       });
-      
-      form.setFieldsValue(config);
+      setEnabled(isEnabled.value || false);
     } catch (error) {
       console.error('Fetch settings error:', error);
     }
@@ -37,13 +37,11 @@ const ShiprocketSettings = () => {
   const handleSave = async (values) => {
     setLoading(true);
     try {
-      await adminApi.updateSettings([
-        { key: 'SHIPROCKET_EMAIL', value: values.email, category: 'DELIVERY' },
-        { key: 'SHIPROCKET_PASSWORD', value: values.password, category: 'DELIVERY' },
-        { key: 'SHIPROCKET_PICKUP_LOCATION', value: values.pickupLocation, category: 'DELIVERY' },
-        { key: 'SHIPROCKET_PICKUP_PINCODE', value: values.pickupPincode, category: 'DELIVERY' },
-        { key: 'SHIPROCKET_ENABLED', value: enabled, category: 'DELIVERY' }
-      ]);
+      await adminApi.saveSetting('SHIPROCKET_EMAIL', values.email);
+      await adminApi.saveSetting('SHIPROCKET_PASSWORD', values.password);
+      await adminApi.saveSetting('SHIPROCKET_PICKUP_LOCATION', values.pickupLocation);
+      await adminApi.saveSetting('SHIPROCKET_PICKUP_PINCODE', values.pickupPincode);
+      await adminApi.saveSetting('SHIPROCKET_ENABLED', enabled);
       message.success('Shiprocket settings saved successfully!');
     } catch (error) {
       message.error('Failed to save settings');

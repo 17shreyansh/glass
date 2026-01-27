@@ -135,14 +135,14 @@ class AdminApiService {
     return response.data;
   }
 
-  // ============ SETTINGS ============
-  async getSettings(category) {
-    const response = await axios.get(`${this.baseURL}/settings/${category}`);
+  // ============ SETTINGS (Simple) ============
+  async getSetting(key) {
+    const response = await axios.get(`${this.baseURL}/admin/setting/${key}`);
     return response.data;
   }
 
-  async updateSettings(settings) {
-    const response = await axios.post(`${this.baseURL}/settings/bulk`, { settings });
+  async saveSetting(key, value) {
+    const response = await axios.post(`${this.baseURL}/admin/setting`, { key, value });
     return response.data;
   }
 
