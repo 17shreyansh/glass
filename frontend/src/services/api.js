@@ -203,6 +203,16 @@ class ApiService {
     return response;
   }
 
+  async checkPincodeServiceability(pincode) {
+    const response = await this.request(`/orders/check-pincode?pincode=${pincode}`);
+    return response;
+  }
+
+  async getOrderTracking(orderId) {
+    const response = await this.request(`/orders/my-orders/${orderId}/tracking`);
+    return response;
+  }
+
   updateOrderStatus(id, status) {
     return this.request(`/orders/${id}/status`, {
       method: 'PATCH',

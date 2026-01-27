@@ -38,7 +38,8 @@ import {
   PhoneOutlined,
   EnvironmentOutlined,
   CalendarOutlined,
-  TruckOutlined
+  TruckOutlined,
+  RocketOutlined
 } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
@@ -63,8 +64,10 @@ const AdminOrdersPage = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderDetailVisible, setOrderDetailVisible] = useState(false);
   const [statusModalVisible, setStatusModalVisible] = useState(false);
+  const [shipModalVisible, setShipModalVisible] = useState(false);
   const [codEnabled, setCodEnabled] = useState(true);
   const [statusForm] = Form.useForm();
+  const [shipForm] = Form.useForm();
 
   // Order status configurations
   const statusConfig = {
@@ -152,6 +155,48 @@ const AdminOrdersPage = () => {
     } catch (error) {
       message.error('Failed to update order status');
       console.error('Error updating status:', error);
+    }
+  };
+
+  // Ship order via Shiprocket
+  const handleShipOrder = async (values) => {
+    try {
+      const data = await adminApi.shipOrderViaShiprocket(selectedOrder._id, values.courierId);
+      
+      if (data.success) {
+        message.success('Order shipped successfully via Shiprocket!');
+        setShipModalVisible(false);
+        setSelectedOrder(null);
+        shipForm.resetFields();
+        fetchOrders(pagination.current, pagination.pageSize);
+      }
+    } catch (error) {
+      message.error(error.response?.data?.message || 'Failed to ship order');
+      console.error('Error shipping order:', error);
+    }
+  };
+
+  // Download label
+  const handleDownloadLabel = async (order) => {
+    try {
+      const data = await adminApi.downloadLabel(order._id);
+      if (data.success && data.labelUrl) {
+        window.open(data.labelUrl, '_blank');
+      }
+    } catch (error) {
+      message.error('Failed to download label');
+    }
+  };
+
+  // Download manifest
+  const handleDownloadManifest = async (order) => {
+    try {
+      const data = await adminApi.downloadManifest(order._id);
+      if (data.success && data.manifestUrl) {
+        window.open(data.manifestUrl, '_blank');
+      }
+    } catch (error) {
+      message.error('Failed to download manifest');
     }
   };
 
@@ -478,7 +523,7 @@ const AdminOrdersPage = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 150, // Increased width to accommodate new button
+      width: 200,
       fixed: 'right',
       render: (_, record) => (
         <Space>
@@ -505,10 +550,22 @@ const AdminOrdersPage = () => {
             }}
             title="Update Status"
           />
+          {!record.shiprocket?.shipmentId && record.status === 'CONFIRMED' && (
+            <Button
+              type="text"
+              icon={<RocketOutlined />}
+              onClick={() => {
+                setSelectedOrder(record);
+                setShipModalVisible(true);
+              }}
+              title="Ship via Shiprocket"
+              style={{ color: '#1890ff' }}
+            />
+          )}
           <Button
             type="text"
             icon={<DownloadOutlined />}
-            onClick={() => handleDownloadInvoice(record)} // Pass the whole record
+            onClick={() => handleDownloadInvoice(record)}
             title="View/Print Invoice"
           />
         </Space>
@@ -695,6 +752,35 @@ const AdminOrdersPage = () => {
               )}
             </Descriptions>
 
+            {selectedOrder.shiprocket?.shipmentId && (
+              <>
+                <Divider />
+                <Title level={4}>Shiprocket Details</Title>
+                <Descriptions bordered column={1}>
+                  <Descriptions.Item label="AWB Code">{selectedOrder.shiprocket.awbCode}</Descriptions.Item>
+                  <Descriptions.Item label="Courier">{selectedOrder.shiprocket.courierName}</Descriptions.Item>
+                  <Descriptions.Item label="Shipment ID">{selectedOrder.shiprocket.shipmentId}</Descriptions.Item>
+                  {selectedOrder.shiprocket.pickupScheduled && (
+                    <Descriptions.Item label="Pickup Status">
+                      <Tag color="green">Scheduled</Tag>
+                    </Descriptions.Item>
+                  )}
+                </Descriptions>
+                <Space style={{ marginTop: 16 }}>
+                  {selectedOrder.shiprocket.labelUrl && (
+                    <Button icon={<DownloadOutlined />} onClick={() => handleDownloadLabel(selectedOrder)}>
+                      Download Label
+                    </Button>
+                  )}
+                  {selectedOrder.shiprocket.manifestUrl && (
+                    <Button icon={<DownloadOutlined />} onClick={() => handleDownloadManifest(selectedOrder)}>
+                      Download Manifest
+                    </Button>
+                  )}
+                </Space>
+              </>
+            )}
+
             <Divider />
 
             <Title level={4}>Customer Information</Title>
@@ -784,6 +870,49 @@ const AdminOrdersPage = () => {
                 Update Status
               </Button>
               <Button onClick={() => setStatusModalVisible(false)}>
+                Cancel
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Ship via Shiprocket Modal */}
+      <Modal
+        title="Ship Order via Shiprocket"
+        open={shipModalVisible}
+        onCancel={() => {
+          setShipModalVisible(false);
+          setSelectedOrder(null);
+          shipForm.resetFields();
+        }}
+        footer={null}
+      >
+        <Form
+          form={shipForm}
+          layout="vertical"
+          onFinish={handleShipOrder}
+        >
+          <Form.Item
+            name="courierId"
+            label="Courier Service"
+            rules={[{ required: true, message: 'Please select courier' }]}
+          >
+            <Select placeholder="Select courier service">
+              <Option value={1}>Delhivery</Option>
+              <Option value={2}>Bluedart</Option>
+              <Option value={3}>DTDC</Option>
+              <Option value={4}>Ecom Express</Option>
+              <Option value={5}>Xpressbees</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit" icon={<RocketOutlined />}>
+                Ship Order
+              </Button>
+              <Button onClick={() => setShipModalVisible(false)}>
                 Cancel
               </Button>
             </Space>

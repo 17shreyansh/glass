@@ -23,15 +23,18 @@ const Checkout = () => {
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponError, setCouponError] = useState('');
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [guestInfo, setGuestInfo] = useState({ name: '', email: '', phone: '' });
+  const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      message.error('Please login to continue');
-      navigate('/login');
+    if (cartItems.length > 0 && !isAuthenticated()) {
+      // Allow guest checkout - don't redirect
       return;
     }
-    fetchAddresses();
-  }, [isAuthenticated, navigate]);
+    if (isAuthenticated()) {
+      fetchAddresses();
+    }
+  }, [isAuthenticated]);
 
   const fetchAddresses = async () => {
     try {
@@ -97,7 +100,7 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async () => {
-    if (!selectedAddress) {
+    if (!selectedAddress && !isGuest) {
       message.error('Please select a delivery address');
       return;
     }
@@ -109,6 +112,60 @@ const Checkout = () => {
 
     try {
       setLoading(true);
+      
+      // Guest checkout: check if account exists, login or create
+      if (!isAuthenticated()) {
+        if (!guestInfo.name || !guestInfo.email || !guestInfo.phone) {
+          message.error('Please fill in all required fields');
+          setLoading(false);
+          return;
+        }
+        
+        const address = addresses.find(a => a._id === selectedAddress);
+        if (!address) {
+          message.error('Please add a delivery address');
+          setLoading(false);
+          return;
+        }
+
+        try {
+          // Try to register - if email exists, backend will return error
+          const registerResponse = await apiService.request('/auth/register', {
+            method: 'POST',
+            body: JSON.stringify({
+              name: guestInfo.name,
+              email: guestInfo.email,
+              password: Math.random().toString(36).slice(-8) + 'Aa1!',
+              phone: guestInfo.phone,
+              skipEmailVerification: true
+            })
+          });
+          
+          if (registerResponse.success) {
+            window.location.reload(); // Reload to update auth state
+            return;
+          }
+        } catch (error) {
+          // If email already exists, show login prompt
+          if (error.message?.includes('already registered')) {
+            Modal.confirm({
+              title: 'Account Already Exists',
+              content: `An account with ${guestInfo.email} already exists. Please login to continue.`,
+              okText: 'Login',
+              cancelText: 'Cancel',
+              onOk: () => {
+                navigate('/login', { state: { from: '/checkout' } });
+              }
+            });
+            setLoading(false);
+            return;
+          }
+          message.error(error.message || 'Failed to create account');
+          setLoading(false);
+          return;
+        }
+      }
+      
       const address = addresses.find(a => a._id === selectedAddress);
       
       if (!address) {
@@ -131,15 +188,13 @@ const Checkout = () => {
         setLoading(false);
         return;
       }
-
-      console.log('Order items:', validItems);
       
       const orderData = {
         items: validItems,
         shippingAddress: {
           fullName: address.name,
           phone: address.phone,
-          email: user?.email || address.email || '',
+          email: guestInfo.email || user?.email || address.email || '',
           address: address.address,
           city: address.city,
           state: address.state,
@@ -181,7 +236,7 @@ const Checkout = () => {
           },
           prefill: {
             name: address.name,
-            email: user?.email,
+            email: guestInfo.email || user?.email,
             contact: address.phone
           },
           theme: {
@@ -324,6 +379,29 @@ const Checkout = () => {
         ) : (
           <Row gutter={[32, 32]}>
             <Col xs={24} lg={16}>
+              {!isAuthenticated() && (
+                <Card style={{ ...styles.card, marginBottom: 20 }}>
+                  <div style={styles.sectionTitle}>YOUR DETAILS</div>
+                  <Form layout="vertical">
+                    <Form.Item label="Full Name" required>
+                      <Input size="large" value={guestInfo.name} onChange={(e) => setGuestInfo({...guestInfo, name: e.target.value})} placeholder="Enter your name" />
+                    </Form.Item>
+                    <Row gutter={16}>
+                      <Col span={12}>
+                        <Form.Item label="Email" required>
+                          <Input size="large" type="email" value={guestInfo.email} onChange={(e) => setGuestInfo({...guestInfo, email: e.target.value})} placeholder="your@email.com" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item label="Phone" required>
+                          <Input size="large" value={guestInfo.phone} onChange={(e) => setGuestInfo({...guestInfo, phone: e.target.value})} placeholder="10-digit number" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </Form>
+                </Card>
+              )}
+              
               <div style={{ marginBottom: 30 }}>
                 <div style={styles.sectionTitle}>SELECT DELIVERY ADDRESS</div>
                 {addresses.length === 0 ? (
@@ -349,7 +427,7 @@ const Checkout = () => {
 
               <div style={{ marginTop: 30 }}>
                 <Button onClick={() => setStep(0)} style={{ marginRight: 10 }}>Back</Button>
-                <Button type="primary" style={{ background: '#8E6A4E', borderColor: '#8E6A4E' }} onClick={handlePlaceOrder} loading={loading}>PLACE ORDER & PAY</Button>
+                <Button type="primary" style={{ background: '#8E6A4E', borderColor: '#8E6A4E' }} onClick={handlePlaceOrder} loading={loading} disabled={!isAuthenticated() && (!guestInfo.name || !guestInfo.email || !guestInfo.phone)}>PLACE ORDER & PAY</Button>
               </div>
             </Col>
 

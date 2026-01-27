@@ -4,6 +4,7 @@ import { Card, Row, Col, Typography, Steps, Divider, Button, Tag, Spin, message,
 import { DownloadOutlined, ArrowLeftOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import AccountLayout from '../../components/AccountLayout';
 import AccountContent from '../../components/AccountContent';
+import TrackingTimeline from '../../components/TrackingTimeline';
 import apiService from '../../services/api';
 
 const { Title, Text } = Typography;
@@ -12,10 +13,12 @@ const OrderDetail = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
+  const [tracking, setTracking] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchOrderDetail();
+    fetchTracking();
   }, [orderId]);
 
   const fetchOrderDetail = async () => {
@@ -27,6 +30,17 @@ const OrderDetail = () => {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTracking = async () => {
+    try {
+      const response = await apiService.getOrderTracking(orderId);
+      if (response.success) {
+        setTracking(response);
+      }
+    } catch (error) {
+      console.error('Failed to fetch tracking:', error);
     }
   };
 
@@ -152,72 +166,7 @@ const OrderDetail = () => {
         </Card>
 
         {order.status !== 'CANCELLED' && (
-          <Card 
-            bordered={false}
-            style={{ 
-              marginBottom: 24,
-              borderRadius: 12,
-              border: '1px solid #e8e8e8'
-            }}
-            bodyStyle={{ padding: '20px' }}
-          >
-            <div style={{ fontSize: 18, fontWeight: 600, color: '#333', marginBottom: 24, fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>
-              Order Progress
-            </div>
-            <Steps 
-              current={getStatusStep(order.status)} 
-              style={{ marginBottom: 32 }}
-              items={[
-                { title: <span style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: 13 }}>Placed</span> },
-                { title: <span style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: 13 }}>Confirmed</span> },
-                { title: <span style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: 13 }}>Processing</span> },
-                { title: <span style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: 13 }}>Shipped</span> },
-                { title: <span style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: 13 }}>Delivered</span> }
-              ]}
-            />
-
-            <Space direction="vertical" size={12} style={{ width: '100%' }}>
-              {order.placedAt && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <ClockCircleOutlined style={{ fontSize: 16, color: '#8E6A4E' }} />
-                  <span style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: 14, color: '#666' }}>
-                    Order Placed - {new Date(order.placedAt).toLocaleString('en-IN')}
-                  </span>
-                </div>
-              )}
-              {order.confirmedAt && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <CheckCircleOutlined style={{ fontSize: 16, color: '#8E6A4E' }} />
-                  <span style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: 14, color: '#666' }}>
-                    Order Confirmed - {new Date(order.confirmedAt).toLocaleString('en-IN')}
-                  </span>
-                </div>
-              )}
-              {order.shippedAt && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <CheckCircleOutlined style={{ fontSize: 16, color: '#8E6A4E' }} />
-                  <span style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: 14, color: '#666' }}>
-                    Order Shipped - {new Date(order.shippedAt).toLocaleString('en-IN')}
-                  </span>
-                </div>
-              )}
-              {order.deliveredAt && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <CheckCircleOutlined style={{ fontSize: 16, color: '#6B8E23' }} />
-                  <span style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: 14, color: '#666' }}>
-                    Order Delivered - {new Date(order.deliveredAt).toLocaleString('en-IN')}
-                  </span>
-                </div>
-              )}
-            </Space>
-
-            {order.trackingNumber && (
-              <div style={{ marginTop: 24, padding: 16, background: '#fef6f0', borderRadius: 10, border: '1px solid #e8d5c4' }}>
-                <Text strong style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: '#8E6A4E', fontSize: 14 }}>Tracking Number: </Text>
-                <Text copyable style={{ fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", fontSize: 14 }}>{order.trackingNumber}</Text>
-              </div>
-            )}
-          </Card>
+          <TrackingTimeline order={order} shippingHistory={order.shippingHistory || []} />
         )}
 
         <Row gutter={[20, 20]} style={{ margin: '0 -10px' }}>

@@ -9,18 +9,24 @@ const {
   getOrder,
   cancelOrder,
   getOrderInvoice,
+  checkPincodeServiceability,
+  getTrackingInfo,
   
   // Admin controllers
   getAllOrders,
   updateOrderStatus,
   toggleCOD,
-  getCODStatus
+  getCODStatus,
+  shipOrderViaShiprocket,
+  downloadLabel,
+  downloadManifest
 } = require('../controllers/orderController');
 
 const { protect, isAdmin } = require('../middleware/authMiddleware');
 
 // PUBLIC ROUTES
 router.get('/cod-status', getCODStatus);
+router.get('/check-pincode', checkPincodeServiceability);
 
 // USER ROUTES (Protected)
 router.use(protect); // All routes below require authentication
@@ -35,6 +41,7 @@ router.post('/apply-coupon', applyCoupon);
 // User order queries
 router.get('/my-orders', getUserOrders);
 router.get('/my-orders/:orderId', getOrder);
+router.get('/my-orders/:orderId/tracking', getTrackingInfo);
 router.patch('/my-orders/:orderId/cancel', cancelOrder);
 router.get('/invoice/:orderId', getOrderInvoice);
 
@@ -44,6 +51,11 @@ router.use(isAdmin); // All routes below require admin privileges
 // Order management
 router.get('/admin/orders', getAllOrders);
 router.patch('/admin/orders/:orderId/status', updateOrderStatus);
+
+// Shiprocket integration
+router.post('/admin/orders/:orderId/ship', shipOrderViaShiprocket);
+router.get('/admin/orders/:orderId/label', downloadLabel);
+router.get('/admin/orders/:orderId/manifest', downloadManifest);
 
 // Settings
 router.post('/admin/toggle-cod', toggleCOD);

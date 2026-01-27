@@ -51,7 +51,7 @@ const createEmailTransporter = () => {
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = async (req, res) => {
-    const { name, email, password, phone, address } = req.body;
+    const { name, email, password, phone, address, skipEmailVerification } = req.body;
 
     try {
         // Check if a user with this email already exists
@@ -60,15 +60,22 @@ exports.register = async (req, res) => {
             return res.status(400).json({ message: "Email already registered. Please login or use a different email." });
         }
 
-        // Create the new user with 'pending' account status
+        // Create the new user
         const user = await User.create({
             name,
             email,
             password,
             phone,
             address,
-            accountStatus: 'pending' // Account is pending until email verification
+            accountStatus: skipEmailVerification ? 'active' : 'pending',
+            isEmailVerified: skipEmailVerification || false
         });
+
+        // Skip email verification for guest checkout
+        if (skipEmailVerification) {
+            sendTokenResponse(user, 201, res);
+            return;
+        }
 
         // Generate an email verification token for the new user
         const verifyToken = user.getEmailVerificationToken();

@@ -100,6 +100,29 @@ const orderSchema = new mongoose.Schema({
   trackingNumber: String,
   notes: String,
   
+  // Shiprocket Integration
+  shiprocket: {
+    orderId: { type: Number }, // Shiprocket order ID
+    shipmentId: { type: Number }, // Shiprocket shipment ID
+    awbCode: { type: String }, // Airway Bill Number
+    courierName: { type: String }, // Assigned courier
+    courierId: { type: Number },
+    trackingUrl: { type: String },
+    labelUrl: { type: String },
+    manifestUrl: { type: String },
+    pickupScheduled: { type: Boolean, default: false },
+    pickupTokenNumber: { type: String }
+  },
+  
+  // Shipping Status History
+  shippingHistory: [{
+    status: String,
+    statusCode: String,
+    timestamp: { type: Date, default: Date.now },
+    location: String,
+    remarks: String
+  }],
+  
   // Timestamps
   placedAt: { type: Date, default: Date.now },
   confirmedAt: Date,

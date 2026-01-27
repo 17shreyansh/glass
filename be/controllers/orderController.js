@@ -1,5 +1,6 @@
 const OrderService = require('../services/OrderService');
 const PaymentService = require('../services/PaymentService');
+const shiprocketService = require('../services/shiprocket.service');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const Settings = require('../models/Settings'); // For COD toggle
@@ -551,20 +552,166 @@ const getOrderInvoice = async (req, res) => {
     }
 };
 
+// Check pincode serviceability
+const checkPincodeServiceability = async (req, res) => {
+    try {
+        const { pincode } = req.query;
+        const pickupPincode = process.env.SHIPROCKET_PICKUP_PINCODE || '110001';
+        
+        const result = await shiprocketService.checkServiceability(pickupPincode, pincode);
+        
+        res.json({
+            success: result.success,
+            available: result.available,
+            couriers: result.couriers
+        });
+    } catch (error) {
+        console.error('Pincode check error:', error);
+        res.status(500).json({ message: 'Failed to check serviceability' });
+    }
+};
+
+// Ship order via Shiprocket (Admin)
+const shipOrderViaShiprocket = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { courierId } = req.body;
+
+        const order = await Order.findById(orderId).populate('userId', 'name email');
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        // Step 1: Create order in Shiprocket
+        const shiprocketOrder = await shiprocketService.createOrder(order);
+        
+        // Step 2: Generate AWB
+        const awbData = await shiprocketService.generateAWB(shiprocketOrder.shipmentId, courierId);
+        
+        // Step 3: Schedule pickup
+        const pickupData = await shiprocketService.schedulePickup(shiprocketOrder.shipmentId);
+        
+        // Step 4: Generate label and manifest
+        const labelData = await shiprocketService.generateLabel(shiprocketOrder.shipmentId);
+        const manifestData = await shiprocketService.generateManifest(shiprocketOrder.shipmentId);
+
+        // Update order with Shiprocket data
+        order.shiprocket = {
+            orderId: shiprocketOrder.orderId,
+            shipmentId: shiprocketOrder.shipmentId,
+            awbCode: awbData.awbCode,
+            courierName: awbData.courierName,
+            courierId: courierId,
+            labelUrl: labelData.labelUrl,
+            manifestUrl: manifestData.manifestUrl,
+            pickupScheduled: true,
+            pickupTokenNumber: pickupData.pickupTokenNumber
+        };
+        
+        order.status = 'PROCESSING';
+        order.trackingNumber = awbData.awbCode;
+        await order.save();
+
+        res.json({
+            success: true,
+            message: 'Order shipped successfully via Shiprocket',
+            order
+        });
+    } catch (error) {
+        console.error('Ship order error:', error);
+        res.status(500).json({ message: error.message || 'Failed to ship order' });
+    }
+};
+
+// Get tracking info
+const getTrackingInfo = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const userId = req.user.id;
+
+        const order = await Order.findOne({
+            $or: [{ _id: orderId }, { orderNumber: orderId }],
+            userId
+        });
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        if (!order.shiprocket?.shipmentId) {
+            return res.json({
+                success: true,
+                tracking: null,
+                message: 'Shipment not yet created'
+            });
+        }
+
+        const trackingData = await shiprocketService.trackShipment(order.shiprocket.shipmentId);
+
+        res.json({
+            success: true,
+            tracking: trackingData.tracking,
+            shiprocket: order.shiprocket,
+            shippingHistory: order.shippingHistory
+        });
+    } catch (error) {
+        console.error('Get tracking error:', error);
+        res.status(500).json({ message: 'Failed to fetch tracking info' });
+    }
+};
+
+// Download shipping label (Admin)
+const downloadLabel = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const order = await Order.findById(orderId);
+
+        if (!order || !order.shiprocket?.labelUrl) {
+            return res.status(404).json({ message: 'Label not available' });
+        }
+
+        res.json({ success: true, labelUrl: order.shiprocket.labelUrl });
+    } catch (error) {
+        console.error('Download label error:', error);
+        res.status(500).json({ message: 'Failed to get label' });
+    }
+};
+
+// Download manifest (Admin)
+const downloadManifest = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const order = await Order.findById(orderId);
+
+        if (!order || !order.shiprocket?.manifestUrl) {
+            return res.status(404).json({ message: 'Manifest not available' });
+        }
+
+        res.json({ success: true, manifestUrl: order.shiprocket.manifestUrl });
+    } catch (error) {
+        console.error('Download manifest error:', error);
+        res.status(500).json({ message: 'Failed to get manifest' });
+    }
+};
+
 module.exports = {
     // User routes
-    // Removed createPaymentOrder as it's merged into createOrder
-    createOrder, // This is now the main endpoint for order creation
+    createOrder,
     verifyPayment,
     applyCoupon,
     getUserOrders,
     getOrder,
     cancelOrder,
     getOrderInvoice,
+    checkPincodeServiceability,
+    getTrackingInfo,
 
     // Admin routes
     getAllOrders,
     updateOrderStatus,
     toggleCOD,
-    getCODStatus
+    getCODStatus,
+    shipOrderViaShiprocket,
+    downloadLabel,
+    downloadManifest
 };

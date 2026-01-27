@@ -56,6 +56,38 @@ class AdminApiService {
     return response.data;
   }
 
+  // Shiprocket Integration
+  async shipOrderViaShiprocket(orderId, courierId) {
+    const response = await axios.post(`${this.baseURL}/orders/admin/orders/${orderId}/ship`, { courierId });
+    return response.data;
+  }
+
+  async downloadLabel(orderId) {
+    const response = await axios.get(`${this.baseURL}/orders/admin/orders/${orderId}/label`);
+    return response.data;
+  }
+
+  async downloadManifest(orderId) {
+    const response = await axios.get(`${this.baseURL}/orders/admin/orders/${orderId}/manifest`);
+    return response.data;
+  }
+
+  // Shiprocket Integration
+  async shipOrderViaShiprocket(orderId, courierId) {
+    const response = await axios.post(`${this.baseURL}/orders/admin/orders/${orderId}/ship`, { courierId });
+    return response.data;
+  }
+
+  async downloadLabel(orderId) {
+    const response = await axios.get(`${this.baseURL}/orders/admin/orders/${orderId}/label`);
+    return response.data;
+  }
+
+  async downloadManifest(orderId) {
+    const response = await axios.get(`${this.baseURL}/orders/admin/orders/${orderId}/manifest`);
+    return response.data;
+  }
+
   // ============ USERS ============
   async getUsers() {
     const response = await axios.get(`${this.baseURL}/auth/users`);
