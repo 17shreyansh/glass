@@ -213,6 +213,11 @@ class ApiService {
     return response;
   }
 
+  async getCODStatus() {
+    const response = await this.request('/orders/cod-status');
+    return response;
+  }
+
   updateOrderStatus(id, status) {
     return this.request(`/orders/${id}/status`, {
       method: 'PATCH',

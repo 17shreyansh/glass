@@ -27,6 +27,8 @@ const Checkout = () => {
   const [loadingDelivery, setLoadingDelivery] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [discountOnDelivery, setDiscountOnDelivery] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState('RAZORPAY');
+  const [codEnabled, setCodEnabled] = useState(true);
 
   useEffect(() => {
     if (cartItems.length > 0 && !isAuthenticated()) {
@@ -35,7 +37,17 @@ const Checkout = () => {
     if (isAuthenticated()) {
       fetchAddresses();
     }
+    fetchCODStatus();
   }, [isAuthenticated]);
+
+  const fetchCODStatus = async () => {
+    try {
+      const response = await apiService.request('/orders/cod-status');
+      setCodEnabled(response.codEnabled);
+    } catch (error) {
+      console.error('Failed to fetch COD status:', error);
+    }
+  };
 
   const fetchAddresses = async () => {
     try {
@@ -242,51 +254,59 @@ const Checkout = () => {
           pincode: address.pincode,
           country: 'India'
         },
-        paymentMethod: 'RAZORPAY',
+        paymentMethod: paymentMethod,
         couponCode: coupon || undefined
       };
 
       const response = await apiService.createOrder(orderData);
       
       if (response.success) {
-        const options = {
-          key: response.razorpayDetails.key,
-          amount: response.razorpayDetails.amount,
-          currency: response.razorpayDetails.currency,
-          order_id: response.razorpayDetails.orderId,
-          name: 'MV Crafted IMPEX',
-          description: 'Order Payment',
-          handler: async function (paymentResponse) {
-            try {
-              const verifyData = {
-                razorpay_order_id: paymentResponse.razorpay_order_id,
-                razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                razorpay_signature: paymentResponse.razorpay_signature,
-                orderData: response.orderData
-              };
-              
-              const verifyResponse = await apiService.verifyPayment(verifyData);
-              if (verifyResponse.success) {
-                message.success('Payment successful! Order placed.');
-                clearCart();
-                navigate('/account/orders');
+        // For COD orders, order is already created
+        if (paymentMethod === 'COD') {
+          message.success('Order placed successfully! Pay on delivery.');
+          clearCart();
+          navigate('/account/orders');
+        } else {
+          // For Razorpay payments
+          const options = {
+            key: response.razorpayDetails.key,
+            amount: response.razorpayDetails.amount,
+            currency: response.razorpayDetails.currency,
+            order_id: response.razorpayDetails.orderId,
+            name: 'MV Crafted IMPEX',
+            description: 'Order Payment',
+            handler: async function (paymentResponse) {
+              try {
+                const verifyData = {
+                  razorpay_order_id: paymentResponse.razorpay_order_id,
+                  razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                  razorpay_signature: paymentResponse.razorpay_signature,
+                  orderData: response.orderData
+                };
+                
+                const verifyResponse = await apiService.verifyPayment(verifyData);
+                if (verifyResponse.success) {
+                  message.success('Payment successful! Order placed.');
+                  clearCart();
+                  navigate('/account/orders');
+                }
+              } catch (error) {
+                message.error('Payment verification failed');
               }
-            } catch (error) {
-              message.error('Payment verification failed');
+            },
+            prefill: {
+              name: address.name,
+              email: guestInfo.email || user?.email,
+              contact: address.phone
+            },
+            theme: {
+              color: '#8E6A4E'
             }
-          },
-          prefill: {
-            name: address.name,
-            email: guestInfo.email || user?.email,
-            contact: address.phone
-          },
-          theme: {
-            color: '#8E6A4E'
-          }
-        };
-        
-        const razorpay = new window.Razorpay(options);
-        razorpay.open();
+          };
+          
+          const razorpay = new window.Razorpay(options);
+          razorpay.open();
+        }
       }
     } catch (error) {
       message.error(error.message || 'Failed to place order');
@@ -418,8 +438,8 @@ const Checkout = () => {
               <Button type="primary" block size="large" style={{ background: '#8E6A4E', borderColor: '#8E6A4E', marginTop: 20, height: 50, fontSize: 16, fontWeight: 600 }} onClick={() => setStep(1)}>PROCEED TO ADDRESS</Button>
 
               <div style={{ marginTop: 20, textAlign: 'center', padding: '15px', background: '#f5f5f5', borderRadius: 8 }}>
-                <Text style={{ color: '#666', fontSize: 13 }}>🔒 Secure Payment via Razorpay</Text><br />
-                <Text style={{ color: '#999', fontSize: 12 }}>UPI • Cards • Net Banking</Text>
+                <Text style={{ color: '#666', fontSize: 13 }}>🔒 Secure Payment</Text><br />
+                <Text style={{ color: '#999', fontSize: 12 }}>Online Payment • {codEnabled ? 'Cash on Delivery' : ''}</Text>
               </div>
             </Col>
           </Row>
@@ -476,8 +496,34 @@ const Checkout = () => {
               </div>
 
               <div style={{ marginTop: 30 }}>
+                <div style={styles.sectionTitle}>SELECT PAYMENT METHOD</div>
+                <Radio.Group value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} style={{ width: '100%', marginBottom: 20 }}>
+                  <div style={{ ...styles.addressCard(paymentMethod === 'RAZORPAY'), marginBottom: 10 }}>
+                    <Radio value="RAZORPAY">
+                      <div style={{ marginLeft: 10 }}>
+                        <Text strong>Online Payment (Razorpay)</Text>
+                        <div style={{ color: '#666', fontSize: 12 }}>UPI, Cards, Net Banking, Wallets</div>
+                      </div>
+                    </Radio>
+                  </div>
+                  {codEnabled && (
+                    <div style={styles.addressCard(paymentMethod === 'COD')}>
+                      <Radio value="COD">
+                        <div style={{ marginLeft: 10 }}>
+                          <Text strong>Cash on Delivery (COD)</Text>
+                          <div style={{ color: '#666', fontSize: 12 }}>Pay when you receive the order</div>
+                        </div>
+                      </Radio>
+                    </div>
+                  )}
+                </Radio.Group>
+              </div>
+
+              <div style={{ marginTop: 20 }}>
                 <Button onClick={() => setStep(0)} style={{ marginRight: 10 }}>Back</Button>
-                <Button type="primary" style={{ background: '#8E6A4E', borderColor: '#8E6A4E' }} onClick={handlePlaceOrder} loading={loading} disabled={!isAuthenticated() && (!guestInfo.name || !guestInfo.email || !guestInfo.phone)}>PLACE ORDER & PAY</Button>
+                <Button type="primary" style={{ background: '#8E6A4E', borderColor: '#8E6A4E' }} onClick={handlePlaceOrder} loading={loading} disabled={!isAuthenticated() && (!guestInfo.name || !guestInfo.email || !guestInfo.phone)}>
+                  {paymentMethod === 'COD' ? 'PLACE ORDER' : 'PLACE ORDER & PAY'}
+                </Button>
               </div>
             </Col>
 

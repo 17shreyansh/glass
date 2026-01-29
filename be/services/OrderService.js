@@ -111,6 +111,8 @@ class OrderService {
                 const pickupPincode = process.env.SHIPROCKET_PICKUP_PINCODE || '110001';
                 const weight = validatedItems.reduce((sum, item) => sum + (item.quantity * 0.5), 0);
                 
+                console.log(`[OrderService] Checking serviceability: pickup=${pickupPincode}, delivery=${shippingAddress.pincode}, weight=${weight}`);
+                
                 const serviceability = await shiprocketService.checkServiceability(
                     pickupPincode,
                     shippingAddress.pincode,
@@ -119,16 +121,30 @@ class OrderService {
                 );
                 
                 if (serviceability.success && serviceability.couriers && serviceability.couriers.length > 0) {
-                    const charges = serviceability.couriers.map(c => c.rate || c.freight_charge || 0);
-                    deliveryCharge = Math.min(...charges);
+                    // Extract charges from different possible fields
+                    const charges = serviceability.couriers.map(c => {
+                        const charge = c.rate || c.freight_charge || c.total_charge || c.cod_charges || 0;
+                        console.log(`[OrderService] Courier ${c.courier_name}: charge=${charge}`);
+                        return charge;
+                    }).filter(c => c > 0);
+                    
+                    if (charges.length > 0) {
+                        deliveryCharge = Math.min(...charges);
+                        console.log(`[OrderService] Selected delivery charge: ₹${deliveryCharge}`);
+                    } else {
+                        console.warn('[OrderService] No valid charges found, using default ₹100');
+                        deliveryCharge = 100;
+                    }
                 } else {
+                    console.warn('[OrderService] No couriers available, using default ₹100');
                     deliveryCharge = 100;
                 }
             } catch (error) {
-                console.error('Shiprocket delivery charge error:', error);
+                console.error('[OrderService] Shiprocket delivery charge error:', error);
                 deliveryCharge = 100;
             }
         } else {
+            console.warn('[OrderService] No pincode provided, using default ₹100');
             deliveryCharge = 100;
         }
         

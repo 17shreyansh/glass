@@ -38,6 +38,29 @@ const initializeServices = async () => {
         // Connect to database
         await connectDB();
 
+        // Check Shiprocket configuration
+        const Settings = require('./models/Settings');
+        const emailFromDB = await Settings.findOne({ key: 'SHIPROCKET_EMAIL' });
+        const passwordFromDB = await Settings.findOne({ key: 'SHIPROCKET_PASSWORD' });
+        
+        console.log('\n' + '='.repeat(60));
+        console.log('📦 SHIPROCKET CONFIGURATION STATUS');
+        console.log('='.repeat(60));
+        
+        if (emailFromDB && passwordFromDB) {
+            console.log('✓ Shiprocket configured via Admin Panel');
+            console.log(`  Email: ${emailFromDB.value}`);
+        } else if (process.env.SHIPROCKET_EMAIL && process.env.SHIPROCKET_PASSWORD) {
+            console.log('⚠ Shiprocket configured via .env file');
+            console.log(`  Email: ${process.env.SHIPROCKET_EMAIL}`);
+            console.log('  Note: Configure in Admin Panel for better management');
+        } else {
+            console.log('❌ Shiprocket NOT CONFIGURED');
+            console.log('  Delivery charges will default to ₹100');
+            console.log('  Configure in Admin Panel or .env file');
+        }
+        console.log('='.repeat(60) + '\n');
+
         // Initialize OrderService
         const orderService = new OrderService();
 

@@ -16,11 +16,29 @@ class ShiprocketService {
         const email = await Settings.getValue('SHIPROCKET_EMAIL', process.env.SHIPROCKET_EMAIL);
         const password = await Settings.getValue('SHIPROCKET_PASSWORD', process.env.SHIPROCKET_PASSWORD);
 
-        const { data } = await axios.post(`${this.baseURL}/auth/login`, { email, password });
+        // Check if using admin panel config or env variables
+        const emailFromDB = await Settings.findOne({ key: 'SHIPROCKET_EMAIL' });
+        const passwordFromDB = await Settings.findOne({ key: 'SHIPROCKET_PASSWORD' });
+        
+        if (emailFromDB && passwordFromDB) {
+            console.log('✓ [Shiprocket] Using configuration from Admin Panel');
+        } else if (process.env.SHIPROCKET_EMAIL && process.env.SHIPROCKET_PASSWORD) {
+            console.log('⚠ [Shiprocket] Using configuration from .env file (Admin Panel not configured)');
+        } else {
+            console.log('❌ [Shiprocket] NOT CONFIGURED - Please configure in Admin Panel or .env file');
+            throw new Error('Shiprocket credentials not configured');
+        }
 
-        this.token = data.token;
-        this.tokenExpiry = Date.now() + (9 * 24 * 60 * 60 * 1000);
-        return this.token;
+        try {
+            const { data } = await axios.post(`${this.baseURL}/auth/login`, { email, password });
+            this.token = data.token;
+            this.tokenExpiry = Date.now() + (9 * 24 * 60 * 60 * 1000);
+            console.log('✓ [Shiprocket] Authentication successful');
+            return this.token;
+        } catch (error) {
+            console.error('❌ [Shiprocket] Authentication failed:', error.response?.data?.message || error.message);
+            throw new Error('Shiprocket authentication failed. Check credentials.');
+        }
     }
 
     async getHeaders() {
@@ -44,12 +62,15 @@ class ShiprocketService {
                 }
             });
 
+            console.log('[Shiprocket] Serviceability response:', JSON.stringify(data, null, 2));
+
             return {
                 success: true,
                 available: data.data?.available_courier_companies?.length > 0,
                 couriers: data.data?.available_courier_companies || []
             };
         } catch (error) {
+            console.error('[Shiprocket] Serviceability error:', error.message);
             return { success: false, available: false, error: error.message };
         }
     }
@@ -57,6 +78,9 @@ class ShiprocketService {
     async createOrder(orderData) {
         const headers = await this.getHeaders();
         const pickupLocation = await Settings.getValue('SHIPROCKET_PICKUP_LOCATION', process.env.SHIPROCKET_PICKUP_LOCATION || 'Primary');
+        
+        // Determine if COD based on payment method
+        const isCOD = orderData.payment.method === 'COD';
         
         const payload = {
             order_id: orderData.orderNumber,
@@ -80,7 +104,7 @@ class ShiprocketService {
                 discount: 0,
                 tax: 0
             })),
-            payment_method: orderData.payment.method === 'COD' ? 'COD' : 'Prepaid',
+            payment_method: isCOD ? 'COD' : 'Prepaid',
             sub_total: orderData.subtotal,
             length: 10,
             breadth: 10,
