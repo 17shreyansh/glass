@@ -34,6 +34,7 @@ import AdminMenu from './Menu';
 import Contacts from './Contacts';
 import FileManager from './FileManager';
 import ShiprocketSettings from './ShiprocketSettings';
+import LegalPages from './LegalPages';
 import './styles/layout.css'; // Import custom CSS for additional styling
 
 const { Sider, Content, Header } = Layout;
@@ -181,6 +182,11 @@ const AdminLayout = () => {
               key: '/admin/shiprocket',
               icon: <CarOutlined />,
               label: <Link to="/admin/shiprocket">Shiprocket</Link>
+            },
+            {
+              key: '/admin/legal-pages',
+              icon: <ProfileOutlined />,
+              label: <Link to="/admin/legal-pages">Legal Pages</Link>
             }
           ]}
         />
@@ -223,7 +229,7 @@ const AdminLayout = () => {
             <Route path="contacts" element={<Contacts />} />
             <Route path="file-manager" element={<FileManager />} />
             <Route path="shiprocket" element={<ShiprocketSettings />} />
-
+            <Route path="legal-pages" element={<LegalPages />} />
           </Routes>
         </Content>
       </Layout>

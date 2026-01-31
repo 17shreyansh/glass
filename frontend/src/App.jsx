@@ -19,6 +19,7 @@ import Checkout from './pages/Checkout';
 import ContactUs from './pages/ContactUs';
 import AboutUs from './pages/AboutUs';
 import ReturnRefund from './pages/ReturnRefund';
+import LegalPage from './pages/LegalPage';
 
 
 // Account Pages
@@ -103,6 +104,7 @@ function App() {
                         <Route path={ROUTES.CONTACT_US} element={<ContactUs />} />
                         <Route path={ROUTES.ABOUT_US} element={<AboutUs />} />
                         <Route path={ROUTES.RETURN_REFUND} element={<ReturnRefund />} />
+                        <Route path="/legal/:slug" element={<LegalPage />} />
 
                         
                         {/* Account Pages */}

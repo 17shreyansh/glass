@@ -8,6 +8,7 @@
     "start": "node server.js",
     "server": "node server.js",
     "seed:admin": "node seeds/adminSeed.js",
+    "seed:legal": "node seeds/legalPageSeed.js",
     "seed:users": "node seeds/userSeed.js",
     "seed:products": "node seeds/productSeed.js",
     "seed:all": "npm run seed:admin && npm run seed:users && npm run seed:products",

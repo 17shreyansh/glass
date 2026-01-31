@@ -29,6 +29,7 @@ const contactRoutes = require('./routes/contactRoutes'); // Import contact route
 const stockRoutes = require('./routes/stockRoutes');
 const webhookRoutes = require('./routes/webhookRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
+const legalPageRoutes = require('./routes/legalPageRoutes');
 const OrderService = require('./services/OrderService');
 const cron = require('node-cron');
 
@@ -137,6 +138,7 @@ app.use('/api/returns', returnRoutes); // NEW: Return routes
 app.use('/api/contacts', contactRoutes); // NEW: Contact routes
 app.use('/api/stock', stockRoutes);
 app.use('/api/webhook', webhookRoutes);
+app.use('/api/legal', legalPageRoutes);
 
 
 

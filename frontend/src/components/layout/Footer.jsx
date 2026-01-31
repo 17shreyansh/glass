@@ -135,10 +135,10 @@ const Footer = () => {
             Policies
           </Title>
           <Space direction="vertical" size="small">
-            <Link to="/return-refund" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Shipping</Link>
-            <Link to="/return-refund" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Returns</Link>
-            <Link to="/return-refund" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Privacy Policy</Link>
-            <Link to="/return-refund" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Terms</Link>
+            <Link to="/legal/shipping-policy" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Shipping</Link>
+            <Link to="/legal/return-refund-policy" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Returns</Link>
+            <Link to="/legal/privacy-policy" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Privacy Policy</Link>
+            <Link to="/legal/terms-conditions" style={{ fontSize: window.innerWidth <= 768 ? "13px" : "15px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", color: "white", textDecoration: "none" }}>Terms</Link>
           </Space>
         </Col>
 
@@ -207,9 +207,9 @@ const Footer = () => {
         }}
       >
         <Text style={{ color: "white", fontSize: window.innerWidth <= 768 ? "11px" : "14px", fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif" }}>
-          <Link to="/return-refund" style={{ color: "white", textDecoration: "none" }}>Privacy Policy</Link>
+          <Link to="/legal/privacy-policy" style={{ color: "white", textDecoration: "none" }}>Privacy Policy</Link>
           {" | "}
-          <Link to="/return-refund" style={{ color: "white", textDecoration: "none" }}>Terms and Conditions</Link>
+          <Link to="/legal/terms-conditions" style={{ color: "white", textDecoration: "none" }}>Terms and Conditions</Link>
           {window.innerWidth > 768 && " | "}
           {window.innerWidth <= 768 && <br />}
           © {new Date().getFullYear()} MV Crafted. All rights reserved.
