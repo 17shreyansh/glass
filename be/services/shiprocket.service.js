@@ -5,19 +5,23 @@ class ShiprocketService {
   constructor() {
     this.baseURL = "https://apiv2.shiprocket.in/v1/external";
     this.token = null;
-    this.tokenExpiry = null;
+    this.tokenExpiry = 0;
   }
 
   // ================= AUTH =================
-  async authenticate() {
-    if (this.token && this.tokenExpiry > Date.now()) {
+  async authenticate(force = false) {
+    // reuse valid token
+    if (!force && this.token && Date.now() < this.tokenExpiry) {
       return this.token;
     }
 
-    let email = (await Settings.getValue("SHIPROCKET_EMAIL"))?.trim();
-    let password = (await Settings.getValue("SHIPROCKET_PASSWORD"))?.trim();
+    let email = await Settings.getValue("SHIPROCKET_EMAIL");
+    let password = await Settings.getValue("SHIPROCKET_PASSWORD");
 
-    // Fallback to env if not in DB
+    email = email?.toString().trim().replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+    password = password?.toString().trim().replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+
+    // fallback env
     if (!email || !password) {
       email = process.env.SHIPROCKET_EMAIL?.trim();
       password = process.env.SHIPROCKET_PASSWORD?.trim();
@@ -28,30 +32,36 @@ class ShiprocketService {
     }
 
     try {
+      console.log("🔐 Shiprocket auth...");
+      console.log("Email:", JSON.stringify(email));
+      console.log("Password length:", password.length);
+
       const res = await axios.post(
         `${this.baseURL}/auth/login`,
         { email, password },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0'
-          }
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
 
       if (!res.data?.token) {
-        throw new Error("Shiprocket token not received");
+        throw new Error("No token received");
       }
 
       this.token = res.data.token;
       this.tokenExpiry = Date.now() + 9 * 24 * 60 * 60 * 1000;
 
+      console.log("✅ Shiprocket auth success");
       return this.token;
-    } catch (error) {
-      if (error.response?.data) {
-        throw new Error(`Shiprocket auth failed: ${error.response.data.message || 'Unknown error'}`);
-      }
-      throw error;
+
+    } catch (err) {
+      this.token = null;
+      this.tokenExpiry = 0;
+
+      console.error("❌ Shiprocket auth error:");
+      console.error(err.response?.data || err.message);
+
+      throw new Error(
+        err.response?.data?.message || "Shiprocket auth failed"
+      );
     }
   }
 
@@ -63,29 +73,53 @@ class ShiprocketService {
     };
   }
 
+  // ================= REQUEST WRAPPER =================
+  async request(config) {
+    try {
+      const headers = await this.headers();
+      return await axios({
+        ...config,
+        headers: { ...headers, ...(config.headers || {}) },
+      });
+    } catch (err) {
+      // retry once on auth failure
+      if (err.response?.status === 401) {
+        console.log("🔁 Token expired, retrying...");
+        await this.authenticate(true);
+
+        const headers = await this.headers();
+        return await axios({
+          ...config,
+          headers: { ...headers, ...(config.headers || {}) },
+        });
+      }
+      throw err;
+    }
+  }
+
   // ================= SERVICEABILITY =================
   async checkServiceability(pickup, delivery, weight = 0.5, cod = false) {
-    const headers = await this.headers();
-
-    const res = await axios.get(
-      `${this.baseURL}/courier/serviceability`,
-      {
-        headers,
-        params: {
-          pickup_postcode: pickup,
-          delivery_postcode: delivery,
-          weight,
-          cod: cod ? 1 : 0,
-        },
-      }
-    );
+    const res = await this.request({
+      method: "GET",
+      url: `${this.baseURL}/courier/serviceability`,
+      params: {
+        pickup_postcode: pickup,
+        delivery_postcode: delivery,
+        weight,
+        cod: cod ? 1 : 0,
+      },
+    });
 
     return res.data;
   }
 
   // ================= CREATE ORDER =================
   async createOrder(order) {
-    const headers = await this.headers();
+    if (!/^\d{10}$/.test(order.phone))
+      throw new Error("Invalid phone");
+
+    if (!/^\d{6}$/.test(order.pincode))
+      throw new Error("Invalid pincode");
 
     const payload = {
       order_id: order.order_id,
@@ -112,7 +146,6 @@ class ShiprocketService {
       })),
 
       payment_method: order.cod ? "COD" : "Prepaid",
-
       sub_total: order.total,
 
       length: 10,
@@ -121,76 +154,57 @@ class ShiprocketService {
       weight: order.weight || 0.5,
     };
 
-    const res = await axios.post(
-      `${this.baseURL}/orders/create/adhoc`,
-      payload,
-      { headers }
-    );
+    const res = await this.request({
+      method: "POST",
+      url: `${this.baseURL}/orders/create/adhoc`,
+      data: payload,
+    });
 
     return res.data;
   }
 
-  // ================= ASSIGN AWB =================
+  // ================= OTHER CALLS =================
   async assignAWB(shipment_id, courier_id) {
-    const headers = await this.headers();
-
-    const res = await axios.post(
-      `${this.baseURL}/courier/assign/awb`,
-      { shipment_id, courier_id },
-      { headers }
-    );
-
+    const res = await this.request({
+      method: "POST",
+      url: `${this.baseURL}/courier/assign/awb`,
+      data: { shipment_id, courier_id },
+    });
     return res.data;
   }
 
-  // ================= PICKUP =================
   async generatePickup(shipment_id) {
-    const headers = await this.headers();
-
-    const res = await axios.post(
-      `${this.baseURL}/courier/generate/pickup`,
-      { shipment_id: [shipment_id] },
-      { headers }
-    );
-
+    const res = await this.request({
+      method: "POST",
+      url: `${this.baseURL}/courier/generate/pickup`,
+      data: { shipment_id: [shipment_id] },
+    });
     return res.data;
   }
 
-  // ================= LABEL =================
   async generateLabel(shipment_id) {
-    const headers = await this.headers();
-
-    const res = await axios.post(
-      `${this.baseURL}/courier/generate/label`,
-      { shipment_id: [shipment_id] },
-      { headers }
-    );
-
+    const res = await this.request({
+      method: "POST",
+      url: `${this.baseURL}/courier/generate/label`,
+      data: { shipment_id: [shipment_id] },
+    });
     return res.data;
   }
 
-  // ================= TRACK =================
   async track(shipment_id) {
-    const headers = await this.headers();
-
-    const res = await axios.get(
-      `${this.baseURL}/courier/track/shipment/${shipment_id}`,
-      { headers }
-    );
-
+    const res = await this.request({
+      method: "GET",
+      url: `${this.baseURL}/courier/track/shipment/${shipment_id}`,
+    });
     return res.data;
   }
 
-  // ================= CANCEL =================
   async cancel(awb) {
-    const headers = await this.headers();
-
-    const res = await axios.post(
-      `${this.baseURL}/orders/cancel/shipment/awbs`,
-      { awbs: [awb] },
-      { headers }
-    );
-
+    const res = await this.request({
+      method: "POST",
+      url: `${this.baseURL}/orders/cancel/shipment/awbs`,
+      data: { awbs: [awb] },
+    });
     return res.data;
   }
 }

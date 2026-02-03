@@ -582,7 +582,25 @@ const shipOrderViaShiprocket = async (req, res) => {
         }
 
         // Step 1: Create order in Shiprocket
-        const shiprocketOrder = await shiprocketService.createOrder(order);
+        const shiprocketOrder = await shiprocketService.createOrder({
+            order_id: order.orderNumber,
+            name: order.shippingAddress.fullName,
+            phone: order.shippingAddress.phone,
+            email: order.shippingAddress.email,
+            address: order.shippingAddress.address,
+            city: order.shippingAddress.city,
+            state: order.shippingAddress.state,
+            pincode: order.shippingAddress.pincode,
+            cod: order.payment.method === 'COD',
+            total: order.totalAmount,
+            weight: 0.5,
+            items: order.items.map(item => ({
+                name: item.name,
+                sku: item.productId?.toString() || 'SKU001',
+                qty: item.quantity,
+                price: item.price
+            }))
+        });
         
         // Step 2: Generate AWB
         const awbData = await shiprocketService.generateAWB(shiprocketOrder.shipmentId, courierId);
