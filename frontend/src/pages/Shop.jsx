@@ -10,6 +10,8 @@ import hero1 from '../assets/jewelleryImage.jpg';
 import p1 from '../assets/c1.jpg';
 import glass from '../assets/glass1.jpg';
 import cate from '../assets/shop.jpeg';
+import banner from '../assets/banner.png';
+
 
 const { Title } = Typography;
 
@@ -191,6 +193,18 @@ const Shop = () => {
 
 
       {/* Glass Section */}
+      <div style={{ backgroundColor: 'black', padding: 0, margin: 0  }}>
+        <img 
+          src={banner}
+          alt="Glass"
+          style={{ 
+            // height: '600px',
+            width: '100%',
+            display: 'block',
+            margin: 0
+          }}
+        />
+      </div>
       <div style={{ backgroundColor: 'black', padding: 0, margin: 0  }}>
         <img 
           src={glass}

@@ -8,9 +8,8 @@ const CartSummary = ({ showCheckoutButton = true, onCheckout }) => {
   const { cartItems, getCartTotal } = useCart();
 
   const subtotal = getCartTotal();
-  const shipping = subtotal > 1000 ? 0 : 100;
-  const tax = subtotal * 0.18; // 18% GST
-  const total = subtotal + shipping + tax;
+  const tax = subtotal * 0.18;
+  const total = subtotal + tax;
 
   return (
     <Card title="Order Summary" style={{ width: '100%' }}>
@@ -18,11 +17,6 @@ const CartSummary = ({ showCheckoutButton = true, onCheckout }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <Text>Subtotal ({cartItems.length} items)</Text>
           <Text>₹{subtotal.toLocaleString()}</Text>
-        </div>
-        
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Text>Shipping</Text>
-          <Text>{shipping === 0 ? 'FREE' : `₹${shipping}`}</Text>
         </div>
         
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -38,12 +32,6 @@ const CartSummary = ({ showCheckoutButton = true, onCheckout }) => {
             ₹{total.toLocaleString()}
           </Title>
         </div>
-        
-        {subtotal < 1000 && (
-          <Text type="secondary" style={{ fontSize: '12px' }}>
-            Add ₹{(1000 - subtotal).toLocaleString()} more for FREE shipping
-          </Text>
-        )}
         
         {showCheckoutButton && (
           <Button 

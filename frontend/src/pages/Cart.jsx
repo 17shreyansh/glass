@@ -224,7 +224,7 @@ const CartCheckout = () => {
                   </Col>
                 </Row>
               </Card>
-            )})}}
+            )})}
           </Col>
 
           <Col xs={24} lg={8}>
@@ -233,11 +233,6 @@ const CartCheckout = () => {
               <div style={styles.summaryRow}>
                 <span>Subtotal ({cartItems.length} items):</span>
                 <span>₹{subtotal.toFixed(2)}</span>
-              </div>
-              <Divider style={styles.divider} />
-              <div style={styles.summaryRow}>
-                <span>Shipping:</span>
-                <span style={{ color: '#52c41a' }}>FREE</span>
               </div>
               <Divider style={styles.divider} />
               <div

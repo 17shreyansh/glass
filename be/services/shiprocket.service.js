@@ -1,198 +1,198 @@
-const axios = require('axios');
-const Settings = require('../models/Settings');
+const axios = require("axios");
+const Settings = require("../models/Settings");
 
 class ShiprocketService {
-    constructor() {
-        this.baseURL = 'https://apiv2.shiprocket.in/v1/external';
-        this.token = null;
-        this.tokenExpiry = null;
+  constructor() {
+    this.baseURL = "https://apiv2.shiprocket.in/v1/external";
+    this.token = null;
+    this.tokenExpiry = null;
+  }
+
+  // ================= AUTH =================
+  async authenticate() {
+    if (this.token && this.tokenExpiry > Date.now()) {
+      return this.token;
     }
 
-    async authenticate() {
-        if (this.token && this.tokenExpiry && Date.now() < this.tokenExpiry) {
-            return this.token;
-        }
+    let email = (await Settings.getValue("SHIPROCKET_EMAIL"))?.trim();
+    let password = (await Settings.getValue("SHIPROCKET_PASSWORD"))?.trim();
 
-        const email = await Settings.getValue('SHIPROCKET_EMAIL', process.env.SHIPROCKET_EMAIL);
-        const password = await Settings.getValue('SHIPROCKET_PASSWORD', process.env.SHIPROCKET_PASSWORD);
-
-        // Check if using admin panel config or env variables
-        const emailFromDB = await Settings.findOne({ key: 'SHIPROCKET_EMAIL' });
-        const passwordFromDB = await Settings.findOne({ key: 'SHIPROCKET_PASSWORD' });
-        
-        if (emailFromDB && passwordFromDB) {
-            console.log('✓ [Shiprocket] Using configuration from Admin Panel');
-        } else if (process.env.SHIPROCKET_EMAIL && process.env.SHIPROCKET_PASSWORD) {
-            console.log('⚠ [Shiprocket] Using configuration from .env file (Admin Panel not configured)');
-        } else {
-            console.log('❌ [Shiprocket] NOT CONFIGURED - Please configure in Admin Panel or .env file');
-            throw new Error('Shiprocket credentials not configured');
-        }
-
-        try {
-            const { data } = await axios.post(`${this.baseURL}/auth/login`, { email, password });
-            this.token = data.token;
-            this.tokenExpiry = Date.now() + (9 * 24 * 60 * 60 * 1000);
-            console.log('✓ [Shiprocket] Authentication successful');
-            return this.token;
-        } catch (error) {
-            console.error('❌ [Shiprocket] Authentication failed:', error.response?.data?.message || error.message);
-            throw new Error('Shiprocket authentication failed. Check credentials.');
-        }
+    // Fallback to env if not in DB
+    if (!email || !password) {
+      email = process.env.SHIPROCKET_EMAIL?.trim();
+      password = process.env.SHIPROCKET_PASSWORD?.trim();
     }
 
-    async getHeaders() {
-        const token = await this.authenticate();
-        return {
+    if (!email || !password) {
+      throw new Error("Shiprocket credentials missing");
+    }
+
+    try {
+      const res = await axios.post(
+        `${this.baseURL}/auth/login`,
+        { email, password },
+        {
+          headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        };
-    }
-
-    async checkServiceability(pickupPincode, deliveryPincode, cod = 0, weight = 0.5) {
-        try {
-            const headers = await this.getHeaders();
-            const { data } = await axios.get(`${this.baseURL}/courier/serviceability`, {
-                headers,
-                params: {
-                    pickup_postcode: pickupPincode,
-                    delivery_postcode: deliveryPincode,
-                    cod: cod ? 1 : 0,
-                    weight
-                }
-            });
-
-            console.log('[Shiprocket] Serviceability response:', JSON.stringify(data, null, 2));
-
-            return {
-                success: true,
-                available: data.data?.available_courier_companies?.length > 0,
-                couriers: data.data?.available_courier_companies || []
-            };
-        } catch (error) {
-            console.error('[Shiprocket] Serviceability error:', error.message);
-            return { success: false, available: false, error: error.message };
+            'User-Agent': 'Mozilla/5.0'
+          }
         }
+      );
+
+      if (!res.data?.token) {
+        throw new Error("Shiprocket token not received");
+      }
+
+      this.token = res.data.token;
+      this.tokenExpiry = Date.now() + 9 * 24 * 60 * 60 * 1000;
+
+      return this.token;
+    } catch (error) {
+      if (error.response?.data) {
+        throw new Error(`Shiprocket auth failed: ${error.response.data.message || 'Unknown error'}`);
+      }
+      throw error;
     }
+  }
 
-    async createOrder(orderData) {
-        const headers = await this.getHeaders();
-        const pickupLocation = await Settings.getValue('SHIPROCKET_PICKUP_LOCATION', process.env.SHIPROCKET_PICKUP_LOCATION || 'Primary');
-        
-        // Determine if COD based on payment method
-        const isCOD = orderData.payment.method === 'COD';
-        
-        const payload = {
-            order_id: orderData.orderNumber,
-            order_date: new Date().toISOString().split('T')[0],
-            pickup_location: pickupLocation,
-            billing_customer_name: orderData.shippingAddress.fullName,
-            billing_last_name: '',
-            billing_address: orderData.shippingAddress.address,
-            billing_city: orderData.shippingAddress.city,
-            billing_pincode: orderData.shippingAddress.pincode,
-            billing_state: orderData.shippingAddress.state,
-            billing_country: orderData.shippingAddress.country || 'India',
-            billing_email: orderData.shippingAddress.email,
-            billing_phone: orderData.shippingAddress.phone,
-            shipping_is_billing: true,
-            order_items: orderData.items.map(item => ({
-                name: item.name,
-                sku: item.productId?.toString() || 'SKU',
-                units: item.quantity,
-                selling_price: item.price,
-                discount: 0,
-                tax: 0
-            })),
-            payment_method: isCOD ? 'COD' : 'Prepaid',
-            sub_total: orderData.subtotal,
-            length: 10,
-            breadth: 10,
-            height: 10,
-            weight: orderData.items.reduce((sum, item) => sum + (item.quantity * 0.5), 0)
-        };
+  async headers() {
+    const token = await this.authenticate();
+    return {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+  }
 
-        const { data } = await axios.post(`${this.baseURL}/orders/create/adhoc`, payload, { headers });
+  // ================= SERVICEABILITY =================
+  async checkServiceability(pickup, delivery, weight = 0.5, cod = false) {
+    const headers = await this.headers();
 
-        return {
-            success: true,
-            orderId: data.order_id,
-            shipmentId: data.shipment_id
-        };
-    }
+    const res = await axios.get(
+      `${this.baseURL}/courier/serviceability`,
+      {
+        headers,
+        params: {
+          pickup_postcode: pickup,
+          delivery_postcode: delivery,
+          weight,
+          cod: cod ? 1 : 0,
+        },
+      }
+    );
 
-    async generateAWB(shipmentId, courierId) {
-        const headers = await this.getHeaders();
-        const { data } = await axios.post(
-            `${this.baseURL}/courier/assign/awb`,
-            { shipment_id: shipmentId, courier_id: courierId },
-            { headers }
-        );
+    return res.data;
+  }
 
-        return {
-            success: true,
-            awbCode: data.response?.data?.awb_code,
-            courierName: data.response?.data?.courier_name
-        };
-    }
+  // ================= CREATE ORDER =================
+  async createOrder(order) {
+    const headers = await this.headers();
 
-    async schedulePickup(shipmentId) {
-        const headers = await this.getHeaders();
-        const { data } = await axios.post(
-            `${this.baseURL}/courier/generate/pickup`,
-            { shipment_id: [shipmentId] },
-            { headers }
-        );
+    const payload = {
+      order_id: order.order_id,
+      order_date: new Date().toISOString().slice(0, 10),
 
-        return {
-            success: true,
-            pickupStatus: data.pickup_status,
-            pickupTokenNumber: data.response?.pickup_token_number
-        };
-    }
+      pickup_location: "Primary",
 
-    async generateLabel(shipmentIds) {
-        const headers = await this.getHeaders();
-        const { data } = await axios.post(
-            `${this.baseURL}/courier/generate/label`,
-            { shipment_id: Array.isArray(shipmentIds) ? shipmentIds : [shipmentIds] },
-            { headers }
-        );
+      billing_customer_name: order.name,
+      billing_address: order.address,
+      billing_city: order.city,
+      billing_pincode: order.pincode,
+      billing_state: order.state,
+      billing_country: "India",
+      billing_email: order.email,
+      billing_phone: order.phone,
 
-        return { success: true, labelUrl: data.label_url };
-    }
+      shipping_is_billing: true,
 
-    async generateManifest(shipmentIds) {
-        const headers = await this.getHeaders();
-        const { data } = await axios.post(
-            `${this.baseURL}/manifests/generate`,
-            { shipment_id: Array.isArray(shipmentIds) ? shipmentIds : [shipmentIds] },
-            { headers }
-        );
+      order_items: order.items.map(i => ({
+        name: i.name,
+        sku: i.sku || "SKU001",
+        units: i.qty,
+        selling_price: i.price,
+      })),
 
-        return { success: true, manifestUrl: data.manifest_url };
-    }
+      payment_method: order.cod ? "COD" : "Prepaid",
 
-    async trackShipment(shipmentId) {
-        try {
-            const headers = await this.getHeaders();
-            const { data } = await axios.get(`${this.baseURL}/courier/track/shipment/${shipmentId}`, { headers });
-            return { success: true, tracking: data.tracking_data };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    }
+      sub_total: order.total,
 
-    async cancelShipment(awbCodes) {
-        const headers = await this.getHeaders();
-        const { data } = await axios.post(
-            `${this.baseURL}/orders/cancel/shipment/awbs`,
-            { awbs: Array.isArray(awbCodes) ? awbCodes : [awbCodes] },
-            { headers }
-        );
+      length: 10,
+      breadth: 10,
+      height: 10,
+      weight: order.weight || 0.5,
+    };
 
-        return { success: true, message: data.message };
-    }
+    const res = await axios.post(
+      `${this.baseURL}/orders/create/adhoc`,
+      payload,
+      { headers }
+    );
+
+    return res.data;
+  }
+
+  // ================= ASSIGN AWB =================
+  async assignAWB(shipment_id, courier_id) {
+    const headers = await this.headers();
+
+    const res = await axios.post(
+      `${this.baseURL}/courier/assign/awb`,
+      { shipment_id, courier_id },
+      { headers }
+    );
+
+    return res.data;
+  }
+
+  // ================= PICKUP =================
+  async generatePickup(shipment_id) {
+    const headers = await this.headers();
+
+    const res = await axios.post(
+      `${this.baseURL}/courier/generate/pickup`,
+      { shipment_id: [shipment_id] },
+      { headers }
+    );
+
+    return res.data;
+  }
+
+  // ================= LABEL =================
+  async generateLabel(shipment_id) {
+    const headers = await this.headers();
+
+    const res = await axios.post(
+      `${this.baseURL}/courier/generate/label`,
+      { shipment_id: [shipment_id] },
+      { headers }
+    );
+
+    return res.data;
+  }
+
+  // ================= TRACK =================
+  async track(shipment_id) {
+    const headers = await this.headers();
+
+    const res = await axios.get(
+      `${this.baseURL}/courier/track/shipment/${shipment_id}`,
+      { headers }
+    );
+
+    return res.data;
+  }
+
+  // ================= CANCEL =================
+  async cancel(awb) {
+    const headers = await this.headers();
+
+    const res = await axios.post(
+      `${this.baseURL}/orders/cancel/shipment/awbs`,
+      { awbs: [awb] },
+      { headers }
+    );
+
+    return res.data;
+  }
 }
 
 module.exports = new ShiprocketService();

@@ -3,8 +3,10 @@ const PaymentService = require('../services/PaymentService');
 const shiprocketService = require('../services/shiprocket.service');
 const Order = require('../models/Order');
 const User = require('../models/User');
-const Settings = require('../models/Settings'); // For COD toggle
+const Settings = require('../models/Settings');
 const PDFDocument = require('pdfkit');
+
+const COD_MIN_AMOUNT = 2000;
 
 // Initialize OrderService
 const orderService = new OrderService();
@@ -80,6 +82,11 @@ const createOrder = async (req, res) => {
             });
         }
 
+        // For COD orders, validate minimum amount
+        if (paymentMethod === 'COD' && calculation.totalAmount < COD_MIN_AMOUNT) {
+            throw new Error(`Minimum order value of ₹${COD_MIN_AMOUNT} required for Cash on Delivery`);
+        }
+
         // For COD orders, create the order immediately
         const order = await orderService.createOrder({
             items,
@@ -96,12 +103,10 @@ const createOrder = async (req, res) => {
             orderNumber: order.orderNumber,
             orderCalculation: {
                 subtotal: calculation.subtotal,
-                deliveryCharge: calculation.deliveryCharge,
                 discountAmount: calculation.discountAmount,
-                discountOnDelivery: calculation.discountOnDelivery,
                 gstAmount: calculation.gstAmount,
                 totalAmount: calculation.totalAmount,
-                savings: calculation.discountAmount + calculation.discountOnDelivery
+                savings: calculation.discountAmount
             }
         });
 
@@ -184,12 +189,10 @@ const applyCoupon = async (req, res) => {
             message: 'Coupon applied successfully',
             calculation: {
                 subtotal: calculation.subtotal,
-                deliveryCharge: calculation.deliveryCharge,
                 discountAmount: calculation.discountAmount,
-                discountOnDelivery: calculation.discountOnDelivery,
                 gstAmount: calculation.gstAmount,
                 totalAmount: calculation.totalAmount,
-                savings: calculation.discountAmount + calculation.discountOnDelivery,
+                savings: calculation.discountAmount,
                 coupon: calculation.couponUsed
             }
         });
@@ -483,22 +486,11 @@ const generateInvoicePDF = (order) => {
                 .text('Subtotal:', summaryX, summaryY)
                 .text(formatCurrency(order.subtotal), 450, summaryY, { width: 85, align: 'right' });
             
-            summaryY += 20;
-            doc.text('Delivery:', summaryX, summaryY)
-                .text(formatCurrency(order.deliveryCharge), 450, summaryY, { width: 85, align: 'right' });
-
             if (order.discountAmount > 0) {
                 summaryY += 20;
                 doc.fillColor('#6B8E23')
                     .text('Discount:', summaryX, summaryY)
                     .text(`-${formatCurrency(order.discountAmount)}`, 450, summaryY, { width: 85, align: 'right' });
-            }
-
-            if (order.discountOnDelivery > 0) {
-                summaryY += 20;
-                doc.fillColor('#6B8E23')
-                    .text('Delivery Discount:', summaryX, summaryY)
-                    .text(`-${formatCurrency(order.discountOnDelivery)}`, 450, summaryY, { width: 85, align: 'right' });
             }
 
             summaryY += 20;

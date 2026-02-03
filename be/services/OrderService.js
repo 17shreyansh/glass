@@ -103,57 +103,12 @@ class OrderService {
             }
         }
 
-        // Calculate Delivery Charge from Shiprocket
+        // Delivery charge is included in product price
         let deliveryCharge = 0;
-        
-        if (shippingAddress.pincode) {
-            try {
-                const pickupPincode = process.env.SHIPROCKET_PICKUP_PINCODE || '110001';
-                const weight = validatedItems.reduce((sum, item) => sum + (item.quantity * 0.5), 0);
-                
-                console.log(`[OrderService] Checking serviceability: pickup=${pickupPincode}, delivery=${shippingAddress.pincode}, weight=${weight}`);
-                
-                const serviceability = await shiprocketService.checkServiceability(
-                    pickupPincode,
-                    shippingAddress.pincode,
-                    0,
-                    weight
-                );
-                
-                if (serviceability.success && serviceability.couriers && serviceability.couriers.length > 0) {
-                    // Extract charges from different possible fields
-                    const charges = serviceability.couriers.map(c => {
-                        const charge = c.rate || c.freight_charge || c.total_charge || c.cod_charges || 0;
-                        console.log(`[OrderService] Courier ${c.courier_name}: charge=${charge}`);
-                        return charge;
-                    }).filter(c => c > 0);
-                    
-                    if (charges.length > 0) {
-                        deliveryCharge = Math.min(...charges);
-                        console.log(`[OrderService] Selected delivery charge: ₹${deliveryCharge}`);
-                    } else {
-                        console.warn('[OrderService] No valid charges found, using default ₹100');
-                        deliveryCharge = 100;
-                    }
-                } else {
-                    console.warn('[OrderService] No couriers available, using default ₹100');
-                    deliveryCharge = 100;
-                }
-            } catch (error) {
-                console.error('[OrderService] Shiprocket delivery charge error:', error);
-                deliveryCharge = 100;
-            }
-        } else {
-            console.warn('[OrderService] No pincode provided, using default ₹100');
-            deliveryCharge = 100;
-        }
         
         // Validate numeric values
         if (typeof subtotal !== 'number' || isNaN(subtotal)) {
             throw new Error('Invalid subtotal amount');
-        }
-        if (typeof deliveryCharge !== 'number' || isNaN(deliveryCharge)) {
-            throw new Error('Invalid delivery charge amount');
         }
         
         let discountAmount = 0;
@@ -205,15 +160,8 @@ class OrderService {
                         discountOnDelivery: 0
                     };
                 } else if (coupon.type === 'FREE_SHIPPING') {
-                    discountOnDelivery = deliveryCharge;
-                    couponUsed = {
-                        couponId: coupon._id,
-                        code: coupon.code,
-                        type: 'FREE_SHIPPING',
-                        value: deliveryCharge,
-                        discountAmount: 0,
-                        discountOnDelivery: discountOnDelivery
-                    };
+                    // FREE_SHIPPING coupons are no longer applicable
+                    throw new Error('Free shipping coupons are not applicable as shipping is included in product price');
                 }
 
                 discountAmount = Math.min(discountAmount, subtotal);

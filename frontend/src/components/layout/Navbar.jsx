@@ -144,7 +144,7 @@ const Navbar = () => {
           width: '100%',
         }}
       >
-         FREE SHIPPING PAN INDIA
+         Premium Quality Glassware
       </div>
 
       {/* Main Navbar */}

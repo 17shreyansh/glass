@@ -23,12 +23,16 @@ const Checkout = () => {
   const [couponError, setCouponError] = useState('');
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [guestInfo, setGuestInfo] = useState({ name: '', email: '', phone: '' });
-  const [deliveryCharge, setDeliveryCharge] = useState(0);
-  const [loadingDelivery, setLoadingDelivery] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
-  const [discountOnDelivery, setDiscountOnDelivery] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('RAZORPAY');
   const [codEnabled, setCodEnabled] = useState(true);
+
+  const COD_MIN_AMOUNT = 2000;
+  const subtotal = getCartTotal();
+  const taxableAmount = subtotal - discountAmount;
+  const gst = Math.round((taxableAmount * 0.18) * 100) / 100;
+  const total = subtotal - discountAmount + gst;
+  const isCODAllowed = total >= COD_MIN_AMOUNT;
 
   useEffect(() => {
     if (cartItems.length > 0 && !isAuthenticated()) {
@@ -55,29 +59,9 @@ const Checkout = () => {
       setAddresses(response.data || []);
       if (response.data && response.data.length > 0) {
         setSelectedAddress(response.data[0]._id);
-        fetchDeliveryCharge(response.data[0].pincode);
       }
     } catch (error) {
       console.error('Failed to fetch addresses:', error);
-    }
-  };
-
-  const fetchDeliveryCharge = async (pincode) => {
-    if (!pincode) return;
-    setLoadingDelivery(true);
-    try {
-      const response = await apiService.request(`/orders/check-pincode?pincode=${pincode}`);
-      if (response.success && response.couriers && response.couriers.length > 0) {
-        const charges = response.couriers.map(c => c.rate || c.freight_charge || 0);
-        setDeliveryCharge(Math.min(...charges));
-      } else {
-        setDeliveryCharge(100);
-      }
-    } catch (error) {
-      console.error('Failed to fetch delivery charge:', error);
-      setDeliveryCharge(100);
-    } finally {
-      setLoadingDelivery(false);
     }
   };
 
@@ -115,14 +99,11 @@ const Checkout = () => {
       if (response.success) {
         const calc = response.calculation;
         setDiscountAmount(calc.discountAmount);
-        setDiscountOnDelivery(calc.discountOnDelivery);
-        setDeliveryCharge(calc.deliveryCharge);
         message.success(`Coupon applied! You saved ₹${calc.savings}`);
       }
     } catch (error) {
       setCouponError(error.message || 'Invalid coupon code');
       setDiscountAmount(0);
-      setDiscountOnDelivery(0);
       message.error(error.message || 'Invalid coupon code');
     } finally {
       setApplyingCoupon(false);
@@ -137,7 +118,6 @@ const Checkout = () => {
         const newAddr = { ...values, _id: Date.now().toString() };
         setAddresses([...addresses, newAddr]);
         setSelectedAddress(newAddr._id);
-        fetchDeliveryCharge(values.pincode);
         message.success('Address added');
       } else {
         await apiService.request('/user/addresses', {
@@ -261,13 +241,11 @@ const Checkout = () => {
       const response = await apiService.createOrder(orderData);
       
       if (response.success) {
-        // For COD orders, order is already created
         if (paymentMethod === 'COD') {
           message.success('Order placed successfully! Pay on delivery.');
           clearCart();
           navigate('/account/orders');
         } else {
-          // For Razorpay payments
           const options = {
             key: response.razorpayDetails.key,
             amount: response.razorpayDetails.amount,
@@ -314,11 +292,6 @@ const Checkout = () => {
       setLoading(false);
     }
   };
-
-  const subtotal = getCartTotal();
-  const taxableAmount = subtotal - discountAmount;
-  const gst = Math.round((taxableAmount * 0.18) * 100) / 100;
-  const total = subtotal - discountAmount + deliveryCharge - discountOnDelivery + gst;
 
   const styles = {
     page: { marginTop: 80, padding: '20px 5%', fontFamily: "'HK Grotesk', 'Hanken Grotesk', sans-serif", background: '#fff' },
@@ -407,7 +380,7 @@ const Checkout = () => {
                   </Button>
                 </div>
                 {couponError && <Text type="danger" style={{ fontSize: 12, marginTop: 5, display: 'block' }}>{couponError}</Text>}
-                {(discountAmount > 0 || discountOnDelivery > 0) && <Text type="success" style={{ fontSize: 12, marginTop: 5, display: 'block', color: '#52c41a' }}>✓ Coupon applied successfully!</Text>}
+                {(discountAmount > 0) && <Text type="success" style={{ fontSize: 12, marginTop: 5, display: 'block', color: '#52c41a' }}>✓ Coupon applied successfully!</Text>}
               </Card>
             </Col>
 
@@ -423,14 +396,6 @@ const Checkout = () => {
                 )}
                 <Divider style={styles.divider} />
                 <div style={styles.summaryRow}><span>GST (18%):</span><span>₹{gst.toFixed(2)}</span></div>
-                <Divider style={styles.divider} />
-                <div style={styles.summaryRow}><span>Shipping:</span><span>{loadingDelivery ? 'Calculating...' : deliveryCharge > 0 ? `₹${deliveryCharge.toFixed(2)}` : 'FREE'}</span></div>
-                {discountOnDelivery > 0 && (
-                  <>
-                    <Divider style={styles.divider} />
-                    <div style={{ ...styles.summaryRow, color: '#52c41a' }}><span>Delivery Discount:</span><span>-₹{discountOnDelivery.toFixed(2)}</span></div>
-                  </>
-                )}
                 <Divider style={styles.divider} />
                 <div style={{ ...styles.summaryRow, fontWeight: 700, fontSize: 18, color: '#000', marginTop: 10 }}><span>Total:</span><span>₹{total.toFixed(2)}</span></div>
               </Card>
@@ -479,7 +444,6 @@ const Checkout = () => {
                   addresses.map(addr => (
                     <div key={addr._id} style={styles.addressCard(selectedAddress === addr._id)} onClick={() => {
                       setSelectedAddress(addr._id);
-                      fetchDeliveryCharge(addr.pincode);
                     }}>
                       <Radio checked={selectedAddress === addr._id} />
                       <div style={{ marginLeft: 10 }}>
@@ -508,10 +472,12 @@ const Checkout = () => {
                   </div>
                   {codEnabled && (
                     <div style={styles.addressCard(paymentMethod === 'COD')}>
-                      <Radio value="COD">
+                      <Radio value="COD" disabled={!isCODAllowed}>
                         <div style={{ marginLeft: 10 }}>
-                          <Text strong>Cash on Delivery (COD)</Text>
-                          <div style={{ color: '#666', fontSize: 12 }}>Pay when you receive the order</div>
+                          <Text strong style={{ color: !isCODAllowed ? '#999' : 'inherit' }}>Cash on Delivery (COD)</Text>
+                          <div style={{ color: '#666', fontSize: 12 }}>
+                            {isCODAllowed ? 'Pay when you receive the order' : `Minimum order value ₹${COD_MIN_AMOUNT} required for COD`}
+                          </div>
                         </div>
                       </Radio>
                     </div>
@@ -539,14 +505,6 @@ const Checkout = () => {
                 )}
                 <Divider style={styles.divider} />
                 <div style={styles.summaryRow}><span>GST (18%):</span><span>₹{gst.toFixed(2)}</span></div>
-                <Divider style={styles.divider} />
-                <div style={styles.summaryRow}><span>Shipping:</span><span>{loadingDelivery ? 'Calculating...' : deliveryCharge > 0 ? `₹${deliveryCharge.toFixed(2)}` : 'FREE'}</span></div>
-                {discountOnDelivery > 0 && (
-                  <>
-                    <Divider style={styles.divider} />
-                    <div style={{ ...styles.summaryRow, color: '#52c41a' }}><span>Delivery Discount:</span><span>-₹{discountOnDelivery.toFixed(2)}</span></div>
-                  </>
-                )}
                 <Divider style={styles.divider} />
                 <div style={{ ...styles.summaryRow, fontWeight: 700, fontSize: 18, color: '#000', marginTop: 10 }}><span>Total:</span><span>₹{total.toFixed(2)}</span></div>
               </Card>
