@@ -6,7 +6,7 @@ const User = require('../models/User');
 const Settings = require('../models/Settings');
 const PDFDocument = require('pdfkit');
 
-const COD_MIN_AMOUNT = 2000;
+const COD_MAX_AMOUNT = 2000;
 
 // Initialize OrderService
 const orderService = new OrderService();
@@ -82,9 +82,9 @@ const createOrder = async (req, res) => {
             });
         }
 
-        // For COD orders, validate minimum amount
-        if (paymentMethod === 'COD' && calculation.totalAmount < COD_MIN_AMOUNT) {
-            throw new Error(`Minimum order value of ₹${COD_MIN_AMOUNT} required for Cash on Delivery`);
+        // For COD orders, validate maximum amount
+        if (paymentMethod === 'COD' && calculation.totalAmount > COD_MAX_AMOUNT) {
+            throw new Error(`Cash on Delivery is only available for orders up to ₹${COD_MAX_AMOUNT}`);
         }
 
         // For COD orders, create the order immediately

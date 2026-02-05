@@ -27,12 +27,12 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('RAZORPAY');
   const [codEnabled, setCodEnabled] = useState(true);
 
-  const COD_MIN_AMOUNT = 2000;
+  const COD_MAX_AMOUNT = 2000;
   const subtotal = getCartTotal();
   const taxableAmount = subtotal - discountAmount;
   const gst = Math.round((taxableAmount * 0.18) * 100) / 100;
   const total = subtotal - discountAmount + gst;
-  const isCODAllowed = total >= COD_MIN_AMOUNT;
+  const isCODAllowed = total <= COD_MAX_AMOUNT;
 
   useEffect(() => {
     if (cartItems.length > 0 && !isAuthenticated()) {
@@ -476,7 +476,7 @@ const Checkout = () => {
                         <div style={{ marginLeft: 10 }}>
                           <Text strong style={{ color: !isCODAllowed ? '#999' : 'inherit' }}>Cash on Delivery (COD)</Text>
                           <div style={{ color: '#666', fontSize: 12 }}>
-                            {isCODAllowed ? 'Pay when you receive the order' : `Minimum order value ₹${COD_MIN_AMOUNT} required for COD`}
+                            {isCODAllowed ? 'Pay when you receive the order' : `COD available only for orders up to ₹${COD_MAX_AMOUNT}`}
                           </div>
                         </div>
                       </Radio>
