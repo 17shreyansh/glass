@@ -155,6 +155,73 @@ const verifyPayment = async (req, res) => {
             razorpaySignature: razorpay_signature
         }, userId);
 
+        // Auto-ship via Shiprocket after payment confirmation
+        try {
+            // Get pickup locations
+            const pickupLocations = await shiprocketService.getPickupLocations();
+            const pickupLocation = pickupLocations.data?.shipping_address?.[0]?.pickup_location || 'Primary';
+
+            const pickupPincode = process.env.SHIPROCKET_PICKUP_PINCODE || '110001';
+            const serviceability = await shiprocketService.checkServiceability(
+                pickupPincode,
+                order.shippingAddress.pincode,
+                0.5,
+                false
+            );
+
+            if (serviceability.data?.available_courier_companies?.length > 0) {
+                const bestCourier = serviceability.data.available_courier_companies[0];
+                
+                const shiprocketOrder = await shiprocketService.createOrder({
+                    order_id: order.orderNumber,
+                    pickup_location: pickupLocation,
+                    name: order.shippingAddress.fullName,
+                    phone: order.shippingAddress.phone,
+                    email: order.shippingAddress.email || order.userId.email,
+                    address: order.shippingAddress.address,
+                    city: order.shippingAddress.city,
+                    state: order.shippingAddress.state,
+                    pincode: order.shippingAddress.pincode,
+                    cod: false,
+                    total: order.totalAmount,
+                    weight: 0.5,
+                    items: order.items.map(item => ({
+                        name: item.name,
+                        sku: item.productId?.toString() || 'SKU001',
+                        qty: item.quantity,
+                        price: item.price
+                    }))
+                });
+
+                const shipmentId = shiprocketOrder.shipment_id;
+                if (shipmentId) {
+                    const awbData = await shiprocketService.generateAWB(shipmentId, bestCourier.courier_company_id);
+                    const pickupData = await shiprocketService.schedulePickup(shipmentId);
+                    const labelData = await shiprocketService.generateLabel(shipmentId);
+                    const manifestData = await shiprocketService.generateManifest(shipmentId);
+
+                    order.shiprocket = {
+                        orderId: shiprocketOrder.order_id,
+                        shipmentId: shipmentId,
+                        awbCode: awbData.awbCode,
+                        courierName: awbData.courierName || bestCourier.courier_name,
+                        courierId: bestCourier.courier_company_id,
+                        labelUrl: labelData.labelUrl,
+                        manifestUrl: manifestData.manifestUrl,
+                        pickupScheduled: true,
+                        pickupTokenNumber: pickupData.pickupTokenNumber
+                    };
+                    order.status = 'PROCESSING';
+                    order.trackingNumber = awbData.awbCode;
+                    await order.save();
+
+                    console.log('✅ Order auto-shipped via Shiprocket');
+                }
+            }
+        } catch (shipError) {
+            console.error('⚠️ Auto-ship failed (order still created):', shipError.message);
+        }
+
         // If order is created successfully, send the response
         res.json({
             success: true,
@@ -581,12 +648,35 @@ const shipOrderViaShiprocket = async (req, res) => {
             return res.status(404).json({ message: 'Order not found' });
         }
 
+        // Get pickup locations
+        const pickupLocations = await shiprocketService.getPickupLocations();
+        const pickupLocation = pickupLocations.data?.shipping_address?.[0]?.pickup_location || 'Primary';
+
+        // Check serviceability and get best courier if not provided
+        let selectedCourierId = courierId;
+        if (!selectedCourierId) {
+            const pickupPincode = process.env.SHIPROCKET_PICKUP_PINCODE || '110001';
+            const serviceability = await shiprocketService.checkServiceability(
+                pickupPincode,
+                order.shippingAddress.pincode,
+                0.5,
+                order.payment.method === 'COD'
+            );
+
+            if (serviceability.data?.available_courier_companies?.length > 0) {
+                selectedCourierId = serviceability.data.available_courier_companies[0].courier_company_id;
+            } else {
+                throw new Error('No courier available for this pincode');
+            }
+        }
+
         // Step 1: Create order in Shiprocket
         const shiprocketOrder = await shiprocketService.createOrder({
             order_id: order.orderNumber,
+            pickup_location: pickupLocation,
             name: order.shippingAddress.fullName,
             phone: order.shippingAddress.phone,
-            email: order.shippingAddress.email,
+            email: order.shippingAddress.email || order.userId.email,
             address: order.shippingAddress.address,
             city: order.shippingAddress.city,
             state: order.shippingAddress.state,
@@ -602,23 +692,31 @@ const shipOrderViaShiprocket = async (req, res) => {
             }))
         });
         
+        // Extract shipment_id and order_id from response
+        const shipmentId = shiprocketOrder.shipment_id;
+        const srOrderId = shiprocketOrder.order_id;
+        
+        if (!shipmentId) {
+            throw new Error('Failed to create shipment: ' + JSON.stringify(shiprocketOrder));
+        }
+        
         // Step 2: Generate AWB
-        const awbData = await shiprocketService.generateAWB(shiprocketOrder.shipmentId, courierId);
+        const awbData = await shiprocketService.generateAWB(shipmentId, selectedCourierId);
         
         // Step 3: Schedule pickup
-        const pickupData = await shiprocketService.schedulePickup(shiprocketOrder.shipmentId);
+        const pickupData = await shiprocketService.schedulePickup(shipmentId);
         
         // Step 4: Generate label and manifest
-        const labelData = await shiprocketService.generateLabel(shiprocketOrder.shipmentId);
-        const manifestData = await shiprocketService.generateManifest(shiprocketOrder.shipmentId);
+        const labelData = await shiprocketService.generateLabel(shipmentId);
+        const manifestData = await shiprocketService.generateManifest(shipmentId);
 
         // Update order with Shiprocket data
         order.shiprocket = {
-            orderId: shiprocketOrder.orderId,
-            shipmentId: shiprocketOrder.shipmentId,
+            orderId: srOrderId,
+            shipmentId: shipmentId,
             awbCode: awbData.awbCode,
             courierName: awbData.courierName,
-            courierId: courierId,
+            courierId: selectedCourierId,
             labelUrl: labelData.labelUrl,
             manifestUrl: manifestData.manifestUrl,
             pickupScheduled: true,

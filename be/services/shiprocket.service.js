@@ -1,5 +1,4 @@
 const axios = require("axios");
-const Settings = require("../models/Settings");
 
 class ShiprocketService {
   constructor() {
@@ -15,32 +14,29 @@ class ShiprocketService {
       return this.token;
     }
 
-    let email = await Settings.getValue("SHIPROCKET_EMAIL");
-    let password = await Settings.getValue("SHIPROCKET_PASSWORD");
-
-    email = email?.toString().trim().replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-    password = password?.toString().trim().replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-
-    // fallback env
-    if (!email || !password) {
-      email = process.env.SHIPROCKET_EMAIL?.trim();
-      password = process.env.SHIPROCKET_PASSWORD?.trim();
-    }
+    // Use env only
+    const email = process.env.SHIPROCKET_EMAIL?.trim();
+    const password = process.env.SHIPROCKET_PASSWORD?.trim();
 
     if (!email || !password) {
-      throw new Error("Shiprocket credentials missing");
+      throw new Error("Shiprocket credentials missing in env");
     }
 
     try {
       console.log("🔐 Shiprocket auth...");
-      console.log("Email:", JSON.stringify(email));
-      console.log("Password length:", password.length);
+      console.log("Email:", email);
 
-      const res = await axios.post(
-        `${this.baseURL}/auth/login`,
-        { email, password },
-        { headers: { "Content-Type": "application/json" } }
-      );
+      const config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: 'https://apiv2.shiprocket.in/v1/external/auth/login',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        data: JSON.stringify({ email, password })
+      };
+
+      const res = await axios(config);
 
       if (!res.data?.token) {
         throw new Error("No token received");
@@ -77,11 +73,29 @@ class ShiprocketService {
   async request(config) {
     try {
       const headers = await this.headers();
-      return await axios({
+      const response = await axios({
         ...config,
         headers: { ...headers, ...(config.headers || {}) },
       });
+      
+      // Log successful response for debugging
+      console.log('Shiprocket API Success:', {
+        url: config.url,
+        data: response.data
+      });
+      
+      return response;
     } catch (err) {
+      // Log detailed error for debugging
+      if (err.response) {
+        console.error('Shiprocket API Error:', {
+          status: err.response.status,
+          data: err.response.data,
+          url: config.url,
+          requestData: config.data
+        });
+      }
+
       // retry once on auth failure
       if (err.response?.status === 401) {
         console.log("🔁 Token expired, retrying...");
@@ -121,33 +135,37 @@ class ShiprocketService {
     if (!/^\d{6}$/.test(order.pincode))
       throw new Error("Invalid pincode");
 
+    const normalizeState = (state) => {
+      return state.charAt(0).toUpperCase() + state.slice(1).toLowerCase();
+    };
+
+    // Split name into first and last
+    const nameParts = order.name.trim().split(' ');
+    const firstName = nameParts[0] || 'Customer';
+    const lastName = nameParts.slice(1).join(' ') || 'Name';
+
     const payload = {
       order_id: order.order_id,
       order_date: new Date().toISOString().slice(0, 10),
-
-      pickup_location: "Primary",
-
-      billing_customer_name: order.name,
+      pickup_location: order.pickup_location || "Primary",
+      billing_customer_name: firstName,
+      billing_last_name: lastName,
       billing_address: order.address,
       billing_city: order.city,
       billing_pincode: order.pincode,
-      billing_state: order.state,
+      billing_state: normalizeState(order.state),
       billing_country: "India",
       billing_email: order.email,
       billing_phone: order.phone,
-
       shipping_is_billing: true,
-
       order_items: order.items.map(i => ({
         name: i.name,
         sku: i.sku || "SKU001",
         units: i.qty,
         selling_price: i.price,
       })),
-
       payment_method: order.cod ? "COD" : "Prepaid",
       sub_total: order.total,
-
       length: 10,
       breadth: 10,
       height: 10,
@@ -163,23 +181,38 @@ class ShiprocketService {
     return res.data;
   }
 
+  // Get pickup locations
+  async getPickupLocations() {
+    const res = await this.request({
+      method: "GET",
+      url: `${this.baseURL}/settings/company/pickup`,
+    });
+    return res.data;
+  }
+
   // ================= OTHER CALLS =================
-  async assignAWB(shipment_id, courier_id) {
+  async generateAWB(shipment_id, courier_id) {
     const res = await this.request({
       method: "POST",
       url: `${this.baseURL}/courier/assign/awb`,
       data: { shipment_id, courier_id },
     });
-    return res.data;
+    return {
+      awbCode: res.data.response?.data?.awb_code,
+      courierName: res.data.response?.data?.courier_name
+    };
   }
 
-  async generatePickup(shipment_id) {
+  async schedulePickup(shipment_id) {
     const res = await this.request({
       method: "POST",
       url: `${this.baseURL}/courier/generate/pickup`,
       data: { shipment_id: [shipment_id] },
     });
-    return res.data;
+    return {
+      pickupScheduled: true,
+      pickupTokenNumber: res.data.pickup_token_number
+    };
   }
 
   async generateLabel(shipment_id) {
@@ -188,10 +221,23 @@ class ShiprocketService {
       url: `${this.baseURL}/courier/generate/label`,
       data: { shipment_id: [shipment_id] },
     });
-    return res.data;
+    return {
+      labelUrl: res.data.label_url
+    };
   }
 
-  async track(shipment_id) {
+  async generateManifest(shipment_id) {
+    const res = await this.request({
+      method: "POST",
+      url: `${this.baseURL}/courier/generate/manifest`,
+      data: { shipment_id: [shipment_id] },
+    });
+    return {
+      manifestUrl: res.data.manifest_url
+    };
+  }
+
+  async trackShipment(shipment_id) {
     const res = await this.request({
       method: "GET",
       url: `${this.baseURL}/courier/track/shipment/${shipment_id}`,
