@@ -670,7 +670,7 @@ const shipOrderViaShiprocket = async (req, res) => {
             }
         }
 
-        // Step 1: Create order in Shiprocket
+        // Create order in Shiprocket
         const shiprocketOrder = await shiprocketService.createOrder({
             order_id: order.orderNumber,
             pickup_location: pickupLocation,
@@ -692,44 +692,49 @@ const shipOrderViaShiprocket = async (req, res) => {
             }))
         });
         
-        // Extract shipment_id and order_id from response
         const shipmentId = shiprocketOrder.shipment_id;
         const srOrderId = shiprocketOrder.order_id;
         
         if (!shipmentId) {
-            throw new Error('Failed to create shipment: ' + JSON.stringify(shiprocketOrder));
+            throw new Error('Failed to create shipment');
         }
-        
-        // Step 2: Generate AWB
-        const awbData = await shiprocketService.generateAWB(shipmentId, selectedCourierId);
-        
-        // Step 3: Schedule pickup
-        const pickupData = await shiprocketService.schedulePickup(shipmentId);
-        
-        // Step 4: Generate label and manifest
-        const labelData = await shiprocketService.generateLabel(shipmentId);
-        const manifestData = await shiprocketService.generateManifest(shipmentId);
 
-        // Update order with Shiprocket data
+        // Update order with basic Shiprocket data
         order.shiprocket = {
             orderId: srOrderId,
             shipmentId: shipmentId,
-            awbCode: awbData.awbCode,
-            courierName: awbData.courierName,
-            courierId: selectedCourierId,
-            labelUrl: labelData.labelUrl,
-            manifestUrl: manifestData.manifestUrl,
-            pickupScheduled: true,
-            pickupTokenNumber: pickupData.pickupTokenNumber
+            courierId: selectedCourierId
         };
+        order.status = 'CONFIRMED';
         
-        order.status = 'PROCESSING';
-        order.trackingNumber = awbData.awbCode;
+        try {
+            // Try to generate AWB
+            const awbData = await shiprocketService.generateAWB(shipmentId, selectedCourierId);
+            
+            if (awbData.awbCode) {
+                // Try to schedule pickup
+                const pickupData = await shiprocketService.schedulePickup(shipmentId);
+                const labelData = await shiprocketService.generateLabel(shipmentId);
+                const manifestData = await shiprocketService.generateManifest(shipmentId);
+
+                order.shiprocket.awbCode = awbData.awbCode;
+                order.shiprocket.courierName = awbData.courierName;
+                order.shiprocket.labelUrl = labelData.labelUrl;
+                order.shiprocket.manifestUrl = manifestData.manifestUrl;
+                order.shiprocket.pickupScheduled = true;
+                order.shiprocket.pickupTokenNumber = pickupData.pickupTokenNumber;
+                order.status = 'PROCESSING';
+                order.trackingNumber = awbData.awbCode;
+            }
+        } catch (awbError) {
+            console.warn('⚠️ AWB/Pickup generation failed:', awbError.response?.data?.message || awbError.message);
+        }
+        
         await order.save();
 
         res.json({
             success: true,
-            message: 'Order shipped successfully via Shiprocket',
+            message: order.trackingNumber ? 'Order shipped successfully' : 'Order created in Shiprocket (AWB pending - check wallet balance)',
             order
         });
     } catch (error) {
