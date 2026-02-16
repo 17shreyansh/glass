@@ -213,6 +213,8 @@ const Footer = () => {
           {window.innerWidth > 768 && " | "}
           {window.innerWidth <= 768 && <br />}
           © {new Date().getFullYear()} MV Crafted. All rights reserved.
+          <br />
+          Made with love and craft by <a href="https://affobe.com" target="_blank" rel="noopener noreferrer" style={{ color: "white", textDecoration: "underline" }}>AFFOBE</a>
         </Text>
       </div>
       </div>
